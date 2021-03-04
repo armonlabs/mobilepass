@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	xmlns:tools="http://schemas.android.com/tools"
+	android:orientation="vertical"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:background="#FFFFFF"
+	tools:context=".fragment.StatusFragment">
+
+	<androidx.constraintlayout.widget.ConstraintLayout
+		android:id="@+id/status_background"
+		android:layout_width="match_parent"
+		android:layout_height="0dp"
+		android:background="@drawable/background_success"
+		app:layout_constraintHeight_percent="0.6"
+		app:layout_constraintLeft_toLeftOf="parent"
+		app:layout_constraintRight_toRightOf="parent"
+		app:layout_constraintTop_toTopOf="parent" />
+
+	<androidx.constraintlayout.widget.ConstraintLayout
+		android:layout_width="match_parent"
+		android:layout_height="0dp"
+		app:layout_constraintBottom_toBottomOf="parent"
+		app:layout_constraintHeight_percent="0.75"
+		app:layout_constraintLeft_toLeftOf="parent"
+		app:layout_constraintRight_toRightOf="parent">
+
+		<ImageView
+			android:id="@+id/imgStatusIcon"
+			android:layout_width="0dp"
+			android:layout_height="0dp"
+			android:contentDescription="@string/img_content_status_icon"
+			android:scaleType="fitCenter"
+			app:layout_constraintBottom_toTopOf="@id/txtStatusMessage"
+			app:layout_constraintHeight_percent="0.3"
+			app:layout_constraintLeft_toLeftOf="parent"
+			app:layout_constraintRight_toRightOf="parent"
+			app:layout_constraintTop_toTopOf="parent"
+			app:layout_constraintWidth_percent="0.3"
+			app:srcCompat="@drawable/status_succeed" />
+
+		<ProgressBar
+			android:id="@+id/progressBar"
+			style="@style/Widget.AppCompat.ProgressBar"
+			android:layout_width="0dp"
+			android:layout_height="0dp"
+			app:layout_constraintBottom_toTopOf="@id/txtStatusMessage"
+			app:layout_constraintHeight_percent="0.3"
+			app:layout_constraintLeft_toLeftOf="parent"
+			app:layout_constraintRight_toRightOf="parent"
+			app:layout_constraintTop_toTopOf="parent"
+			app:layout_constraintWidth_percent="0.3" />
+
+		<TextView
+			android:id="@+id/txtStatusMessage"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:layout_marginLeft="14dp"
+			android:layout_marginRight="14dp"
+			android:fontFamily="sans-serif"
+			android:gravity="center|top"
+			android:text="@string/text_status_message_succeed"
+			android:textAlignment="center"
+			android:textAllCaps="false"
+			android:textColor="#000000"
+			android:textSize="16sp"
+			app:layout_constraintBottom_toTopOf="@id/imgStatusPoweredBy"
+			app:layout_constraintHorizontal_bias="0.1"
+			app:layout_constraintLeft_toLeftOf="parent"
+			app:layout_constraintRight_toRightOf="parent"
+			app:layout_constraintTop_toTopOf="@id/imgStatusIcon" />
+
+		<ImageView
+			android:id="@+id/imgStatusPoweredBy"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_marginBottom="24dp"
+			android:contentDescription="@string/img_content_powered_by_armon"
+			android:src="@drawable/poweredby_colored"
+			app:layout_constraintBottom_toBottomOf="parent"
+			app:layout_constraintLeft_toLeftOf="parent"
+			app:layout_constraintRight_toRightOf="parent" />
+
+	</androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

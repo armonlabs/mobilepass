@@ -1,0 +1,2 @@
+include ':app', ':mobilepasssdk'
+rootProject.name='MobilePassSDK'

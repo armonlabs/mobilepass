@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<color name="colorLibrary">#103652</color>
+	<color name="white">#FFFFFF</color>
+	<color name="black">#000000</color>
+	<color name="qrcode_mask">#92000000</color>
+</resources>
