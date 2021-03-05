@@ -161,7 +161,6 @@
 		DE14A06725CF4C9100F8B8B3 = {
 			isa = PBXGroup;
 			children = (
-				DECDEB9C25F238A20056F8C3 /* Distribution */,
 				DE14A07325CF4C9200F8B8B3 /* MobilePassSDK */,
 				DE14A07225CF4C9200F8B8B3 /* Products */,
 				DE14A0A525D121C900F8B8B3 /* Frameworks */,
@@ -295,13 +294,6 @@
 				DE46BB8125E2A971006A727A /* QRCodeListState.swift */,
 			);
 			path = Enum;
-			sourceTree = "<group>";
-		};
-		DECDEB9C25F238A20056F8C3 /* Distribution */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Distribution;
 			sourceTree = "<group>";
 		};
 		DEF0BF8225D2867100397D18 /* Util */ = {
