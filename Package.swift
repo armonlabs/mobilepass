@@ -14,6 +14,6 @@ let package = Package(
     targets: [
         .binaryTarget(
             name: "MobilePassSDK", 
-            path: "MobilePassSDK.xcframework")
+            path: "./ios/Distribution/MobilePassSDK.xcframework")
     ]
 )
