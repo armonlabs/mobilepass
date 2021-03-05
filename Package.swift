@@ -2,18 +2,18 @@
 import PackageDescription
 
 let package = Package(
-    name: "MobilePass",
+    name: "MobilePassSDK",
     platforms: [
         .iOS(.v13)
     ],
     products: [
         .library(
-            name: "MobilePass", 
-            targets: ["MobilePass"])
+            name: "MobilePassSDK", 
+            targets: ["MobilePassSDK"])
     ],
     targets: [
         .binaryTarget(
             name: "MobilePassSDK", 
-            path: "./ios/Distribution/MobilePassSDK.xcframework")
+            path: "ios/Distribution/MobilePassSDK.xcframework")
     ]
 )
