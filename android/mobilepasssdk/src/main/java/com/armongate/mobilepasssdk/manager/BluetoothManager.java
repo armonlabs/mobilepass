@@ -226,7 +226,6 @@ public class BluetoothManager {
         BluetoothDevice device = currentDevicesInRange.get(deviceIdentifier);
 
         if (device != null) {
-            LogManager.getInstance().debug("TODO Using Transport LE");
             BluetoothGatt connection = device.connectGatt(activeContext, false, mBluetoothGattCallback, BluetoothDevice.TRANSPORT_LE);
             currentConnectedDevices.put(deviceIdentifier, new DeviceConnection(device, connection));
         } else {
@@ -492,9 +491,6 @@ public class BluetoothManager {
     private void processChallengeResult(String deviceIdentifier, BLEDataContent result) {
         if (result.result == DataTypes.RESULT.Succeed) {
             onConnectionStateChanged(deviceIdentifier, DeviceConnectionStatus.ConnectionState.CONNECTED);
-
-            // TODO Vibrate > NotificationManager.getInstance().vibrate();
-
             LogManager.getInstance().info("Disconnect from device after successful process of passing!");
             disconnect();
         } else {

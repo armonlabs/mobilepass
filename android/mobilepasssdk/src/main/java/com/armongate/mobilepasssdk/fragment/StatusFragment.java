@@ -61,11 +61,6 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
         // Inflate the layout for this fragment
         mCurrentView = inflater.inflate(R.layout.fragment_status, container, false);
 
-        /*
-        ImageView gifViewer = mCurrentView.findViewById(R.id.imageGif);
-        Glide.with(this).load(mActionType.equals(PassFlowActivity.ACTION_BLUETOOTH) ? R.drawable.scanning : R.drawable.loading).fitCenter().into(gifViewer);
-         */
-
         BluetoothManager.getInstance().delegate = this;
 
         updateStatus(R.drawable.background_waiting,

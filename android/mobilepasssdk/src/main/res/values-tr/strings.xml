@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 	<string name="app_name">MobilePassSDK</string>
-	<string name="text_status_message_succeed">İşlem başarılı</string>
-	<string name="text_status_message_failed">Geçiş başarısız oldu</string>
+	<string name="text_status_message_succeed">Şimdi geçiş yapabilirsiniz</string>
+	<string name="text_status_message_failed">Geçiş isteğiniz başarısız oldu</string>
 	<string name="text_status_message_not_connected">Cihaz ile iletişim kurulamadı</string>
 	<string name="text_status_message_unauthorized">Geçiş yetkiniz bulunmamaktadır</string>
 	<string name="text_status_message_scanning">Yakındaki cihazlar taranıyor</string>
-	<string name="text_status_message_connecting">Bağlantı kuruluyor...</string>
-	<string name="text_status_message_waiting">İsteğiniz gönderiliyor...</string>
+	<string name="text_status_message_connecting">Bağlantı kuruluyor…</string>
+	<string name="text_status_message_waiting">Geçiş isteğiniz gönderiliyor…</string>
 	<string name="text_location_message">Devam edebilmek için tanımlı konumda olmanız gerekmektedir</string>
 	<string name="text_qrcode_message">Geçiş yapacağınız erişim kontrol noktasının karekodunu okutunuz</string>
 	<string name="img_content_powered_by_armon">Powered by armon</string>

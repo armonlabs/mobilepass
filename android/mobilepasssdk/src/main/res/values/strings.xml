@@ -1,14 +1,14 @@
 <resources>
 	<string name="app_name">MobilePassSDK</string>
-	<string name="text_status_message_succeed">İşlem başarılı</string>
-	<string name="text_status_message_failed">Geçiş başarısız oldu</string>
-	<string name="text_status_message_not_connected">Cihaz ile iletişim kurulamadı</string>
-	<string name="text_status_message_unauthorized">Geçiş yetkiniz bulunmamaktadır</string>
-	<string name="text_status_message_scanning">Yakındaki cihazlar taranıyor</string>
-	<string name="text_status_message_connecting">Bağlantı kuruluyor...</string>
-	<string name="text_status_message_waiting">İsteğiniz gönderiliyor...</string>
-	<string name="text_location_message">Devam edebilmek için tanımlı konumda olmanız gerekmektedir</string>
-	<string name="text_qrcode_message">Geçiş yapacağınız erişim kontrol noktasının karekodunu okutunuz</string>
+	<string name="text_status_message_succeed">You can pass now</string>
+	<string name="text_status_message_failed">Pass request has been failed</string>
+	<string name="text_status_message_not_connected">Could not communicate with the device</string>
+	<string name="text_status_message_unauthorized">You are not authorized to pass</string>
+	<string name="text_status_message_scanning">Scanning for nearby devices</string>
+	<string name="text_status_message_connecting">Connecting…</string>
+	<string name="text_status_message_waiting">Your pass request is being sent…</string>
+	<string name="text_location_message">You must be in a defined location to continue</string>
+	<string name="text_qrcode_message">Please read the QR code of access point</string>
 	<string name="img_content_powered_by_armon">Powered by armon</string>
 	<string name="img_content_status_icon">status icon</string>
 </resources>

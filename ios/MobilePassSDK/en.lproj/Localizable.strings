@@ -12,6 +12,6 @@
 "text_status_message_unauthorized" = "You are not authorized to pass";
 "text_status_message_scanning" = "Scanning for nearby devices";
 "text_status_message_connecting" = "Connecting...";
-"text_status_message_waiting" = "Your pass request is being sent";
+"text_status_message_waiting" = "Your pass request is being sent...";
 "text_location_message" = "You must be in a defined location to continue";
 "text_qrcode_message" = "Please read the QR code of access point";
