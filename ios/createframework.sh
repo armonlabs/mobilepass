@@ -6,4 +6,6 @@ xcodebuild archive -scheme MobilePassSDK -configuration Release -destination 'ge
 
 xcodebuild -create-xcframework -framework './build/MobilePassSDK.framework-iphonesimulator.xcarchive/Products/Library/Frameworks/MobilePassSDK.framework' -framework './build/MobilePassSDK.framework-iphoneos.xcarchive/Products/Library/Frameworks/MobilePassSDK.framework' -output './build/MobilePassSDK.xcframework';
 
+cp -rf ./build/MobilePassSDK.xcframework ./Distribution;
+
 osascript -e 'display notification "MobilePass SDK is READY!"';

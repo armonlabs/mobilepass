@@ -1,0 +1,11 @@
+framework module MobilePassSDK {
+  umbrella header "MobilePassSDK.h"
+
+  export *
+  module * { export * }
+}
+
+module MobilePassSDK.Swift {
+    header "MobilePassSDK-Swift.h"
+    requires objc
+}
