@@ -50,7 +50,7 @@ allprojects {
 
 ```
 dependencies {
-	implementation 'com.github.armonlabs:mobilepass:0.0.1'
+	implementation 'com.github.armonlabs:mobilepass:0.0.2'
 }
 ```
 
@@ -158,11 +158,13 @@ passManager.triggerQRCodeRead();
 
 ### Installation
 
--   Download iOS Framework file from [here](http://docs.armongate.com/libqrble.framework) firstly
+-   Add swift packagege dependency by using File > Swift Packages > Add Package Dependency
 
--   Navigate to your project settings by clicking on it in the project navigator.
+```
+https://github.com/armonlabs/mobilepass.git
+```
 
--   Make sure that your target is selected and General tab is open. Then add framework file at `Frameworks, Libraries, and Embedded Content` section with + button. Select `Embed & Sign` for Embed option.
+-   Make sure that your target is selected and General tab is open and package is added to `Frameworks, Libraries, and Embedded Content` section
 
 -   Navigate to the Build Phases tab and make sure your framework is included in the `Link Binary With Libraries` list. It should already be included by default after following the steps above, however in case it’s not; click on the + button and add it.
 
