@@ -1,0 +1,145 @@
+// swift-interface-format-version: 1.0
+// swift-compiler-version: Apple Swift version 5.3.2 (swiftlang-1200.0.45 clang-1200.0.32.28)
+// swift-module-flags: -target arm64-apple-ios13.0 -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -Onone -module-name MobilePassSDK
+import AVFoundation
+import CommonCrypto
+import CoreBluetooth
+import Foundation
+@_exported import MobilePassSDK
+import Swift
+import SwiftUI
+import UIKit
+import _MapKit_SwiftUI
+public struct DeviceCapability : Swift.Codable {
+  public init(from decoder: Swift.Decoder) throws
+  public func encode(to encoder: Swift.Encoder) throws
+}
+public class MobilePass {
+  public var delegate: MobilePassSDK.MobilePassDelegate?
+  public init(config: MobilePassSDK.Configuration)
+  public func updateToken(token: Swift.String, language: Swift.String) throws
+  public func triggerQRCodeRead() -> UIKit.UIViewController
+  @objc deinit
+}
+public struct DeviceConnectionStatus {
+}
+@objc @_inheritsConvenienceInitializers public class PassFlowController : UIKit.UIViewController {
+  @objc override dynamic public func viewDidLoad()
+  @objc override dynamic public func viewDidDisappear(_ animated: Swift.Bool)
+  @objc override dynamic public init(nibName nibNameOrNil: Swift.String?, bundle nibBundleOrNil: Foundation.Bundle?)
+  @objc required dynamic public init?(coder: Foundation.NSCoder)
+  @objc deinit
+}
+extension UIImage {
+  public class func gif(data: Foundation.Data) -> UIKit.UIImage?
+  public class func gif(url: Swift.String) -> UIKit.UIImage?
+  public class func gif(name: Swift.String) -> UIKit.UIImage?
+  @available(iOS 9.0, *)
+  public class func gif(asset: Swift.String) -> UIKit.UIImage?
+}
+public struct BLEScanConfiguration : Swift.Codable {
+  public init(from decoder: Swift.Decoder) throws
+  public func encode(to encoder: Swift.Encoder) throws
+}
+public enum ExtendedEncoding {
+  case hexadecimal
+  public static func == (a: MobilePassSDK.ExtendedEncoding, b: MobilePassSDK.ExtendedEncoding) -> Swift.Bool
+  public var hashValue: Swift.Int {
+    get
+  }
+  public func hash(into hasher: inout Swift.Hasher)
+}
+public class Configuration {
+  public init(memberId: Swift.String, serverUrl: Swift.String)
+  public init(memberId: Swift.String, serverUrl: Swift.String, qrCodeMessage: Swift.String)
+  public init(memberId: Swift.String, serverUrl: Swift.String, token: Swift.String, language: Swift.String)
+  public init(memberId: Swift.String, serverUrl: Swift.String, qrCodeMessage: Swift.String, token: Swift.String, language: Swift.String)
+  @objc deinit
+}
+public struct QRCodeReaderView : SwiftUI.UIViewControllerRepresentable {
+  public enum ScanError : Swift.Error {
+    case addInputFailed, addOutputFailed
+    public static func == (a: MobilePassSDK.QRCodeReaderView.ScanError, b: MobilePassSDK.QRCodeReaderView.ScanError) -> Swift.Bool
+    public var hashValue: Swift.Int {
+      get
+    }
+    public func hash(into hasher: inout Swift.Hasher)
+  }
+  @objc @_hasMissingDesignatedInitializers public class QRCodeReaderCoordinator : ObjectiveC.NSObject, AVFoundation.AVCaptureMetadataOutputObjectsDelegate {
+    @objc public func metadataOutput(_ output: AVFoundation.AVCaptureMetadataOutput, didOutput metadataObjects: [AVFoundation.AVMetadataObject], from connection: AVFoundation.AVCaptureConnection)
+    @objc deinit
+    @objc override dynamic public init()
+  }
+  @objc @_inheritsConvenienceInitializers public class QRCodeReaderViewController : UIKit.UIViewController {
+    @objc override dynamic public func viewDidLoad()
+    @objc override dynamic public func viewWillLayoutSubviews()
+    @objc override dynamic public func viewDidAppear(_ animated: Swift.Bool)
+    @objc override dynamic public func viewWillAppear(_ animated: Swift.Bool)
+    @objc override dynamic public func viewDidDisappear(_ animated: Swift.Bool)
+    @objc override dynamic public var prefersStatusBarHidden: Swift.Bool {
+      @objc get
+    }
+    @objc override dynamic public var supportedInterfaceOrientations: UIKit.UIInterfaceOrientationMask {
+      @objc get
+    }
+    @objc deinit
+    @objc override dynamic public init(nibName nibNameOrNil: Swift.String?, bundle nibBundleOrNil: Foundation.Bundle?)
+    @objc required dynamic public init?(coder: Foundation.NSCoder)
+  }
+  public var completion: (Swift.Result<Swift.String, MobilePassSDK.QRCodeReaderView.ScanError>) -> Swift.Void
+  public init(completion: @escaping (Swift.Result<Swift.String, MobilePassSDK.QRCodeReaderView.ScanError>) -> Swift.Void)
+  public func makeCoordinator() -> MobilePassSDK.QRCodeReaderView.QRCodeReaderCoordinator
+  public func makeUIViewController(context: MobilePassSDK.QRCodeReaderView.Context) -> MobilePassSDK.QRCodeReaderView.QRCodeReaderViewController
+  public func updateUIViewController(_ uiViewController: MobilePassSDK.QRCodeReaderView.QRCodeReaderViewController, context: MobilePassSDK.QRCodeReaderView.Context)
+  public typealias UIViewControllerType = MobilePassSDK.QRCodeReaderView.QRCodeReaderViewController
+  public typealias Coordinator = MobilePassSDK.QRCodeReaderView.QRCodeReaderCoordinator
+  public typealias Body = Swift.Never
+}
+public protocol MobilePassDelegate {
+  func onPassCancelled(reason: Swift.Int)
+  func onPassCompleted(succeed: Swift.Bool)
+  func onQRCodeListStateChanged(state: Swift.Int)
+}
+public enum FlowViewType {
+  case qr, map, action
+  public static func == (a: MobilePassSDK.FlowViewType, b: MobilePassSDK.FlowViewType) -> Swift.Bool
+  public var hashValue: Swift.Int {
+    get
+  }
+  public func hash(into hasher: inout Swift.Hasher)
+}
+public enum ActionState {
+  case scanning, connecting, succeed, failed
+  public static func == (a: MobilePassSDK.ActionState, b: MobilePassSDK.ActionState) -> Swift.Bool
+  public var hashValue: Swift.Int {
+    get
+  }
+  public func hash(into hasher: inout Swift.Hasher)
+}
+public struct ActionConfig : Swift.Codable {
+  public init(from decoder: Swift.Decoder) throws
+  public func encode(to encoder: Swift.Encoder) throws
+}
+public protocol PassFlowDelegate {
+  func onQRCodeFound(code: Swift.String)
+  func onLocationValidated()
+  func onPassCompleted(succeed: Swift.Bool)
+  func onNextActionRequired()
+  func onConnectionStateChanged(isActive: Swift.Bool)
+  func needPermissionCamera()
+  func needPermissionLocation()
+  func needEnableBluetooth()
+  func onError()
+}
+public protocol BluetoothManagerDelegate {
+  func onConnectionStateChanged(state: MobilePassSDK.DeviceConnectionStatus)
+  func onBLEStateChanged(state: MobilePassSDK.DeviceCapability)
+}
+extension MobilePassSDK.ExtendedEncoding : Swift.Equatable {}
+extension MobilePassSDK.ExtendedEncoding : Swift.Hashable {}
+extension MobilePassSDK.QRCodeReaderView.ScanError : Swift.Equatable {}
+extension MobilePassSDK.QRCodeReaderView.ScanError : Swift.Hashable {}
+extension MobilePassSDK.FlowViewType : Swift.Equatable {}
+extension MobilePassSDK.FlowViewType : Swift.Hashable {}
+extension MobilePassSDK.ActionState : Swift.Equatable {}
+extension MobilePassSDK.ActionState : Swift.Hashable {}
