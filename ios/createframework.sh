@@ -8,10 +8,10 @@ xcodebuild archive -scheme MobilePassSDK -configuration Release -destination 'ge
 
 xcodebuild -create-xcframework -framework './build/MobilePassSDK.framework-iphonesimulator.xcarchive/Products/Library/Frameworks/MobilePassSDK.framework' -framework './build/MobilePassSDK.framework-iphoneos.xcarchive/Products/Library/Frameworks/MobilePassSDK.framework' -output './build/MobilePassSDK.xcframework';
 
-zip -r -X MobilePassSDK.xcframework.$NEW_VERSION.zip ./build/MobilePassSDK.xcframework;
+cd build && zip -r -X MobilePassSDK.xcframework.$NEW_VERSION.zip MobilePassSDK.xcframework && cd ..;
 
 cd Distribution && rm -rf *.$NEW_VERSION.zip && cd ..;
 
-mv MobilePassSDK.xcframework.$NEW_VERSION.zip ./Distribution;
+mv build/MobilePassSDK.xcframework.$NEW_VERSION.zip ./Distribution;
 
 swift package compute-checksum Distribution/MobilePassSDK.xcframework.$NEW_VERSION.zip 
