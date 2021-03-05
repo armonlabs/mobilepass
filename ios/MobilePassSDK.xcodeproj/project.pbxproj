@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		DE04557425DA69690071B418 /* GifPlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE04557325DA69690071B418 /* GifPlayerView.swift */; };
 		DE07C72325D181E100BD7021 /* BluetoothManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE07C72225D181E100BD7021 /* BluetoothManager.swift */; };
 		DE147D5725D3FC70000B77C8 /* PassFlowDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE147D5625D3FC70000B77C8 /* PassFlowDelegate.swift */; };
 		DE147D7225D41109000B77C8 /* MapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE147D7125D41109000B77C8 /* MapView.swift */; };
@@ -72,7 +71,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		DE04557325DA69690071B418 /* GifPlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GifPlayerView.swift; sourceTree = "<group>"; };
 		DE07C72225D181E100BD7021 /* BluetoothManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothManager.swift; sourceTree = "<group>"; };
 		DE147D5625D3FC70000B77C8 /* PassFlowDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PassFlowDelegate.swift; sourceTree = "<group>"; };
 		DE147D7125D41109000B77C8 /* MapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapView.swift; sourceTree = "<group>"; };
@@ -246,7 +244,6 @@
 				DE27229C25D86E8800E1F8F7 /* QRCodeReaderView.swift */,
 				DE27229F25D871EC00E1F8F7 /* ScanQRCodeView.swift */,
 				DE79EEAD25D9988300D8C072 /* PassFlowView.swift */,
-				DE04557325DA69690071B418 /* GifPlayerView.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -456,7 +453,6 @@
 				DEF0BF9025D28C7E00397D18 /* PacketHeaders.swift in Sources */,
 				DE07C72325D181E100BD7021 /* BluetoothManager.swift in Sources */,
 				DEF0BFBB25D2CB7E00397D18 /* BaseService.swift in Sources */,
-				DE04557425DA69690071B418 /* GifPlayerView.swift in Sources */,
 				DE14A0A325D11F7400F8B8B3 /* CryptoKeyPair.swift in Sources */,
 				DEB3115F25EC2F0500DD91AF /* BLEScanConfiguration.swift in Sources */,
 				DEF0BF8725D286A600397D18 /* String+Extensions.swift in Sources */,
@@ -658,7 +654,7 @@
 					"@loader_path/Frameworks",
 					"$(SRCROOT)",
 				);
-				MARKETING_VERSION = 0.0.1;
+				MARKETING_VERSION = 0.0.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.armongate.MobilePassSDK;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
@@ -690,7 +686,7 @@
 					"@loader_path/Frameworks",
 					"$(SRCROOT)",
 				);
-				MARKETING_VERSION = 0.0.1;
+				MARKETING_VERSION = 0.0.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.armongate.MobilePassSDK;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;

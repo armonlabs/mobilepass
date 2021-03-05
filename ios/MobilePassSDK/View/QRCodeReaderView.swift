@@ -64,7 +64,7 @@ public struct QRCodeReaderView: UIViewControllerRepresentable {
                         parent.completion(.success(qrCodeContent))
                     }
                 } else {
-                    print("MobilePass | Invalid qr code content!")
+                    LogManager.shared.warn(message: "Invalid QR code content")
                 }
             }
         }

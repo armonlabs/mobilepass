@@ -27,7 +27,6 @@ struct MapView: View {
         ZStack(alignment: .bottom) {
             MapViewContent(checkPoint: checkPoint, completion: { result in
                 if case let .success(distance) = result {
-                    print("In Region > \(distance)")
                     delegate?.onLocationValidated()
                 }
             }).edgesIgnoringSafeArea(.all)
@@ -65,11 +64,11 @@ struct MapViewContent: UIViewRepresentable {
         }
         
         public func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
-            print("Region changed! > " + mapView.region.span.latitudeDelta.description)
+            
         }
         
         public func mapView(_ mapView: MKMapView, didUpdate userLocation: MKUserLocation) {
-            print("User location changed: \(userLocation.coordinate.latitude), \(userLocation.coordinate.longitude)")
+            LogManager.shared.debug(message: "User location changed: \(userLocation.coordinate.latitude), \(userLocation.coordinate.longitude)")
             
             if (isInitialLocation) {
                 isInitialLocation = false
@@ -81,11 +80,12 @@ struct MapViewContent: UIViewRepresentable {
                 let userLoc = CLLocationCoordinate2D(latitude: userLocation.coordinate.latitude, longitude: userLocation.coordinate.longitude)
                 
                 let distance = MKMapPoint(userLoc).distance(to: MKMapPoint(pinLoc))
-                print("Distance: \(distance)")
                 
                 if (distance < CLLocationDistance(self.parent.checkPoint!.radius)) {
                     isLocationFound = true
                     parent.completion(.success(distance))
+                } else {
+                    LogManager.shared.debug(message: "Distance: \(distance)")
                 }
             }
         }

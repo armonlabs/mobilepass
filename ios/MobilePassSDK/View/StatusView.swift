@@ -42,9 +42,9 @@ struct StatusView: View, BluetoothManagerDelegate {
     @Environment(\.colorScheme) var colorScheme
     @Environment(\.locale) var locale
     
-    private var delegate: PassFlowDelegate?
-    private var isBLEEnabled: Bool?
-    private var currentConfig: ActionConfig?
+    private var delegate:       PassFlowDelegate?
+    private var isBLEEnabled:   Bool?
+    private var currentConfig:  ActionConfig?
     
     @State private var timerBluetooth:      Timer?
     @State private var lastConnectionState: DeviceConnectionStatus.ConnectionState?
@@ -52,21 +52,13 @@ struct StatusView: View, BluetoothManagerDelegate {
     @ObservedObject var viewModel: CurrentStatusModel
     
     init(delegate: PassFlowDelegate?, config: ActionConfig?) {
-        LogManager.shared.debug(message: "Init Status View!")
-        
-        self.delegate = delegate
-        self.viewModel = CurrentStatusModel()
+        self.delegate   = delegate
+        self.viewModel  = CurrentStatusModel()
         
         BluetoothManager.shared.delegate = self
         
         if (config != nil) {
-            LogManager.shared.debug(message: "Status View is for remote access: \(config!.isRemoteAccess)")
             self.currentConfig = config
-            // self.currentConfig = ActionConfig(isRemoteAccess: config!.isRemoteAccess, deviceId: config!.deviceId, accessPointId: config!.accessPointId, hardwareId: config!.hardwareId, direction: config!.direction, deviceNumber: config!.deviceNumber, relayNumber: config!.relayNumber, devicePublicKey: config!.devicePublicKey, nextAction: config!.nextAction)
-            
-            LogManager.shared.debug(message: "Config 1 is nil: \((config == nil).description)")
-            LogManager.shared.debug(message: "Config 2 is nil: \((self.currentConfig == nil).description)")
-            
             self.startAction()
         }
     }
@@ -74,7 +66,6 @@ struct StatusView: View, BluetoothManagerDelegate {
     var body: some View {
         GeometryReader { (geometry) in
             VStack(alignment: .center) {
-                /*GIFView(gifName: $viewModel.statusAnimation).frame(width: geometry.size.width * 0.5, height: geometry.size.width * 0.5, alignment: .center)*/
                 if self.viewModel.showSpinner {
                     LoadingView(size: .constant(geometry.size.width * 0.22))
                 } else {
@@ -125,8 +116,6 @@ struct StatusView: View, BluetoothManagerDelegate {
     
     private func runBluetooth() {
         self.viewModel.update(color: .gray, message: "text_status_message_scanning", showSpinner: true, icon: "")
-        
-        LogManager.shared.debug(message: "Current config has value: " + (currentConfig != nil).description)
         
         if (currentConfig != nil) {
             let config: BLEScanConfiguration = BLEScanConfiguration(uuidFilter: [currentConfig!.deviceId!],
@@ -190,12 +179,7 @@ struct StatusView: View, BluetoothManagerDelegate {
     }
     
     func onBLEStateChanged(state: DeviceCapability) {
-        /*if (state.enabled) {
-            self.runBluetooth()
-        } else {
-            self.onBluetoothConnectionFailed()
-            self.delegate?.needEnableBluetooth()
-        }*/
+
     }
     
 }

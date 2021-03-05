@@ -30,7 +30,6 @@ struct ScanQRCodeView: View {
             QRCodeReaderView(
                 completion: { result in
                     if case let .success(code) = result {
-                        print("FOUND! > " + code)
                         delegate?.onQRCodeFound(code: code)
                     }
                 }
