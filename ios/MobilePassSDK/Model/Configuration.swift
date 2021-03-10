@@ -27,29 +27,13 @@ public class Configuration {
     var allowMockLocation: Bool?
     
     
-    public init(memberId: String, serverUrl: String) {
-        self.memberId   = memberId
-        self.serverUrl  = serverUrl
+    public init(memberId: String, serverUrl: String, token: String?, language: String?, qrCodeMessage: String?, allowMockLocation: Bool?) {
+        self.memberId           = memberId
+        self.serverUrl          = serverUrl
+        self.qrCodeMessage      = qrCodeMessage
+        self.token              = token
+        self.language           = language
+        self.allowMockLocation  = allowMockLocation
     }
     
-    public init(memberId: String, serverUrl: String, qrCodeMessage: String) {
-        self.memberId       = memberId
-        self.serverUrl      = serverUrl
-        self.qrCodeMessage  = qrCodeMessage
-    }
-    
-    public init(memberId: String, serverUrl: String, token: String, language: String) {
-        self.memberId   = memberId
-        self.serverUrl  = serverUrl
-        self.token      = token
-        self.language   = language
-    }
-    
-    public init(memberId: String, serverUrl: String, qrCodeMessage: String, token: String, language: String) {
-        self.memberId       = memberId
-        self.serverUrl      = serverUrl
-        self.qrCodeMessage  = qrCodeMessage
-        self.token          = token
-        self.language       = language
-    }
 }
