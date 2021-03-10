@@ -25,7 +25,7 @@ struct MapView: View {
     
     var body: some View {
         ZStack(alignment: .bottom) {
-            MapViewContent(checkPoint: checkPoint, completion: { result in
+            MapViewContent(checkPoint: checkPoint, delegate: delegate, completion: { result in
                 if case let .success(distance) = result {
                     delegate?.onLocationValidated()
                 }
@@ -58,9 +58,11 @@ struct MapViewContent: UIViewRepresentable {
         private var isInitialLocation: Bool = true
         private var isLocationFound: Bool = false
         var parent: MapViewContent
-                
-        init(parent: MapViewContent) {
+        var flowDelegate: PassFlowDelegate?
+        
+        init(parent: MapViewContent, delegate: PassFlowDelegate?) {
             self.parent = parent
+            self.flowDelegate = delegate
         }
         
         public func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
@@ -76,16 +78,20 @@ struct MapViewContent: UIViewRepresentable {
             }
             
             if (!isLocationFound && self.parent.checkPoint != nil) {
-                let pinLoc = CLLocationCoordinate2D(latitude: self.parent.checkPoint!.latitude, longitude: self.parent.checkPoint!.longitude)
-                let userLoc = CLLocationCoordinate2D(latitude: userLocation.coordinate.latitude, longitude: userLocation.coordinate.longitude)
-                
-                let distance = MKMapPoint(userLoc).distance(to: MKMapPoint(pinLoc))
-                
-                if (distance < CLLocationDistance(self.parent.checkPoint!.radius)) {
-                    isLocationFound = true
-                    parent.completion(.success(distance))
+                if (userLocation.location?.altitude == 0 && !ConfigurationManager.shared.isMockLocationAllowed()) {
+                    self.flowDelegate?.onMockLocationDetected()
                 } else {
-                    LogManager.shared.debug(message: "Distance: \(distance)")
+                    let pinLoc = CLLocationCoordinate2D(latitude: self.parent.checkPoint!.latitude, longitude: self.parent.checkPoint!.longitude)
+                    let userLoc = CLLocationCoordinate2D(latitude: userLocation.coordinate.latitude, longitude: userLocation.coordinate.longitude)
+                    
+                    let distance = MKMapPoint(userLoc).distance(to: MKMapPoint(pinLoc))
+                    
+                    if (distance < CLLocationDistance(self.parent.checkPoint!.radius)) {
+                        isLocationFound = true
+                        parent.completion(.success(distance))
+                    } else {
+                        LogManager.shared.debug(message: "Distance: \(distance)")
+                    }
                 }
             }
         }
@@ -105,15 +111,17 @@ struct MapViewContent: UIViewRepresentable {
     }
     
     func makeCoordinator() -> Coordinator {
-        return Coordinator(parent: self)
+        return Coordinator(parent: self, delegate: self.flowDelegate)
     }
     
     public var completion: (Result<Double, Error>) -> Void
     public var checkPoint: ResponseAccessPointItemGeoLocation?
+    public var flowDelegate: PassFlowDelegate?
     
-    public init(checkPoint: ResponseAccessPointItemGeoLocation?, completion: @escaping (Result<Double, Error>) -> Void) {
+    public init(checkPoint: ResponseAccessPointItemGeoLocation?, delegate: PassFlowDelegate?, completion: @escaping (Result<Double, Error>) -> Void) {
         self.completion = completion
         self.checkPoint = checkPoint
+        self.flowDelegate = delegate
     }
     
     func makeUIView(context: Context) -> MKMapView {

@@ -14,5 +14,6 @@ public protocol PassFlowDelegate {
     func needPermissionCamera()
     func needPermissionLocation()
     func needEnableBluetooth()
+    func onMockLocationDetected()
     func onError()
 }

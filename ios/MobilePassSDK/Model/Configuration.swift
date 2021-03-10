@@ -23,6 +23,9 @@ public class Configuration {
     /** Language code to localize texts [tr | en] */
     var language: String?
     
+    /** Determines usage of mock location in flow | default: false*/
+    var allowMockLocation: Bool?
+    
     
     public init(memberId: String, serverUrl: String) {
         self.memberId   = memberId

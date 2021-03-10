@@ -103,6 +103,10 @@ struct PassFlowView: View, PassFlowDelegate {
         DelegateManager.shared.errorOccurred()
     }
     
+    func onMockLocationDetected() {
+        DelegateManager.shared.onMockLocationDetected()
+    }
+    
     
     private func checkNextAction() {
         if (actionList.count > 0) {

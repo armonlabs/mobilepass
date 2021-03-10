@@ -82,6 +82,10 @@ class ConfigurationManager: NSObject {
         return mCurrentConfig?.language ?? "en"
     }
     
+    public func isMockLocationAllowed() -> Bool {
+        return mCurrentConfig?.allowMockLocation ?? false
+    }
+    
     // MARK: Private Methods
     
     private func getStoredQRCodes() -> Void {

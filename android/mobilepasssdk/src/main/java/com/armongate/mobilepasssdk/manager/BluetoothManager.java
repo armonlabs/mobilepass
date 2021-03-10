@@ -226,7 +226,7 @@ public class BluetoothManager {
         BluetoothDevice device = currentDevicesInRange.get(deviceIdentifier);
 
         if (device != null) {
-            BluetoothGatt connection = device.connectGatt(activeContext, false, mBluetoothGattCallback, BluetoothDevice.TRANSPORT_LE);
+            BluetoothGatt connection = device.connectGatt(activeContext, false, mBluetoothGattCallback);
             currentConnectedDevices.put(deviceIdentifier, new DeviceConnection(device, connection));
         } else {
             LogManager.getInstance().warn("Connection cancelled due to empty device instance that received from range list");

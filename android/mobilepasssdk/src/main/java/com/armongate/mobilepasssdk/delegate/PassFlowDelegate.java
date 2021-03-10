@@ -10,5 +10,6 @@ public interface PassFlowDelegate {
     void needPermissionLocation();
     void needEnableBluetooth();
     void needEnableLocationServices();
+    void onMockLocationDetected();
     void onError(Exception exception);
 }

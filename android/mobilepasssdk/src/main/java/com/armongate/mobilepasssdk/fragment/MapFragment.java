@@ -18,6 +18,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.armongate.mobilepasssdk.R;
+import com.armongate.mobilepasssdk.manager.ConfigurationManager;
 import com.armongate.mobilepasssdk.manager.DelegateManager;
 import com.armongate.mobilepasssdk.manager.LogManager;
 import com.armongate.mobilepasssdk.manager.SettingsManager;
@@ -110,17 +111,22 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
                 if (lastLocation != null) {
                     LogManager.getInstance().debug("Location changed; Latitude: " + lastLocation.getLatitude() + ", Longitude: " + lastLocation.getLongitude());
 
-                    Location dest = new Location(LocationManager.GPS_PROVIDER);
-                    dest.setLatitude(mPointLatitude);
-                    dest.setLongitude(mPointLongitude);
-
-                    float distance = lastLocation.distanceTo(dest);
-
-                    if (distance < mPointRadius) {
-                        DelegateManager.getInstance().flowLocationValidated();
+                    if (lastLocation.isFromMockProvider() && !ConfigurationManager.getInstance().allowMockLocation()) {
+                        LogManager.getInstance().debug("Mock location detected!");
+                        DelegateManager.getInstance().flowMockLocationDetected();
                     } else {
-                        LogManager.getInstance().debug("Distance to point: " + distance);
-                        moveCamera(lastLocation);
+                        Location dest = new Location(LocationManager.GPS_PROVIDER);
+                        dest.setLatitude(mPointLatitude);
+                        dest.setLongitude(mPointLongitude);
+
+                        float distance = lastLocation.distanceTo(dest);
+
+                        if (distance < mPointRadius) {
+                            DelegateManager.getInstance().flowLocationValidated();
+                        } else {
+                            LogManager.getInstance().debug("Distance to point: " + distance);
+                            moveCamera(lastLocation);
+                        }
                     }
                 }
             }

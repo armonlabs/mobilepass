@@ -61,6 +61,10 @@ class DelegateManager: NSObject {
         mobilePassDelegate?.onQRCodeListStateChanged(state: state.rawValue)
     }
     
+    func onMockLocationDetected() {
+        endFlow(dismiss: true, cancelReason: CancelReason.USING_MOCK_LOCATION_DATA)
+    }
+    
     private func endFlow(dismiss: Bool, cancelReason: CancelReason) {
         if (!isPassFlowCompleted && !dismiss) {
             mobilePassDelegate?.onPassCancelled(reason: cancelReason.rawValue)

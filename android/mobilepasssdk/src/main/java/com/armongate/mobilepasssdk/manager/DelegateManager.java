@@ -130,4 +130,12 @@ public class DelegateManager {
 
         mainPassCancelled(CancelReason.ERROR);
     }
+
+    public void flowMockLocationDetected() {
+        if (mCurrentPassFlowDelegate != null) {
+            mCurrentPassFlowDelegate.onMockLocationDetected();
+        }
+
+        mainPassCancelled(CancelReason.USING_MOCK_LOCATION_DATA);
+    }
 }

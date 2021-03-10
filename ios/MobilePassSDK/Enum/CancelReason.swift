@@ -13,5 +13,6 @@ enum CancelReason: Int, Codable {
     case USER_CLOSED                    = 3
     case NEED_ENABLE_BLE                = 4
     case NEED_ENABLE_LOCATION_SERVICES  = 5
-    case ERROR                          = 6
+    case USING_MOCK_LOCATION_DATA       = 6
+    case ERROR                          = 7
 }

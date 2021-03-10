@@ -38,6 +38,6 @@ extension Int {
         let merged = firstValue + secondValue
         guard let num = UInt64(merged, radix: 2) else { return nil }
         
-        return String(num, radix: 16, uppercase: true).data(using: .hexadecimal)!
+        return String(("0" + String(num, radix: 16, uppercase: true)).suffix(2)).data(using: .hexadecimal)!
     }
 }

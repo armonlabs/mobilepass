@@ -90,8 +90,9 @@ public class ConverterUtil {
         String secondValue = secondBinary.substring(secondBinary.length() - 4);
 
         int resultValue = Integer.parseInt(firstValue + secondValue, 2);
+        byte[] result = BigInteger.valueOf(resultValue).toByteArray();
 
-        return BigInteger.valueOf(resultValue).toByteArray()[0];
+        return result.length > 0 ? result[result.length - 1] : (byte)0x00;
     }
 
     public static String bytesToHexString(byte[] data) {

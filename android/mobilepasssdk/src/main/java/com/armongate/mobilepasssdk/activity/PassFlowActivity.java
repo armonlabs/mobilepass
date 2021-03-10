@@ -121,6 +121,11 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
     }
 
     @Override
+    public void onMockLocationDetected() {
+        finish();
+    }
+
+    @Override
     public void onError(Exception exception) {
         finish();
     }

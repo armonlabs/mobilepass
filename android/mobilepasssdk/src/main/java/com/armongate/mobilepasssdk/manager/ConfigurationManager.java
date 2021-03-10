@@ -96,6 +96,10 @@ public class ConfigurationManager {
         return mCurrentConfig != null && mCurrentConfig.language != null ? mCurrentConfig.language : "en";
     }
 
+    public boolean allowMockLocation() {
+        return mCurrentConfig != null && mCurrentConfig.allowMockLocation != null ? mCurrentConfig.allowMockLocation : false;
+    }
+
     private void getStoredQRCodes() {
         String storageQRCodes = StorageManager.getInstance().getValue(mCurrentContext, StorageKeys.QRCODES);
 

@@ -31,4 +31,11 @@ public class Configuration {
      * 'en' - English
      */
     public @Nullable String language;
+
+    /**
+     * Determines usage of mock location in flow
+     *
+     * @default false
+     */
+    public @Nullable Boolean allowMockLocation;
 }
