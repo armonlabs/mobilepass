@@ -13,7 +13,7 @@ let package = Package(
     targets: [
         .binaryTarget(
             name: "MobilePassSDK",
-            url: "https://github.com/armonlabs/mobilepass/raw/main/ios/Distribution/MobilePassSDK.xcframework.0.0.3.zip",
-            checksum: "f6779bec56614bdf17f485cf6e855f0adae07699bb61d63901aa1e543b270275"),
+            url: "https://github.com/armonlabs/mobilepass/raw/main/ios/Distribution/MobilePassSDK.xcframework.0.0.4.zip",
+            checksum: "8e7c674833ace2ceb08d29c8f72c386c3ce8f158d4ece401d663bb9fab259ee0"),
     ]
 )
