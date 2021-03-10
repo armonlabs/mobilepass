@@ -30,8 +30,12 @@ public class MobilePass {
      * @param token OAuth token value of current user's session to validate
      * @param language Language code to localize texts [tr | en]
      */
-    public func updateToken(token: String, language: String) throws {
-        try ConfigurationManager.shared.setToken(token: token, language: language)
+    public func updateToken(token: String, language: String) {
+        do {
+            try ConfigurationManager.shared.setToken(token: token, language: language)
+        } catch {
+            LogManager.shared.error(message: "Update token with given parameters failed!")
+        }
     }
     
     /**
