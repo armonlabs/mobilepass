@@ -18,7 +18,7 @@ When the user arrives at the point, the flow will be as follows;
     -   Bluetooth First, Then Remote Access
         -   Library tries bluetooth flow first. If this flow fails, bluetooth communication will be started
 
--   Remote Access method can validates user's location also. If the method is defined with geolocation validation requirement, library checks checks if the user is at the specified location before remote access request
+-   Remote Access method can validates user's location also. If the method is defined with geolocation validation requirement, library checks if the user is at the specified location before remote access request
 -   After flow completed, returns the result to the application.
 
 <br />
@@ -54,7 +54,7 @@ dependencies {
 }
 ```
 
--   Change your application's min sdk version with `23` if required
+-   Change your application's min sdk version with `21` if required
 
 -   Specify your Google Maps API Key. This will be required to show user's and access points' location on map if QR code definition has geolocation validation requirement. Add your API key to your manifest file (android/app/src/main/AndroidManifest.xml)
 
@@ -309,13 +309,14 @@ Triggers QR Code reading and related pass flow.
 
 Library is configurable while initialization. Available props are listed below
 
-| Parameter     | Description                                                                | Type   |
-| ------------- | -------------------------------------------------------------------------- | ------ |
-| memberId      | Member id that will be used for validation to pass                         | String |
-| serverUrl     | URL of server that communicate between SDK, devices and validation server  | String |
-| qrCodeMessage | Information message for QR Code reader that will be shown at top of screen | String |
-| token         | OAuth token value of current user's session to validate                    | String |
-| language      | Language code to localize texts                                            | String |
+| Parameter         | Description                                                                | Type   | Required |
+| ----------------- | -------------------------------------------------------------------------- | ------ | -------- |
+| memberId          | Member id that will be used for validation to pass                         | String | Yes      |
+| serverUrl         | URL of server that communicate between SDK, devices and validation server  | String | Yes      |
+| qrCodeMessage     | Information message for QR Code reader that will be shown at top of screen | String | No       |
+| token             | OAuth token value of current user's session to validate                    | String | No       |
+| language          | Language code to localize texts                                            | String | No       |
+| allowMockLocation | Allow unreliable locations or not                                          | String | No       |
 
 <br />
 <br />
@@ -339,12 +340,13 @@ Library is configurable while initialization. Available props are listed below
 
 | Name                          | Value |
 | ----------------------------- | ----- |
-| Need Permission for Camera    |  1    |
+| Need Permission for Camera    | 1     |
 | Need Permission for Location  | 2     |
-| User Closed                   |  3    |
+| User Closed                   | 3     |
 | Need Enable Bluetooth         | 4     |
-| Need Enable Location Services |  5    |
-| Error                         |  6    |
+| Need Enable Location Services | 5     |
+| Using Mock Location           | 6     |
+| Error                         | 7     |
 
 <br />
 
@@ -352,6 +354,6 @@ Library is configurable while initialization. Available props are listed below
 
 | Name              | Value |
 | ----------------- | ----- |
-| Empty             |  1    |
+| Empty             | 1     |
 | Using Stored Data | 2     |
-| Using Synced Data |  3    |
+| Using Synced Data | 3     |
