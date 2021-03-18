@@ -20,6 +20,7 @@ class DelegateManager: NSObject {
     // MARK: Private Fields
     
     private var isPassFlowCompleted: Bool = false
+    private var isDismissedManual: Bool = false
     private var mobilePassDelegate: MobilePassDelegate?
     private var mobilePassController: UIViewController?
     
@@ -30,11 +31,14 @@ class DelegateManager: NSObject {
         mobilePassController = viewController
         
         isPassFlowCompleted = false
+        isDismissedManual = false
     }
     
     func onCompleted(succeed: Bool) {
         isPassFlowCompleted = true
-        mobilePassDelegate?.onPassCompleted(succeed: succeed)
+        DispatchQueue.main.async {
+            self.mobilePassDelegate?.onPassCompleted(succeed: succeed)
+        }
     }
     
     func onCancelled(dismiss: Bool) {
@@ -58,7 +62,9 @@ class DelegateManager: NSObject {
     }
     
     func qrCodeListChanged(state: QRCodeListState) {
-        mobilePassDelegate?.onQRCodeListStateChanged(state: state.rawValue)
+        DispatchQueue.main.async {
+            self.mobilePassDelegate?.onQRCodeListStateChanged(state: state.rawValue)
+        }
     }
     
     func onMockLocationDetected() {
@@ -66,12 +72,17 @@ class DelegateManager: NSObject {
     }
     
     private func endFlow(dismiss: Bool, cancelReason: CancelReason) {
-        if (!isPassFlowCompleted && !dismiss) {
-            mobilePassDelegate?.onPassCancelled(reason: cancelReason.rawValue)
-        }
-        
         if (dismiss) {
-            mobilePassController?.dismiss(animated: true, completion: nil)
+            isDismissedManual = true
+            DispatchQueue.main.async {
+                self.mobilePassController?.dismiss(animated: true, completion: {
+                    if (!self.isPassFlowCompleted) {
+                        self.mobilePassDelegate?.onPassCancelled(reason: cancelReason.rawValue)
+                    }
+                })
+            }
+        } else if (!isPassFlowCompleted && !isDismissedManual) {
+            self.mobilePassDelegate?.onPassCancelled(reason: cancelReason.rawValue)
         }
     }
 }
