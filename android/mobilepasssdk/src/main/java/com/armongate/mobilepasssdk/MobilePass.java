@@ -51,8 +51,6 @@ public class MobilePass {
 
     /**
      * Starts qr code reading session and related flow
-     *
-     * ! Don't forget to set token before this call
      */
     public void triggerQRCodeRead() {
         DelegateManager.getInstance().clearFlowFlags();

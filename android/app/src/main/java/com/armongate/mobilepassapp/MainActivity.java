@@ -19,10 +19,8 @@ public class MainActivity extends AppCompatActivity implements MobilePassDelegat
         setContentView(R.layout.activity_main);
 
         Configuration config = new Configuration();
-        config.memberId = "imamlargecer";
+        config.memberId = "customid";
         config.serverUrl = "https://dev3.armon.com.tr:3443";
-        // config.token = "dahsdlasjdlajsdlajsdljasdljsad";
-        // config.allowMockLocation = true;
 
         passer = new MobilePass(this, config);
         passer.setDelegate(this);
