@@ -1,13 +1,19 @@
 package com.armongate.mobilepasssdk.manager;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.LocationManager;
 
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 public class SettingsManager {
+
+    public static int REQUEST_CODE_CAMERA = 1001;
+    public static int REQUEST_CODE_LOCATION = 1002;
+
     // Singleton
 
     private static SettingsManager instance = null;
@@ -23,35 +29,27 @@ public class SettingsManager {
 
     // Public Functions
 
-    public boolean checkLocationPermission(Context context) {
-        boolean hasPermission = this.checkPermission(context, Manifest.permission.ACCESS_FINE_LOCATION);
-        boolean servicesOn = this.checkLocationServicesOn(context);
-
-        if (!servicesOn) {
-            DelegateManager.getInstance().flowNeedLocationSettingsChange();
-        }
-
-        if (!hasPermission) {
-            DelegateManager.getInstance().flowNeedPermissionLocation();
-        }
-
-        return hasPermission && servicesOn;
+    public boolean checkLocationEnabled(Context context) {
+        return this.checkLocationServicesOn(context);
     }
 
-    public boolean checkCameraPermission(Context context) {
-        boolean hasPermission = this.checkPermission(context, Manifest.permission.CAMERA);
+    public boolean checkLocationPermission(Context context, Activity activity) {
+        return this.checkPermission(context, Manifest.permission.ACCESS_FINE_LOCATION, REQUEST_CODE_LOCATION, activity);
+    }
 
-        if (!hasPermission) {
-            DelegateManager.getInstance().flowNeedPermissionCamera();
-        }
-
-        return hasPermission;
+    public boolean checkCameraPermission(Context context, Activity activity) {
+        return this.checkPermission(context, Manifest.permission.CAMERA, REQUEST_CODE_CAMERA, activity);
     }
 
     // Private Functions
 
-    private boolean checkPermission(Context context, String permission) {
-        return ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED;
+    private boolean checkPermission(Context context, String permission, int requestCode, Activity activity) {
+        if (ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED) {
+            return true;
+        }
+
+        ActivityCompat.requestPermissions(activity, new String[] { permission }, requestCode);
+        return false;
     }
 
     private boolean checkLocationServicesOn(Context context) {

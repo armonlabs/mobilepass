@@ -98,7 +98,7 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
             @Override
             public void onCompleted(Object result) {
                 updateStatus(R.drawable.background_success, R.string.text_status_message_succeed, false, R.drawable.status_succeed);
-                DelegateManager.getInstance().flowPassCompleted(true);
+                DelegateManager.getInstance().onCompleted(true);
             }
 
             @Override
@@ -116,7 +116,7 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
                     }
 
                     updateStatus(R.drawable.background_failed, failMessage, false, R.drawable.status_failed);
-                    DelegateManager.getInstance().flowPassCompleted(false);
+                    DelegateManager.getInstance().onCompleted(false);
                 }
             }
         });
@@ -161,7 +161,7 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
             }
         } else {
             updateStatus(R.drawable.background_failed, R.string.text_status_message_failed, false, R.drawable.status_failed);
-            DelegateManager.getInstance().flowPassCompleted(false);
+            DelegateManager.getInstance().onCompleted(false);
         }
     }
 
@@ -198,7 +198,7 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
 
         if (state.state == DeviceConnectionStatus.ConnectionState.CONNECTED) {
             updateStatus(R.drawable.background_success, R.string.text_status_message_succeed, false, R.drawable.status_succeed);
-            DelegateManager.getInstance().flowPassCompleted(true);
+            DelegateManager.getInstance().onCompleted(true);
         } else if (state.state == DeviceConnectionStatus.ConnectionState.FAILED
                 || state.state == DeviceConnectionStatus.ConnectionState.NOT_FOUND
                 || (mLastConnectionState == DeviceConnectionStatus.ConnectionState.CONNECTING && state.state == DeviceConnectionStatus.ConnectionState.DISCONNECTED)) {

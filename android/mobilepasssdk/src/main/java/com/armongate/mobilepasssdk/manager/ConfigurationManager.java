@@ -153,7 +153,7 @@ public class ConfigurationManager {
     }
 
     private void sendUserData() {
-        if (mCurrentContext != null && !getToken().isEmpty()) {
+        if (mCurrentContext != null) {
             if (mCurrentKeyPair == null) {
                 checkKeyPair();
             }
@@ -202,13 +202,13 @@ public class ConfigurationManager {
                 StorageManager.getInstance().setValue(mCurrentContext, StorageKeys.QRCODES, valueQRCodesToStore);
 
                 LogManager.getInstance().debug(valueQRCodesToStore);
-                DelegateManager.getInstance().mainQRCodeListStateChanged(mCurrentQRCodes.size() > 0 ? QRCodeListState.USING_SYNCED_DATA : QRCodeListState.EMPTY);
+                DelegateManager.getInstance().onQRCodeListStateChanged(mCurrentQRCodes.size() > 0 ? QRCodeListState.USING_SYNCED_DATA : QRCodeListState.EMPTY);
             }
 
             @Override
             public void onError(int statusCode) {
                 LogManager.getInstance().error("Get access list failed with status code " + statusCode);
-                DelegateManager.getInstance().mainQRCodeListStateChanged(mCurrentQRCodes.size() > 0 ? QRCodeListState.USING_STORED_DATA : QRCodeListState.EMPTY);
+                DelegateManager.getInstance().onQRCodeListStateChanged(mCurrentQRCodes.size() > 0 ? QRCodeListState.USING_STORED_DATA : QRCodeListState.EMPTY);
             }
         });
     }

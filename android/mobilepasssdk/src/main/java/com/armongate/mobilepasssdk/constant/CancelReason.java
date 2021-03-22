@@ -8,4 +8,5 @@ public class CancelReason {
     public static final int NEED_ENABLE_LOCATION_SERVICES = 5;
     public static final int USING_MOCK_LOCATION_DATA = 6;
     public static final int ERROR = 7;
+    public static final int NEED_PERMISSION_BLUETOOTH = 8;
 }

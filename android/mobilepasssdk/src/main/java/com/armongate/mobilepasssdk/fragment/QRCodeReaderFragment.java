@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.Size;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.SurfaceHolder;
@@ -13,16 +14,13 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.armongate.mobilepasssdk.R;
 import com.armongate.mobilepasssdk.manager.ConfigurationManager;
 import com.armongate.mobilepasssdk.manager.DelegateManager;
 import com.armongate.mobilepasssdk.manager.LogManager;
-import com.armongate.mobilepasssdk.manager.SettingsManager;
 import com.google.android.gms.vision.CameraSource;
 import com.google.android.gms.vision.Detector;
 import com.google.android.gms.vision.barcode.Barcode;
@@ -48,9 +46,7 @@ public class QRCodeReaderFragment extends Fragment implements SurfaceHolder.Call
             txtQRCodeMessage.setText(ConfigurationManager.getInstance().getMessageQRCode());
         }
 
-        if (SettingsManager.getInstance().checkCameraPermission(getContext())) {
-            setupControls((SurfaceView)view.findViewById(R.id.qrSurfaceView));
-        }
+        setupControls((SurfaceView)view.findViewById(R.id.qrSurfaceView));
 
         return view;
     }
@@ -80,15 +76,12 @@ public class QRCodeReaderFragment extends Fragment implements SurfaceHolder.Call
         try {
             cameraSource.start(surfaceHolder);
         } catch (Exception exception) {
-            LogManager.getInstance().error("Something went wrong while creating of qr code reader surface > " + exception.getLocalizedMessage());
-            DelegateManager.getInstance().flowError(exception);
+            DelegateManager.getInstance().onErrorOccurred(exception);
         }
     }
 
     @Override
-    public void surfaceChanged(SurfaceHolder surfaceHolder, int i, int i1, int i2) {
-
-    }
+    public void surfaceChanged(SurfaceHolder surfaceHolder, int i, int i1, int i2) { }
 
     @Override
     public void surfaceDestroyed(SurfaceHolder surfaceHolder) {
@@ -96,9 +89,7 @@ public class QRCodeReaderFragment extends Fragment implements SurfaceHolder.Call
     }
 
     @Override
-    public void release() {
-
-    }
+    public void release() { }
 
     @Override
     public void receiveDetections(Detector.Detections<Barcode> detections) {
@@ -125,7 +116,7 @@ public class QRCodeReaderFragment extends Fragment implements SurfaceHolder.Call
                         DelegateManager.getInstance().flowQRCodeFound(parsedContent);
                     }
                 } else {
-                    LogManager.getInstance().warn("Unknown qr code has been found! Data: " + code.displayValue);
+                    LogManager.getInstance().warn("Unknown qr code format! Data: " + code.displayValue);
                 }
             }
         }

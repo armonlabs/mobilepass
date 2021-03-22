@@ -133,11 +133,6 @@ public class BluetoothManager {
     public void startScan(BLEScanConfiguration configuration) {
         LogManager.getInstance().info("Bluetooth scanner is starting...");
 
-        if (!SettingsManager.getInstance().checkLocationPermission(activeContext)) {
-            LogManager.getInstance().warn("Scanning cancelled because location permission is required");
-            return;
-        }
-
         // Check current Bluetooth Adapter instance
         if (currentBluetoothAdapter == null) {
             readyBluetoothAdapter();
@@ -151,7 +146,7 @@ public class BluetoothManager {
 
         if (!this.bluetoothState.enabled) {
             LogManager.getInstance().warn("Bluetooth is disabled; enable and try again");
-            DelegateManager.getInstance().flowNeedEnableBluetooth();
+            DelegateManager.getInstance().onNeedEnableBluetooth();
 
             return;
         }

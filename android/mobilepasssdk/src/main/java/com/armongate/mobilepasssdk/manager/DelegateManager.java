@@ -11,6 +11,7 @@ public class DelegateManager {
     private static MobilePassDelegate   mCurrentMobilePassDelegate  = null;
 
     private static boolean mFlowCompleted = false;
+    private static boolean mDismissedManual = false;
 
     private DelegateManager() {
 
@@ -34,25 +35,22 @@ public class DelegateManager {
 
     public void clearFlowFlags() {
         mFlowCompleted = false;
+        mDismissedManual = false;
     }
 
-    public void mainPassCompleted(boolean succeed) {
+    public void onCompleted(boolean succeed) {
+        mFlowCompleted = true;
+
         if (mCurrentMobilePassDelegate != null) {
             mCurrentMobilePassDelegate.onPassCompleted(succeed);
         }
     }
 
-    public void mainPassCancelled(int reason) {
-        if (reason == CancelReason.USER_CLOSED && mFlowCompleted) {
-            return;
-        }
-
-        if (mCurrentMobilePassDelegate != null) {
-            mCurrentMobilePassDelegate.onPassCancelled(reason);
-        }
+    public void onCancelled(boolean dismiss) {
+        endFlow(dismiss, CancelReason.USER_CLOSED);
     }
 
-    public void mainQRCodeListStateChanged(int state) {
+    public void onQRCodeListStateChanged(int state) {
         if (mCurrentMobilePassDelegate != null) {
             mCurrentMobilePassDelegate.onQRCodeListStateChanged(state);
         }
@@ -70,15 +68,6 @@ public class DelegateManager {
         }
     }
 
-    public void flowPassCompleted(boolean succeed) {
-        if (mCurrentPassFlowDelegate != null) {
-            mCurrentPassFlowDelegate.onPassCompleted(succeed);
-        }
-
-        mFlowCompleted = true;
-        mainPassCompleted(succeed);
-    }
-
     public void flowNextActionRequired() {
         if (mCurrentPassFlowDelegate != null) {
             mCurrentPassFlowDelegate.onNextActionRequired();
@@ -91,51 +80,48 @@ public class DelegateManager {
         }
     }
 
-    public void flowNeedPermissionCamera() {
-        if (mCurrentPassFlowDelegate != null) {
-            mCurrentPassFlowDelegate.needPermissionCamera();
-        }
-
-        mainPassCancelled(CancelReason.NEED_PERMISSION_CAMERA);
+    public void onErrorOccurred(Exception ex) {
+        LogManager.getInstance().error("Exception on pass flow; " + ex.getLocalizedMessage());
+        endFlow(true, CancelReason.ERROR);
     }
 
-    public void flowNeedPermissionLocation() {
-        if (mCurrentPassFlowDelegate != null) {
-            mCurrentPassFlowDelegate.needPermissionLocation();
-        }
-
-        mainPassCancelled(CancelReason.NEED_PERMISSION_LOCATION);
+    public void onNeedPermissionCamera() {
+        endFlow(true, CancelReason.NEED_PERMISSION_CAMERA);
     }
 
-    public void flowNeedLocationSettingsChange() {
-        if (mCurrentPassFlowDelegate != null) {
-            mCurrentPassFlowDelegate.needEnableLocationServices();
-        }
-
-        mainPassCancelled(CancelReason.NEED_ENABLE_LOCATION_SERVICES);
+    public void onNeedPermissionLocation() {
+        endFlow(true, CancelReason.NEED_PERMISSION_LOCATION);
     }
 
-    public void flowNeedEnableBluetooth() {
-        if (mCurrentPassFlowDelegate != null) {
-            mCurrentPassFlowDelegate.needEnableBluetooth();
-        }
-
-        mainPassCancelled(CancelReason.NEED_ENABLE_BLE);
+    public void onNeedPermissionBluetooth() {
+        endFlow(true, CancelReason.NEED_PERMISSION_BLUETOOTH);
     }
 
-    public void flowError(Exception ex) {
-        if (mCurrentPassFlowDelegate != null) {
-            mCurrentPassFlowDelegate.onError(ex);
-        }
-
-        mainPassCancelled(CancelReason.ERROR);
+    public void onNeedLocationSettingsChange() {
+        endFlow(true, CancelReason.NEED_ENABLE_LOCATION_SERVICES);
     }
 
-    public void flowMockLocationDetected() {
-        if (mCurrentPassFlowDelegate != null) {
-            mCurrentPassFlowDelegate.onMockLocationDetected();
-        }
+    public void onNeedEnableBluetooth() {
+        endFlow(true, CancelReason.NEED_ENABLE_BLE);
+    }
 
-        mainPassCancelled(CancelReason.USING_MOCK_LOCATION_DATA);
+    public void onMockLocationDetected() {
+        endFlow(true, CancelReason.USING_MOCK_LOCATION_DATA);
+    }
+
+    private void endFlow(boolean dismiss, int reason) {
+        if (dismiss) {
+            mDismissedManual = true;
+
+            if (mCurrentPassFlowDelegate != null) {
+                mCurrentPassFlowDelegate.onFinishRequired();
+            }
+
+            if (mCurrentMobilePassDelegate != null && !mFlowCompleted) {
+                mCurrentMobilePassDelegate.onPassCancelled(reason);
+            }
+        } else if (mCurrentMobilePassDelegate != null && !mFlowCompleted && !mDismissedManual) {
+            mCurrentMobilePassDelegate.onPassCancelled(reason);
+        }
     }
 }

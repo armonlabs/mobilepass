@@ -1,10 +1,12 @@
 package com.armongate.mobilepasssdk.activity;
 
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
@@ -13,15 +15,18 @@ import com.armongate.mobilepasssdk.R;
 import com.armongate.mobilepasssdk.constant.CancelReason;
 import com.armongate.mobilepasssdk.constant.QRTriggerType;
 import com.armongate.mobilepasssdk.delegate.PassFlowDelegate;
+import com.armongate.mobilepasssdk.fragment.CheckFragment;
 import com.armongate.mobilepasssdk.fragment.MapFragment;
 import com.armongate.mobilepasssdk.fragment.QRCodeReaderFragment;
 import com.armongate.mobilepasssdk.fragment.StatusFragment;
 import com.armongate.mobilepasssdk.manager.ConfigurationManager;
 import com.armongate.mobilepasssdk.manager.DelegateManager;
 import com.armongate.mobilepasssdk.manager.LogManager;
+import com.armongate.mobilepasssdk.manager.SettingsManager;
 import com.armongate.mobilepasssdk.model.QRCodeContent;
 import com.armongate.mobilepasssdk.model.response.ResponseAccessPointItemQRCodeItemTrigger;
 
+import java.security.Permission;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -51,7 +56,7 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
                     .setReorderingAllowed(true)
-                    .add(R.id.fragment, QRCodeReaderFragment.class, null)
+                    .add(R.id.fragment, SettingsManager.getInstance().checkCameraPermission(getApplicationContext(), this) ? QRCodeReaderFragment.class : CheckFragment.class, null)
                     .commit();
         }
 
@@ -71,8 +76,29 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
     public void onBackPressed() {
         if (!connectionActive) {
             super.onBackPressed();
-            DelegateManager.getInstance().mainPassCancelled(CancelReason.USER_CLOSED);
+            DelegateManager.getInstance().onCancelled(false);
         }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        boolean permissionGranted = grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED;
+
+        if (requestCode == SettingsManager.REQUEST_CODE_CAMERA) {
+            if (permissionGranted) {
+                replaceFragment(QRCodeReaderFragment.class, null);
+            } else {
+                DelegateManager.getInstance().onNeedPermissionCamera();
+            }
+        } else if (requestCode == SettingsManager.REQUEST_CODE_LOCATION) {
+            if (permissionGranted) {
+                processAction();
+            } else {
+                DelegateManager.getInstance().onNeedPermissionLocation();
+            }
+        }
+
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
     @Override
@@ -84,9 +110,6 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
     public void onLocationValidated() {
         checkNextAction();
     }
-
-    @Override
-    public void onPassCompleted(boolean succeed) { }
 
     @Override
     public void onNextActionRequired() {
@@ -101,32 +124,7 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
     }
 
     @Override
-    public void needPermissionCamera() {
-        finish();
-    }
-
-    @Override
-    public void needPermissionLocation() {
-        finish();
-    }
-
-    @Override
-    public void needEnableBluetooth() {
-        finish();
-    }
-
-    @Override
-    public void needEnableLocationServices() {
-        finish();
-    }
-
-    @Override
-    public void onMockLocationDetected() {
-        finish();
-    }
-
-    @Override
-    public void onError(Exception exception) {
+    public void onFinishRequired() {
         finish();
     }
 
@@ -166,6 +164,7 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
                     case QRTriggerType.Bluetooth:
                         LogManager.getInstance().debug("Trigger Type: Bluetooth");
                         actionCurrent = ACTION_BLUETOOTH;
+
                         break;
                     case QRTriggerType.BluetoothThenRemote:
                         LogManager.getInstance().debug("Trigger Type: Bluetooth Then Remote");
@@ -196,7 +195,17 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
                         LogManager.getInstance().warn("Unknown QR code trigger type! > " + trigger.type);
                 }
 
-                processAction();
+                boolean needLocationPermission = actionList.contains(ACTION_BLUETOOTH) || actionList.contains(ACTION_LOCATION);
+
+                if (needLocationPermission && !SettingsManager.getInstance().checkLocationEnabled(getApplicationContext())) {
+                    DelegateManager.getInstance().onNeedLocationSettingsChange();
+                }
+
+                if (!needLocationPermission || SettingsManager.getInstance().checkLocationPermission(getApplicationContext(), this)) {
+                    processAction();
+                } else {
+                    replaceFragment(CheckFragment.class, null);
+                }
             }
         }
 
