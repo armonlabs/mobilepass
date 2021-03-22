@@ -44,6 +44,8 @@ public class MobilePass {
      * ! Don't forget to set token before this call
      */
     public func triggerQRCodeRead() -> UIViewController {
+        DelegateManager.shared.clearFlags()
+        
         let controller: PassFlowController = PassFlowController()
         DelegateManager.shared.setMainDelegate(delegate: delegate, viewController: controller)
         

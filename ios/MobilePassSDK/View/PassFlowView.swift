@@ -6,41 +6,66 @@
 //
 
 import SwiftUI
+import AVFoundation
 
 public enum FlowViewType {
     case qr, map, action
 }
 
-struct PassFlowView: View, PassFlowDelegate {
-    @State private var currentView = FlowViewType.qr
+class ActiveActionModel: ObservableObject {
+    @Published var currentView:         FlowViewType = FlowViewType.qr
+    @Published var actionList:          [String] = []
+    @Published var actionCurrent:       String = ""
+    @Published var connectionActive:    Bool = false
+    @Published var activeQRCodeContent: QRCodeContent? = nil
     
-    @State private var actionList:          [String] = []
-    @State private var actionCurrent:       String = ""
-    @State private var connectionActive:    Bool = false
-    @State private var activeQRCodeContent: QRCodeContent? = nil
+    func setView(viewType: FlowViewType) {
+        self.currentView = viewType
+    }
+    
+    func setAction(list: [String], current: String) {
+        self.actionList     = list
+        self.actionCurrent  = current
+    }
+    
+    func setQRContent(content: QRCodeContent?) {
+        self.activeQRCodeContent = content
+    }
+    
+    func changeConnectionState(isActive: Bool) {
+        self.connectionActive = isActive
+    }
+}
+
+struct PassFlowView: View, PassFlowDelegate {
+    // @State private var currentView = FlowViewType.qr
+    
+    @ObservedObject var viewModel: ActiveActionModel = ActiveActionModel()
     
     public static let ACTION_BLUETOOTH      = "bluetooth"
     public static let ACTION_REMOTEACCESS   = "remoteAccess"
     public static let ACTION_LOCATION       = "location"
     
+    private var key: String = "?"
+    
     var body: some View {
         NavigationView {
             GeometryReader { (geometry) in
                 Group {
-                    if currentView == FlowViewType.qr {
-                        ScanQRCodeView(delegate: self)
-                    } else if currentView == FlowViewType.map {
-                        MapView(delegate: self, checkPoint: activeQRCodeContent?.accessPoint.geoLocation)
+                    if viewModel.currentView == FlowViewType.qr {
+                        ScanQRCodeView()
+                    } else if viewModel.currentView == FlowViewType.map {
+                        MapView(checkPoint: viewModel.activeQRCodeContent?.accessPoint.geoLocation)
                     } else {
-                        StatusView(delegate: self, config: ActionConfig(isRemoteAccess: actionCurrent == PassFlowView.ACTION_REMOTEACCESS,
-                                                                        deviceId: activeQRCodeContent?.accessPoint.deviceInfo.id,
-                                                                        accessPointId: activeQRCodeContent?.accessPoint.id,
-                                                                        hardwareId: activeQRCodeContent?.action.config.hardwareId,
-                                                                        direction: activeQRCodeContent?.action.config.direction,
-                                                                        deviceNumber: activeQRCodeContent?.action.config.deviceNumber,
-                                                                        relayNumber: activeQRCodeContent?.action.config.relayNumber,
-                                                                        devicePublicKey: activeQRCodeContent?.accessPoint.deviceInfo.publicKey,
-                                                                        nextAction: actionList.count > 0 ? actionList.first : nil))
+                        StatusView(config: ActionConfig(isRemoteAccess: viewModel.actionCurrent == PassFlowView.ACTION_REMOTEACCESS,
+                                                                        deviceId: viewModel.activeQRCodeContent?.accessPoint.deviceInfo.id,
+                                                                        accessPointId: viewModel.activeQRCodeContent?.accessPoint.id,
+                                                                        hardwareId: viewModel.activeQRCodeContent?.action.config.hardwareId,
+                                                                        direction: viewModel.activeQRCodeContent?.action.config.direction,
+                                                                        deviceNumber: viewModel.activeQRCodeContent?.action.config.deviceNumber,
+                                                                        relayNumber: viewModel.activeQRCodeContent?.action.config.relayNumber,
+                                                                        devicePublicKey: viewModel.activeQRCodeContent?.accessPoint.deviceInfo.publicKey,
+                                                                        nextAction: viewModel.actionList.count > 0 ? viewModel.actionList.first : nil))
                     }
                 }.navigationBarTitle(Text(""), displayMode: .inline)
                 .navigationBarItems(leading: ZStack(alignment: .leading) {
@@ -49,7 +74,7 @@ struct PassFlowView: View, PassFlowDelegate {
                     HStack {
                         Spacer()
                         Button(action: {
-                            if (!connectionActive) {
+                            if (!viewModel.connectionActive) {
                                 DelegateManager.shared.onCancelled(dismiss: true)
                             }
                         }) {
@@ -63,19 +88,20 @@ struct PassFlowView: View, PassFlowDelegate {
         }.environment(\.locale, Locale(identifier: ConfigurationManager.shared.getLanguage()))
     }
     
+    init(key: String) {
+        self.checkCameraPermission()
+        
+        self.key = key
+        DelegateManager.shared.setPassFlowDelegate(delegate: self)
+    }
+    
     
     func onQRCodeFound(code: String) {
         processQRCodeData(code: code)
     }
     
     func onLocationValidated() {
-        LogManager.shared.debug(message: "On Location Valid, action list: \(actionList)")
-        
         checkNextAction()
-    }
-    
-    func onPassCompleted(succeed: Bool) {
-        DelegateManager.shared.onCompleted(succeed: succeed)
     }
     
     func onNextActionRequired() {
@@ -83,34 +109,45 @@ struct PassFlowView: View, PassFlowDelegate {
     }
     
     func onConnectionStateChanged(isActive: Bool) {
-        connectionActive = isActive
+        viewModel.changeConnectionState(isActive: isActive)
         // TODO Call that from related points
     }
     
-    func needPermissionCamera() {
-        DelegateManager.shared.needPermissionCamera()
+    private func checkCameraPermission() -> Void {
+        let videoAuthStatus = AVCaptureDevice.authorizationStatus(for: .video)
+        switch (videoAuthStatus) {
+        case .authorized:
+            LogManager.shared.info(message: "Camera Permission Status: Authorized")
+            break
+            
+        case .denied, .restricted:
+            LogManager.shared.info(message: "Camera Permission Status: Denied or Restricted, needs to be changed in settings to continue")
+            DelegateManager.shared.needPermissionCamera()
+            break
+            
+        case .notDetermined:
+            AVCaptureDevice.requestAccess(for: .video, completionHandler: { (granted) in
+                
+                guard granted else {
+                    LogManager.shared.info(message: "Camera Permission Status: Denied, needs to be changed in settings to continue")
+                    DelegateManager.shared.needPermissionCamera()
+                    return
+                }
+                
+                LogManager.shared.info(message: "Camera Permission Status: Authorized")
+            })
+            break
+        @unknown default:
+            LogManager.shared.info(message: "Camera Permission Status: Unknown!")
+            DelegateManager.shared.needPermissionCamera()
+        }
     }
-    
-    func needPermissionLocation() {
-        DelegateManager.shared.needPermissionLocation()
-    }
-    
-    func needEnableBluetooth() {
-        DelegateManager.shared.needBluetoothEnabled()
-    }
-    
-    func onError() {
-        DelegateManager.shared.errorOccurred()
-    }
-    
-    func onMockLocationDetected() {
-        DelegateManager.shared.onMockLocationDetected()
-    }
-    
     
     private func checkNextAction() {
-        if (actionList.count > 0) {
-            actionCurrent = actionList.removeFirst()
+        if (viewModel.actionList.count > 0) {
+            let nextOne: String = viewModel.actionList.removeFirst()
+            
+            viewModel.setAction(list: viewModel.actionList, current: nextOne)
             processAction()
         } else {
             DelegateManager.shared.onCancelled(dismiss: true)
@@ -118,15 +155,16 @@ struct PassFlowView: View, PassFlowDelegate {
     }
     
     private func processQRCodeData(code: String) {
-        activeQRCodeContent = ConfigurationManager.shared.getQRCodeContent(qrCodeData: code)
+        viewModel.activeQRCodeContent = ConfigurationManager.shared.getQRCodeContent(qrCodeData: code)
         
-        if (activeQRCodeContent != nil) {
-            let trigger: ResponseAccessPointItemQRCodeItemTrigger = self.activeQRCodeContent!.action.config.trigger
+        if (viewModel.activeQRCodeContent != nil) {
+            let trigger: ResponseAccessPointItemQRCodeItemTrigger = viewModel.activeQRCodeContent!.action.config.trigger
             
-            let needLocation: Bool = trigger.validateGeoLocation == true && activeQRCodeContent!.accessPoint.geoLocation != nil
+            let needLocation: Bool = trigger.validateGeoLocation == true && viewModel.activeQRCodeContent!.accessPoint.geoLocation != nil
             LogManager.shared.debug(message: "Need location: \(needLocation)")
             
-            actionList = []
+            var actionList: [String] = []
+            var actionCurrent: String = ""
             
             switch trigger.type {
             case QRTriggerType.Bluetooth:
@@ -159,28 +197,29 @@ struct PassFlowView: View, PassFlowDelegate {
                 break
             }
             
+            viewModel.setAction(list: actionList, current: actionCurrent)
             processAction()
         }
     }
     
     private func processAction() {
-        if (actionCurrent.count == 0) {
+        if (viewModel.actionCurrent.count == 0) {
             return;
         }
         
-        LogManager.shared.debug(message: "Current action: \(actionCurrent)");
-        LogManager.shared.debug(message: "Action list: \(actionList)");
+        LogManager.shared.debug(message: "Current action: \(viewModel.actionCurrent)");
+        LogManager.shared.debug(message: "Action list: \(viewModel.actionList)");
         
-        if (actionCurrent == PassFlowView.ACTION_LOCATION) {
-            currentView = FlowViewType.map
+        if (viewModel.actionCurrent == PassFlowView.ACTION_LOCATION) {
+            viewModel.setView(viewType: FlowViewType.map)
         } else {
-            currentView = FlowViewType.action
+            viewModel.setView(viewType: FlowViewType.action)
         }
     }
 }
 
 struct PassFlowView_Previews: PreviewProvider {
     static var previews: some View {
-        PassFlowView()
+        PassFlowView(key: "PREVIEW")
     }
 }

@@ -57,35 +57,26 @@ class BaseService: NSObject {
     }
     
     private func createRequest<T: Decodable>(url: String, body: [String: Any]?, completion: @escaping (Result<T?, RequestError>) -> Void) -> URLRequest? {
-        let requestToken: String? = ConfigurationManager.shared.getToken()
+        var request = URLRequest(url: createUrl(url: url, completion: completion))
+        request.httpMethod = body == nil ? "GET" : "POST"
         
-        if (requestToken != nil) {
-            LogManager.shared.info(message: "Check token returns data, create request object")
-            var request = URLRequest(url: createUrl(url: url, completion: completion))
-            request.httpMethod = body == nil ? "GET" : "POST"
-            
-            if (body != nil) {
-                let jsonData = try? JSONSerialization.data(withJSONObject: body!)
-                request.httpBody = jsonData
-            }
-            
-            request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-            request.addValue("application/json", forHTTPHeaderField: "Accept")
-            request.setValue("\(requestToken ?? "")", forHTTPHeaderField: "Authorization")
-            
-            return request
-        } else {
-            completion(.failure(RequestError(message: "Stored token is empty!", reason: .missingToken, code: nil)))
-            LogManager.shared.info(message: "Check token returns empty")
-            return nil
+        if (body != nil) {
+            let jsonData = try? JSONSerialization.data(withJSONObject: body!)
+            request.httpBody = jsonData
         }
+        
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.addValue("application/json", forHTTPHeaderField: "Accept")
+        request.setValue("\(ConfigurationManager.shared.getToken())", forHTTPHeaderField: "Authorization")
+        
+        return request
     }
     
     private func request<T: Decodable>(request: URLRequest, completion: @escaping (Result<T?, RequestError>) -> Void) {
         URLSession.shared.dataTask(with: request) { data, response, error in
             let response = response as? HTTPURLResponse
             let statusCode = response?.statusCode
-                        
+            
             guard let data = data, error == nil, statusCode != nil else {
                 LogManager.shared.info(message: "Request failed: \(error?.localizedDescription ?? "No data")")
                 completion(.failure(RequestError(message: error!.localizedDescription, reason: .other, code: statusCode ?? 0)))
@@ -97,7 +88,7 @@ class BaseService: NSObject {
                 completion(.failure(RequestError(message: "Request failed with status code: \(statusCode!)", reason: .other, code: statusCode!)))
                 return
             }
-                        
+            
             LogManager.shared.info(message: "Request completed successfully")
             
             let state: T? = self.getResponse(fromData: data)
@@ -117,21 +108,21 @@ class BaseService: NSObject {
         
         do {
             let decoder = JSONDecoder()
-            let messages = try decoder.decode(T.self, from: data)
-            print(messages as Any)
+            let _ = try decoder.decode(T.self, from: data) // messages
+            LogManager.shared.info(message: "Parse response succeed")
         } catch DecodingError.dataCorrupted(let context) {
-            print(context)
+            LogManager.shared.info(message: "Data corrupted: " + context.debugDescription)
         } catch DecodingError.keyNotFound(let key, let context) {
-            print("Key '\(key)' not found:", context.debugDescription)
-            print("codingPath:", context.codingPath)
+            LogManager.shared.info(message: "Key '\(key)' not found: " + context.debugDescription)
+            LogManager.shared.info(message: "CodingPath: " + context.codingPath.debugDescription)
         } catch DecodingError.valueNotFound(let value, let context) {
-            print("Value '\(value)' not found:", context.debugDescription)
-            print("codingPath:", context.codingPath)
+            LogManager.shared.info(message: "Value '\(value)' not found: " + context.debugDescription)
+            LogManager.shared.info(message: "CodingPath: " + context.codingPath.debugDescription)
         } catch DecodingError.typeMismatch(let type, let context) {
-            print("Type '\(type)' mismatch:", context.debugDescription)
-            print("codingPath:", context.codingPath)
+            LogManager.shared.info(message: "Type '\(type)' mismatch: " + context.debugDescription)
+            LogManager.shared.info(message: "CodingPath: " + context.codingPath.debugDescription)
         } catch {
-            print("error: ", error)
+            LogManager.shared.info(message: "Parse response failed: " + error.localizedDescription)
         }
         
         if let result = stateData {

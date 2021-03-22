@@ -8,12 +8,6 @@
 public protocol PassFlowDelegate {
     func onQRCodeFound(code: String)
     func onLocationValidated()
-    func onPassCompleted(succeed: Bool)
     func onNextActionRequired()
     func onConnectionStateChanged(isActive: Bool)
-    func needPermissionCamera()
-    func needPermissionLocation()
-    func needEnableBluetooth()
-    func onMockLocationDetected()
-    func onError()
 }

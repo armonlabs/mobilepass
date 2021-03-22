@@ -132,20 +132,18 @@ class ConfigurationManager: NSObject {
     }
     
     private func sendUserData() throws -> Void {
-        if (getToken().count > 0) {
-            if (mCurrentKeyPair == nil) {
-                try checkKeyPair();
-            }
-            
-            DataService().sendUserInfo(request: RequestSetUserData(publicKey: mCurrentKeyPair!.publicKey, memberId: getMemberId()), completion: { (result) in
-                if case .success(_) = result {
-                    self.getAccessPoints()
-                } else {
-                    LogManager.shared.error(message: "Send user info to server failed!")
-                    self.getAccessPoints()
-                }
-            })
+        if (mCurrentKeyPair == nil) {
+            try checkKeyPair();
         }
+        
+        DataService().sendUserInfo(request: RequestSetUserData(publicKey: mCurrentKeyPair!.publicKey, memberId: getMemberId()), completion: { (result) in
+            if case .success(_) = result {
+                self.getAccessPoints()
+            } else {
+                LogManager.shared.error(message: "Send user info to server failed!")
+                self.getAccessPoints()
+            }
+        })
     }
     
     private func getAccessPoints() -> Void {
@@ -162,6 +160,10 @@ class ConfigurationManager: NSObject {
                         
                         self.mCurrentQRCodes[qrCode.qrCodeData] = content
                     }
+                }
+                
+                for qrCode in self.mCurrentQRCodes {
+                    LogManager.shared.debug(message: "\(qrCode.key) > Type: \(qrCode.value.action.config.trigger.type) | Direction: \(qrCode.value.action.config.direction) | Validate Location: \(String(describing: qrCode.value.action.config.trigger.validateGeoLocation))")
                 }
                 
                 do {

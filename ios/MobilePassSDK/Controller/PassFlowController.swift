@@ -10,7 +10,7 @@ import SwiftUI
 import UIKit
 
 public class PassFlowController: UIViewController {
-    private var contentView: UIHostingController<PassFlowView> = UIHostingController(rootView: PassFlowView())
+    private var contentView: UIHostingController<PassFlowView> = UIHostingController(rootView: PassFlowView(key: Date.init().description))
     
     public override func viewDidLoad() {
         super.viewDidLoad()
@@ -25,7 +25,12 @@ public class PassFlowController: UIViewController {
         
     
     public override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
         DelegateManager.shared.onCancelled(dismiss: false)
+        
+        contentView.willMove(toParent: nil)
+        contentView.view.removeFromSuperview()
+        contentView.removeFromParent()
     }
     
     fileprivate func setupConstraints() {

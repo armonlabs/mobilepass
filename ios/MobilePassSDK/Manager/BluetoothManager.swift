@@ -17,12 +17,13 @@ class BluetoothManager: NSObject {
         super.init()
         
         LogManager.shared.info(message: "Setting up Bluetooth Manager instance")
-        // readyCentralManager()
     }
     
     // MARK: Fields
     
-    public var delegate: BluetoothManagerDelegate?
+    public var onScanningStarted:           (() -> ())?
+    public var onConnectionStateChanged:    ((DeviceConnectionStatus) -> ())?
+    public var onBleStateChanged:           ((DeviceCapability) -> ())?
     
     private var bluetoothState:             DeviceCapability?
     
@@ -71,8 +72,37 @@ class BluetoothManager: NSObject {
             return
         }
         
-        self.currentCentralManager.scanForPeripherals(withServices: filterServiceUUIDs,
-                                                      options: [CBCentralManagerScanOptionAllowDuplicatesKey: true])
+        let authorizationStatus: CBManagerAuthorization = self.currentCentralManager.authorization;
+        
+        switch authorizationStatus {
+        case .allowedAlways:
+            LogManager.shared.info(message: "Bluetooth Authorization Status: Allowed Always")
+            break
+        case .denied:
+            LogManager.shared.info(message: "Bluetooth Authorization Status: Denied")
+            break
+        case .restricted:
+            LogManager.shared.info(message: "Bluetooth Authorization Status: Restricted")
+            break
+        case .notDetermined:
+            LogManager.shared.info(message: "Bluetooth Authorization Status: Not Determined")
+            break
+        @unknown default:
+            LogManager.shared.info(message: "Bluetooth Authorization Status: Unknown Default")
+        }
+        
+        if (authorizationStatus == .allowedAlways) {
+            if (self.currentCentralManager.state == .poweredOn) {
+                self.onScanningStarted?()
+                LogManager.shared.info(message: "Scanning peripherals now...")
+                self.currentCentralManager.scanForPeripherals(withServices: filterServiceUUIDs,
+                                                              options: [CBCentralManagerScanOptionAllowDuplicatesKey: true])
+            } else {
+                LogManager.shared.info(message: "Bluetooth authorization status is allowed, but state is not powered on yet")
+            }
+        } else if (authorizationStatus != .notDetermined) {
+            DelegateManager.shared.needPermissionBluetooth()
+        }
     }
     
     public func stopScan(disconnect: Bool) {
@@ -174,7 +204,7 @@ class BluetoothManager: NSObject {
     
     private func onConnectionStateChanged(identifier: String, connectionState: DeviceConnectionStatus.ConnectionState, failReason: Int? = nil) {
         LogManager.shared.info(message: "Connection state changed for " + identifier + " > " + self.getDescriptionOfConnectionState(state: connectionState));
-        delegate?.onConnectionStateChanged(state: DeviceConnectionStatus(id: identifier, state: connectionState, failReason: failReason))
+        self.onConnectionStateChanged?(DeviceConnectionStatus(id: identifier, state: connectionState, failReason: failReason))
         
         if (connectionState == .failed) {
             disconnect()
@@ -225,10 +255,12 @@ extension BluetoothManager: CBCentralManagerDelegate {
         case .unauthorized:
             state = "This app is not authorized to use Bluetooth Low Energy.";
             self.bluetoothState = DeviceCapability(support: true, enabled: false, needAuthorize: true)
+            DelegateManager.shared.needPermissionBluetooth()
             break;
         case .poweredOff:
             state = "Bluetooth on this device is currently powered off.";
             self.bluetoothState = DeviceCapability(support: true, enabled: false, needAuthorize: false)
+            DelegateManager.shared.needBluetoothEnabled() // TODO Handle in SDK
             break;
         case .resetting:
             state = "The BLE Manager is resetting; a state update is pending.";
@@ -252,7 +284,7 @@ extension BluetoothManager: CBCentralManagerDelegate {
         }
         
         LogManager.shared.info(message: state)
-        delegate?.onBLEStateChanged(state: self.bluetoothState!)
+        self.onBleStateChanged?(self.bluetoothState!)
     }
     
     func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
@@ -501,7 +533,8 @@ extension BluetoothManager {
     
     private func processChallengeResult(deviceIdentifier: String, result: BLEDataContent) {
         if (result.result == DataTypes.RESULT.Succeed) {
-            delegate?.onConnectionStateChanged(state: DeviceConnectionStatus(id: deviceIdentifier, state: DeviceConnectionStatus.ConnectionState.connected))
+            self.onConnectionStateChanged?(DeviceConnectionStatus(id: deviceIdentifier, state: DeviceConnectionStatus.ConnectionState.connected))
+            //delegate?.onConnectionStateChanged(state: DeviceConnectionStatus(id: deviceIdentifier, state: DeviceConnectionStatus.ConnectionState.connected))
             
             LogManager.shared.info(message: "Disconnect from device after successful process of passing!")
             self.disconnect()

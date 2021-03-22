@@ -51,7 +51,6 @@
 		DEB3116C25EC2FD900DD91AF /* DeviceCapability.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEB3116B25EC2FD900DD91AF /* DeviceCapability.swift */; };
 		DEF0BF8425D2868500397D18 /* Data+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEF0BF8325D2868500397D18 /* Data+Extensions.swift */; };
 		DEF0BF8725D286A600397D18 /* String+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEF0BF8625D286A600397D18 /* String+Extensions.swift */; };
-		DEF0BF8B25D28ACE00397D18 /* BluetoothManagerDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEF0BF8A25D28ACE00397D18 /* BluetoothManagerDelegate.swift */; };
 		DEF0BF9025D28C7E00397D18 /* PacketHeaders.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEF0BF8F25D28C7E00397D18 /* PacketHeaders.swift */; };
 		DEF0BF9425D28CA100397D18 /* StorageKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEF0BF9325D28CA100397D18 /* StorageKeys.swift */; };
 		DEF0BF9725D28D3000397D18 /* DataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEF0BF9625D28D3000397D18 /* DataTypes.swift */; };
@@ -118,7 +117,6 @@
 		DEB3116B25EC2FD900DD91AF /* DeviceCapability.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceCapability.swift; sourceTree = "<group>"; };
 		DEF0BF8325D2868500397D18 /* Data+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+Extensions.swift"; sourceTree = "<group>"; };
 		DEF0BF8625D286A600397D18 /* String+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Extensions.swift"; sourceTree = "<group>"; };
-		DEF0BF8A25D28ACE00397D18 /* BluetoothManagerDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothManagerDelegate.swift; sourceTree = "<group>"; };
 		DEF0BF8F25D28C7E00397D18 /* PacketHeaders.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PacketHeaders.swift; sourceTree = "<group>"; };
 		DEF0BF9325D28CA100397D18 /* StorageKeys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageKeys.swift; sourceTree = "<group>"; };
 		DEF0BF9625D28D3000397D18 /* DataTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataTypes.swift; sourceTree = "<group>"; };
@@ -308,7 +306,6 @@
 		DEF0BF8925D28ABD00397D18 /* Delegate */ = {
 			isa = PBXGroup;
 			children = (
-				DEF0BF8A25D28ACE00397D18 /* BluetoothManagerDelegate.swift */,
 				DE147D5625D3FC70000B77C8 /* PassFlowDelegate.swift */,
 				DE19DF2425DA345300AB250C /* MobilePassDelegate.swift */,
 			);
@@ -482,7 +479,6 @@
 				DE147D5725D3FC70000B77C8 /* PassFlowDelegate.swift in Sources */,
 				DEF0BFAC25D2A2B900397D18 /* ActionError.swift in Sources */,
 				DE30E55B25DD3D1C004CAED2 /* ResponseAccessPointItemQRCodeItem.swift in Sources */,
-				DEF0BF8B25D28ACE00397D18 /* BluetoothManagerDelegate.swift in Sources */,
 				DE30E54225DD3AB3004CAED2 /* ResponsePagination.swift in Sources */,
 				DE19DF2D25DA3EB700AB250C /* DelegateManager.swift in Sources */,
 				DE30E54B25DD3B58004CAED2 /* ResponseAccessPointItemGeoLocation.swift in Sources */,

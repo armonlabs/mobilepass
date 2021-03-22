@@ -11,26 +11,18 @@ import AVFoundation
 struct ScanQRCodeView: View {
     @Environment(\.locale) var locale
     
-    fileprivate var delegate: PassFlowDelegate?
-    
     private enum MaskSide {
         case top, bottom, left, right
     }
     
-    init(delegate: PassFlowDelegate?) {
-        self.delegate = delegate
-        
-        if (AVCaptureDevice.authorizationStatus(for: .video) != .authorized) {
-            self.delegate?.needPermissionCamera()
-        }
-    }
+    init() {}
     
     var body: some View {
         ZStack {
             QRCodeReaderView(
                 completion: { result in
                     if case let .success(code) = result {
-                        delegate?.onQRCodeFound(code: code)
+                        DelegateManager.shared.flowQRCodeFound(code: code)
                     }
                 }
             )
@@ -96,10 +88,11 @@ struct ScanQRCodeView: View {
         .background(Color.black.opacity(0.6))
         .position(x: positionX, y: positionY)
     }
+
 }
 
 struct ScanQRCodeView_Previews: PreviewProvider {
     static var previews: some View {
-        ScanQRCodeView(delegate: nil)
+        ScanQRCodeView()
     }
 }

@@ -136,7 +136,6 @@ class CryptoManager: NSObject {
             }
             
             guard status == kCCSuccess else {
-                print("NOT SUCCEED")
                 return nil
             }
                     
