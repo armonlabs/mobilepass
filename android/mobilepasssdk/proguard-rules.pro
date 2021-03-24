@@ -65,7 +65,9 @@
     java.lang.Object readResolve();
 }
 
--keep class org.spongycastle.*.* { *; }
+# -keep class org.spongycastle.*.* { *; }
+-keep class org.spongycastle.* {*;}
+-keepclassmembers class org.spongycastle.*
 
 # Your library may contain more items that need to be preserved;
 # typically classes that are dynamically created using Class.forName:
