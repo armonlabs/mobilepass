@@ -28,6 +28,8 @@ public class MobilePass {
     public MobilePass(Context context, Configuration config) {
         mActiveContext = context;
 
+        LogManager.getInstance().info("SDK Version: 0.0.6");
+
         BaseService.getInstance().setContext(context);
         BluetoothManager.getInstance().setContext(context);
         ConfigurationManager.getInstance().setConfig(context, config);
@@ -54,7 +56,6 @@ public class MobilePass {
      * Starts qr code reading session and related flow
      */
     public void triggerQRCodeRead() {
-        LogManager.getInstance().debug("TEST BRANCH 2218");
         DelegateManager.getInstance().clearFlowFlags();
         showActivity();
     }
