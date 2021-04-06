@@ -123,7 +123,7 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
     }
 
     private void runBluetooth() {
-        BLEScanConfiguration config = new BLEScanConfiguration(Collections.singletonList(mDeviceId), mDevicePublicKey, ConfigurationManager.getInstance().getMemberId(), mHardwareId, mDeviceNumber, mRelayNumber);
+        BLEScanConfiguration config = new BLEScanConfiguration(Collections.singletonList(mDeviceId), mDevicePublicKey, ConfigurationManager.getInstance().getMemberId(), mHardwareId, mDeviceNumber, mDirection, mRelayNumber);
 
         BluetoothManager.getInstance().startScan(config);
         startBluetoothTimer();

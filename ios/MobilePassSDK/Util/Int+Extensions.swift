@@ -31,11 +31,12 @@ extension Int {
         return Data(fillArray)
     }
     
-    func mergeToData(_ append: Int) -> Data? {
-        let firstValue = ("0000" + String(self, radix: 2)).suffix(4)
-        let secondValue = ("0000" + String(append, radix: 2)).suffix(4)
+    func mergeToData(_ direction: Int, _ relay: Int) -> Data? {
+        let deviceValue     = ("00" + String(self, radix: 2)).suffix(2)
+        let directionValue  = ("00" + String(direction, radix: 2)).suffix(2)
+        let relayValue      = ("0000" + String(relay, radix: 2)).suffix(4)
 
-        let merged = firstValue + secondValue
+        let merged = deviceValue + directionValue + relayValue
         guard let num = UInt64(merged, radix: 2) else { return nil }
         
         return String(("0" + String(num, radix: 16, uppercase: true)).suffix(2)).data(using: .hexadecimal)!

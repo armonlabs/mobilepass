@@ -82,14 +82,16 @@ public class ConverterUtil {
         return fillArray;
     }
 
-    public static byte mergeToData(int first, int second) {
-        String firstBinary = ("0000" + Integer.toBinaryString(first));
-        String secondBinary = ("0000" + Integer.toBinaryString(second));
+    public static byte mergeToData(int deviceNumber, int direction, int relayNumber) {
+        String deviceBinary = ("00" + Integer.toBinaryString(deviceNumber));
+        String directionBinary = ("00" + Integer.toBinaryString(direction));
+        String relayBinary = ("0000" + Integer.toBinaryString(relayNumber));
 
-        String firstValue = firstBinary.substring(firstBinary.length() - 4);
-        String secondValue = secondBinary.substring(secondBinary.length() - 4);
+        String deviceValue = deviceBinary.substring(deviceBinary.length() - 2);
+        String directionValue = directionBinary.substring(directionBinary.length() - 2);
+        String relayValue = relayBinary.substring(relayBinary.length() - 4);
 
-        int resultValue = Integer.parseInt(firstValue + secondValue, 2);
+        int resultValue = Integer.parseInt(deviceValue + directionValue + relayValue, 2);
         byte[] result = BigInteger.valueOf(resultValue).toByteArray();
 
         return result.length > 0 ? result[result.length - 1] : (byte)0x00;

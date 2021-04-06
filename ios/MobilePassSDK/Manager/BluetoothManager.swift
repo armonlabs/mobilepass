@@ -564,7 +564,7 @@ extension BluetoothManager {
         // MARK: Ready result data after encryption
         resultData.append(currentConfiguration!.dataUserId.data(using: .utf8)!.fill(length: 16, repeating: 0x00))
         resultData.append(currentConfiguration!.dataHardwareId.data(using: .utf8)!.fill(length: 16, repeating: 0x00))
-        resultData.append(currentConfiguration!.deviceNumber.mergeToData(currentConfiguration!.relayNumber)!)
+        resultData.append(currentConfiguration!.deviceNumber.mergeToData(currentConfiguration!.dataDirection, currentConfiguration!.relayNumber)!)
         
         resultData.append(encryptedResponse)
         

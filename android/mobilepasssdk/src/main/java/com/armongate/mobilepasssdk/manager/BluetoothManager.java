@@ -502,7 +502,7 @@ public class BluetoothManager {
 
         resultData = ArrayUtil.concat(resultData, ConverterUtil.stringToData(currentConfiguration.dataUserId, 16, (byte)0, false));
         resultData = ArrayUtil.concat(resultData, ConverterUtil.stringToData(currentConfiguration.dataHardwareId, 16, (byte)0, false));
-        resultData = ArrayUtil.add(resultData, (byte)ConverterUtil.mergeToData(currentConfiguration.deviceNumber, currentConfiguration.relayNumber));
+        resultData = ArrayUtil.add(resultData, (byte)ConverterUtil.mergeToData(currentConfiguration.deviceNumber, currentConfiguration.direction, currentConfiguration.relayNumber));
 
         byte[] encryptedResponse = CryptoManager.getInstance().encryptBytesWithIV(ConfigurationManager.getInstance().getPrivateKey(), currentConfiguration.devicePublicKey, challenge, iv);
         resultData = ArrayUtil.concat(resultData, encryptedResponse);
