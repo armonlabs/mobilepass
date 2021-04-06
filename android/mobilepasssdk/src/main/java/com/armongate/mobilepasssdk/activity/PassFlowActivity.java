@@ -154,7 +154,7 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
             ResponseAccessPointItemQRCodeItemTrigger trigger = activeQRCodeContent.action.config != null ? activeQRCodeContent.action.config.trigger : null;
 
             if (trigger != null) {
-                boolean needLocation = trigger.validateGeoLocation && activeQRCodeContent.accessPoint.geoLocation != null;
+                boolean needLocation = trigger.validateGeoLocation != null && trigger.validateGeoLocation && activeQRCodeContent.accessPoint.geoLocation != null;
 
                 LogManager.getInstance().debug("Need location: " + needLocation);
 
@@ -195,7 +195,7 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
                         LogManager.getInstance().warn("Unknown QR code trigger type! > " + trigger.type);
                 }
 
-                boolean needLocationPermission = actionList.contains(ACTION_BLUETOOTH) || actionList.contains(ACTION_LOCATION);
+                boolean needLocationPermission = actionCurrent.equals(ACTION_BLUETOOTH) || actionCurrent.equals(ACTION_LOCATION) || actionList.contains(ACTION_BLUETOOTH) || actionList.contains(ACTION_LOCATION);
 
                 if (needLocationPermission && !SettingsManager.getInstance().checkLocationEnabled(getApplicationContext())) {
                     DelegateManager.getInstance().onNeedLocationSettingsChange();
