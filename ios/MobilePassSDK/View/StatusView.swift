@@ -14,13 +14,11 @@ public enum ActionState {
 
 public struct ActionConfig: Codable {
     var isRemoteAccess:     Bool
-    var deviceId:           String?
+    var devices:            [ResponseAccessPointItemDeviceInfo]
     var accessPointId:      String?
-    var hardwareId:         String?
     var direction:          Direction?
     var deviceNumber:       Int?
     var relayNumber:        Int?
-    var devicePublicKey:    String?
     var nextAction:         String?
 }
 
@@ -134,11 +132,9 @@ struct StatusView: View {
         self.viewModel.update(color: .gray, message: "text_status_message_scanning", showSpinner: true, icon: "")
         
         if (currentConfig != nil) {
-            let config: BLEScanConfiguration = BLEScanConfiguration(uuidFilter: [currentConfig!.deviceId!],
-                                                                    dataUserId: ConfigurationManager.shared.getMemberId(),
-                                                                    dataHardwareId: currentConfig!.hardwareId!,
-                                                                    dataDirection: currentConfig!.direction!.rawValue,
-                                                                    devicePublicKey: currentConfig!.devicePublicKey!,
+            let config: BLEScanConfiguration = BLEScanConfiguration(devices: currentConfig!.devices,
+                                                                    userId: ConfigurationManager.shared.getMemberId(),
+                                                                    direction: currentConfig!.direction!.rawValue,
                                                                     deviceNumber: currentConfig!.deviceNumber!,
                                                                     relayNumber: currentConfig!.relayNumber!)
             

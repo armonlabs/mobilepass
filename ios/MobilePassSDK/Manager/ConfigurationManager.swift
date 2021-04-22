@@ -161,7 +161,7 @@ class ConfigurationManager: NSObject {
                         self.mCurrentQRCodes[qrCode.qrCodeData] = content
                     }
                 }
-                
+                                
                 for qrCode in self.mCurrentQRCodes {
                     LogManager.shared.debug(message: "\(qrCode.key) > Type: \(qrCode.value.action.config.trigger.type) | Direction: \(qrCode.value.action.config.direction) | Validate Location: \(String(describing: qrCode.value.action.config.trigger.validateGeoLocation))")
                 }
@@ -169,6 +169,8 @@ class ConfigurationManager: NSObject {
                 do {
                     let valueQRCodesToStore: String? = try? JSONUtil.shared.encodeJSONData(data: self.mCurrentQRCodes)
                     _ = try StorageManager.shared.setValue(key: StorageKeys.QRCODES, value: valueQRCodesToStore ?? "", secure: false)
+                    
+                    LogManager.shared.debug(message: valueQRCodesToStore!)
                 } catch {
                     LogManager.shared.error(message: "Store received access list failed!")
                 }

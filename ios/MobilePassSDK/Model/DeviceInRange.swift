@@ -6,8 +6,14 @@
 //
 
 import Foundation
+import CoreBluetooth
 
-struct DeviceInRange: Codable {
-    var id:         String
-    var name:       String
+struct DeviceInRange {
+    var serviceUUID: String
+    var device:      CBPeripheral
+    
+    init(serviceUUID: String, bluetoothDevice: CBPeripheral) {
+        self.serviceUUID    = serviceUUID
+        self.device         = bluetoothDevice
+    }
 }

@@ -12,5 +12,5 @@ struct ResponseAccessPointItem: Codable {
     var name:           String
     var qrCodeData:     [ResponseAccessPointItemQRCodeItem]
     var geoLocation:    ResponseAccessPointItemGeoLocation?
-    var deviceInfo:     ResponseAccessPointItemDeviceInfo
+    var deviceInfo:     [ResponseAccessPointItemDeviceInfo]
 }

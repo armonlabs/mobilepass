@@ -9,6 +9,7 @@ import Foundation
 
 struct ResponseAccessPointItemDeviceInfo: Codable {
     var id:         String
+    var hardwareId: String?
     var brand:      Int?
     var model:      String?
     var name:       String?
