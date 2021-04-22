@@ -23,7 +23,7 @@ public struct BLEScanConfiguration {
         self.deviceList = [:]
         
         for device in devices {
-            self.deviceList[device.id] = DeviceConnectionInfo(deviceId: device.id, publicKey: device.publicKey ?? "", hardwareId: device.hardwareId ?? "")
+            self.deviceList[device.id.lowercased()] = DeviceConnectionInfo(deviceId: device.id, publicKey: device.publicKey ?? "", hardwareId: device.hardwareId ?? "")
         }
     }
 }

@@ -469,7 +469,7 @@ extension BluetoothManager: CBPeripheralDelegate {
                     
                     do {
                         let connectedDevice = self.currentConnectedDevices[peripheral.identifier.uuidString]!
-                        let deviceConnectionInfo = self.currentConfiguration != nil ? self.currentConfiguration!.deviceList[connectedDevice.serviceUUID] : nil
+                        let deviceConnectionInfo = self.currentConfiguration != nil ? self.currentConfiguration!.deviceList[connectedDevice.serviceUUID.lowercased()] : nil
                         
                         if (deviceConnectionInfo != nil) {
                             let resultData: Data? = try generateChallengeResponseDataWithDirection(challengeType:   result!.type,

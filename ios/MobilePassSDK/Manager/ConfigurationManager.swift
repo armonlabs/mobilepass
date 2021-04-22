@@ -169,8 +169,6 @@ class ConfigurationManager: NSObject {
                 do {
                     let valueQRCodesToStore: String? = try? JSONUtil.shared.encodeJSONData(data: self.mCurrentQRCodes)
                     _ = try StorageManager.shared.setValue(key: StorageKeys.QRCODES, value: valueQRCodesToStore ?? "", secure: false)
-                    
-                    LogManager.shared.debug(message: valueQRCodesToStore!)
                 } catch {
                     LogManager.shared.error(message: "Store received access list failed!")
                 }
