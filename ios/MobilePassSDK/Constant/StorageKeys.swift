@@ -10,6 +10,6 @@ import Foundation
 struct StorageKeys {
     
     static let USER_DETAILS     = "armon_mobilepass_sdk_user_details"
-    static let QRCODES          = "armon_mobilepass_sdk_qrcodes"
+    static let QRCODES          = "armon_mobilepass_sdk_qrcode_list"
     
 }
