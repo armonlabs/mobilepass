@@ -28,7 +28,7 @@ public class MobilePass {
     public MobilePass(Context context, Configuration config) {
         mActiveContext = context;
 
-        LogManager.getInstance().info("SDK Version: 0.0.7");
+        LogManager.getInstance().info("SDK Version: 0.0.8");
 
         BaseService.getInstance().setContext(context);
         BluetoothManager.getInstance().setContext(context);
