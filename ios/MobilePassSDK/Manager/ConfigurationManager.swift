@@ -205,7 +205,7 @@ class ConfigurationManager: NSObject {
     }
     
     private func getAccessPoints() -> Void {
-        self.mPagination = RequestPagination(take: 3, skip: 0)
+        self.mPagination = RequestPagination(take: 100, skip: 0)
         
         self.mTempQRCodes = [:]
         self.mReceivedItemCount = 0
