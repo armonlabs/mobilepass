@@ -24,6 +24,7 @@ import com.armongate.mobilepasssdk.manager.LogManager;
 import com.armongate.mobilepasssdk.model.BLEScanConfiguration;
 import com.armongate.mobilepasssdk.model.DeviceConnectionStatus;
 import com.armongate.mobilepasssdk.model.StorageDataUserDetails;
+import com.armongate.mobilepasssdk.model.request.RequestAccess;
 import com.armongate.mobilepasssdk.model.response.ResponseAccessPointItemDeviceInfo;
 import com.armongate.mobilepasssdk.service.AccessPointService;
 import com.armongate.mobilepasssdk.service.BaseService;
@@ -102,7 +103,12 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
     private void runRemoteAccess() {
         BluetoothManager.getInstance().stopScan(true);
 
-        new AccessPointService().remoteOpen(mAccessPointId, mDirection, new BaseService.ServiceResultListener() {
+        RequestAccess request = new RequestAccess();
+        request.accessPointId = mAccessPointId;
+        request.clubMemberId = ConfigurationManager.getInstance().getMemberId();
+        request.direction = mDirection;
+
+        new AccessPointService().remoteOpen(request, new BaseService.ServiceResultListener() {
             @Override
             public void onCompleted(Object result) {
                 updateStatus(R.drawable.background_success, R.string.text_status_message_succeed, false, R.drawable.status_succeed);

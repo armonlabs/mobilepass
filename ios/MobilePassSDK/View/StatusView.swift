@@ -103,7 +103,7 @@ struct StatusView: View {
     
     private func runRemoteAccess() {
         if (currentConfig?.accessPointId != nil && currentConfig?.direction != nil) {
-            AccessPointService().remoteOpen(accessPointId: currentConfig!.accessPointId!, direction: currentConfig!.direction!, completion: { (result) in
+            AccessPointService().remoteOpen(request: RequestAccess(accessPointId: currentConfig!.accessPointId!, clubMemberId: ConfigurationManager.shared.getMemberId(), direction: currentConfig!.direction!), completion: { (result) in
                 if case .success(_) = result {
                     self.viewModel.update(color: .green, message: "text_status_message_succeed", showSpinner: false, icon: "checkmark.circle")
                     DelegateManager.shared.onCompleted(succeed: true)
