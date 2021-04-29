@@ -28,7 +28,7 @@ public class BLEScanConfiguration {
         this.deviceList = new HashMap<>();
 
         for (ResponseAccessPointItemDeviceInfo device : devices) {
-            this.deviceList.put(device.id, new DeviceConnectionInfo(device.id, device.publicKey, device.hardwareId));
+            this.deviceList.put(device.id.toLowerCase(), new DeviceConnectionInfo(device.id, device.publicKey, device.hardwareId));
         }
     }
 

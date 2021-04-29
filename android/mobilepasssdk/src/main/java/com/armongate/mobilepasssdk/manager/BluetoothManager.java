@@ -829,7 +829,7 @@ public class BluetoothManager {
                             String deviceId = result.data.containsKey("deviceId") ? result.data.get("deviceId").toString() : "";
 
                             DeviceConnection        connectedDevice         = currentConnectedDevices.get(gatt.getDevice().getAddress());
-                            DeviceConnectionInfo    deviceConnectionInfo    = currentConfiguration.deviceList.get(connectedDevice.serviceUUID);
+                            DeviceConnectionInfo    deviceConnectionInfo    = currentConfiguration.deviceList.get(connectedDevice.serviceUUID.toLowerCase());
 
                             if (connectedDevice != null && deviceConnectionInfo != null) {
                                 LogManager.getInstance().debug("Auth challenge received, device id: " + deviceId);
