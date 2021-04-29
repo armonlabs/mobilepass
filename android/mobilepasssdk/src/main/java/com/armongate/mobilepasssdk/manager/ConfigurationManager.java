@@ -181,8 +181,9 @@ public class ConfigurationManager {
         }
     }
 
-    /*
     private void processAccessPointsResponse(ResponseAccessPointList response) {
+        mReceivedItemCount += response.items.length;
+
         for (ResponseAccessPointItem item:
                 response.items) {
             for (ResponseAccessPointItemQRCodeItem qrCode :
@@ -194,36 +195,28 @@ public class ConfigurationManager {
             }
         }
 
-        String valueQRCodesToStore = new Gson().toJson(mCurrentQRCodes);
-        StorageManager.getInstance().setValue(mCurrentContext, StorageKeys.QRCODES, valueQRCodesToStore);
+        if (response.pagination.total > mReceivedItemCount) {
+            LogManager.getInstance().debug("Fetch next page for Access Points");
+            mPagination.skip = mReceivedItemCount;
+            fetchAccessPoints();
+        } else {
+            LogManager.getInstance().debug("Get Access Points Completed!");
+            mCurrentQRCodes = new HashMap<>();
+            mCurrentQRCodes.putAll(mTempQRCodes);
 
-        LogManager.getInstance().debug(valueQRCodesToStore);
-        DelegateManager.getInstance().onQRCodeListStateChanged(mCurrentQRCodes.size() > 0 ? QRCodeListState.USING_SYNCED_DATA : QRCodeListState.EMPTY);
+            String valueQRCodesToStore = new Gson().toJson(mCurrentQRCodes);
+            StorageManager.getInstance().setValue(mCurrentContext, StorageKeys.QRCODES, valueQRCodesToStore);
+
+            DelegateManager.getInstance().onQRCodeListStateChanged(mCurrentQRCodes.size() > 0 ? QRCodeListState.USING_SYNCED_DATA : QRCodeListState.EMPTY);
+        }
     }
-     */
 
     private void fetchAccessPoints() {
+        LogManager.getInstance().debug("New page for Access Points");
         new DataService().getAccessList(mPagination, new BaseService.ServiceResultListener<ResponseAccessPointList>() {
             @Override
             public void onCompleted(ResponseAccessPointList response) {
-                mCurrentQRCodes = new HashMap<>();
-
-                for (ResponseAccessPointItem item:
-                        response.items) {
-                    for (ResponseAccessPointItemQRCodeItem qrCode :
-                            item.qrCodeData) {
-                        QRCodeContent content = new QRCodeContent(qrCode.qrCodeData, item, qrCode);
-                        mCurrentQRCodes.put(qrCode.qrCodeData, content);
-
-                        LogManager.getInstance().debug(new Gson().toJson(content));
-                    }
-                }
-
-                String valueQRCodesToStore = new Gson().toJson(mCurrentQRCodes);
-                StorageManager.getInstance().setValue(mCurrentContext, StorageKeys.QRCODES, valueQRCodesToStore);
-
-                LogManager.getInstance().debug(valueQRCodesToStore);
-                DelegateManager.getInstance().onQRCodeListStateChanged(mCurrentQRCodes.size() > 0 ? QRCodeListState.USING_SYNCED_DATA : QRCodeListState.EMPTY);
+               processAccessPointsResponse(response);
             }
 
             @Override
@@ -236,7 +229,7 @@ public class ConfigurationManager {
 
     private void getAccessPoints() {
         mPagination = new RequestPagination();
-        mPagination.take = 100;
+        mPagination.take = 1;
         mPagination.skip = 0;
 
         mReceivedItemCount = 0;
