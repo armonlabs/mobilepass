@@ -75,7 +75,7 @@ class ConfigurationManager: NSObject {
     }
     
     public func getToken() -> String {
-        return mCurrentConfig?.token ?? ""
+        return mCurrentConfig?.token ?? "unknown"
     }
     
     public func getLanguage() -> String {
