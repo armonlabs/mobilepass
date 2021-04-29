@@ -27,11 +27,15 @@ import java.util.List;
 public class ConfigurationManager {
 
     private static ConfigurationManager instance = null;
-    private static Configuration mCurrentConfig;
     private static Context mCurrentContext;
+    private static Configuration mCurrentConfig;
     private static CryptoKeyPair mCurrentKeyPair;
     private static List<StorageDataUserDetails> mUserKeyDetails = new ArrayList<>();
     private static HashMap<String, QRCodeContent> mCurrentQRCodes = new HashMap<>();
+    private static HashMap<String, QRCodeContent> mTempQRCodes = new HashMap<>();
+
+    private int mReceivedItemCount = 0;
+    private RequestPagination mPagination = null;
 
     private ConfigurationManager() { }
 
@@ -89,7 +93,7 @@ public class ConfigurationManager {
     }
 
     public String getToken() {
-        return mCurrentConfig != null && mCurrentConfig.token != null ? mCurrentConfig.token : "";
+        return mCurrentConfig != null && mCurrentConfig.token != null ? mCurrentConfig.token : "unknown";
     }
 
     public String getLanguage() {
@@ -177,18 +181,35 @@ public class ConfigurationManager {
         }
     }
 
-    private void getAccessPoints() {
-        RequestPagination request = new RequestPagination();
-        request.take = 100;
-        request.skip = 0;
+    /*
+    private void processAccessPointsResponse(ResponseAccessPointList response) {
+        for (ResponseAccessPointItem item:
+                response.items) {
+            for (ResponseAccessPointItemQRCodeItem qrCode :
+                    item.qrCodeData) {
+                QRCodeContent content = new QRCodeContent(qrCode.qrCodeData, item, qrCode);
+                mTempQRCodes.put(qrCode.qrCodeData, content);
 
-        new DataService().getAccessList(request, new BaseService.ServiceResultListener<ResponseAccessPointList>() {
+                LogManager.getInstance().debug(new Gson().toJson(content));
+            }
+        }
+
+        String valueQRCodesToStore = new Gson().toJson(mCurrentQRCodes);
+        StorageManager.getInstance().setValue(mCurrentContext, StorageKeys.QRCODES, valueQRCodesToStore);
+
+        LogManager.getInstance().debug(valueQRCodesToStore);
+        DelegateManager.getInstance().onQRCodeListStateChanged(mCurrentQRCodes.size() > 0 ? QRCodeListState.USING_SYNCED_DATA : QRCodeListState.EMPTY);
+    }
+     */
+
+    private void fetchAccessPoints() {
+        new DataService().getAccessList(mPagination, new BaseService.ServiceResultListener<ResponseAccessPointList>() {
             @Override
             public void onCompleted(ResponseAccessPointList response) {
                 mCurrentQRCodes = new HashMap<>();
 
                 for (ResponseAccessPointItem item:
-                     response.items) {
+                        response.items) {
                     for (ResponseAccessPointItemQRCodeItem qrCode :
                             item.qrCodeData) {
                         QRCodeContent content = new QRCodeContent(qrCode.qrCodeData, item, qrCode);
@@ -211,5 +232,16 @@ public class ConfigurationManager {
                 DelegateManager.getInstance().onQRCodeListStateChanged(mCurrentQRCodes.size() > 0 ? QRCodeListState.USING_STORED_DATA : QRCodeListState.EMPTY);
             }
         });
+    }
+
+    private void getAccessPoints() {
+        mPagination = new RequestPagination();
+        mPagination.take = 100;
+        mPagination.skip = 0;
+
+        mReceivedItemCount = 0;
+        mTempQRCodes = new HashMap<>();
+
+        this.fetchAccessPoints();
     }
 }
