@@ -229,7 +229,7 @@ public class ConfigurationManager {
 
     private void getAccessPoints() {
         mPagination = new RequestPagination();
-        mPagination.take = 1;
+        mPagination.take = 3;
         mPagination.skip = 0;
 
         mReceivedItemCount = 0;
