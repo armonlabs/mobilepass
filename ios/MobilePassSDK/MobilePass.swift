@@ -18,7 +18,7 @@ public class MobilePass {
      */
     public init(config: Configuration) {
         do {
-            LogManager.shared.info(message: "SDK Version: 0.0.9")
+            LogManager.shared.info(message: "SDK Version: 0.0.10")
             try ConfigurationManager.shared.setConfig(data: config)
         } catch {
             LogManager.shared.error(message: "Set configuration with given parameters failed!")
