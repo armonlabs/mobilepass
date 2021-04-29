@@ -163,7 +163,7 @@ public class ConfigurationManager {
             }
 
             RequestSetUserData request = new RequestSetUserData();
-            request.memberId = getMemberId();
+            request.clubMemberId = getMemberId();
             request.publicKey = mCurrentKeyPair.getPublicKeyWithoutHead();
 
             new DataService().sendUserInfo(request, new BaseService.ServiceResultListener<Object>() {
