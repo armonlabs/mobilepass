@@ -8,13 +8,13 @@
 import Foundation
 
 struct RequestSetUserData: Codable {
-    var publicKey: String;
-    var memberId: String;
+    var publicKey:      String;
+    var clubMemberId:   String;
     
     var dictionary: [String: Any] {
         return [
             "publicKey": publicKey,
-            "memberId": memberId
+            "clubMemberId": clubMemberId
         ]
     }
 }

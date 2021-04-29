@@ -196,11 +196,9 @@ public class ConfigurationManager {
         }
 
         if (response.pagination.total > mReceivedItemCount) {
-            LogManager.getInstance().debug("Fetch next page for Access Points");
             mPagination.skip = mReceivedItemCount;
             fetchAccessPoints();
         } else {
-            LogManager.getInstance().debug("Get Access Points Completed!");
             mCurrentQRCodes = new HashMap<>();
             mCurrentQRCodes.putAll(mTempQRCodes);
 
@@ -212,7 +210,6 @@ public class ConfigurationManager {
     }
 
     private void fetchAccessPoints() {
-        LogManager.getInstance().debug("New page for Access Points");
         new DataService().getAccessList(mPagination, new BaseService.ServiceResultListener<ResponseAccessPointList>() {
             @Override
             public void onCompleted(ResponseAccessPointList response) {
@@ -229,7 +226,7 @@ public class ConfigurationManager {
 
     private void getAccessPoints() {
         mPagination = new RequestPagination();
-        mPagination.take = 3;
+        mPagination.take = 100;
         mPagination.skip = 0;
 
         mReceivedItemCount = 0;
