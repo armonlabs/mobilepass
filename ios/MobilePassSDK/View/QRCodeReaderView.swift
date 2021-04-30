@@ -71,15 +71,15 @@ public class QRCodeReaderCoordinator: NSObject, AVCaptureMetadataOutputObjectsDe
                 var uuid: Substring = ""
                 var direction: Substring = ""
                 
-                if let prefixRange = Range(match.range(at: 1), in: stringValue) {
+                if let prefixRange = Range(match.range(at: 2), in: stringValue) {
                     prefix = stringValue[prefixRange]
                 }
 
-                if let uuidRange = Range(match.range(at: 2), in: stringValue) {
+                if let uuidRange = Range(match.range(at: 3), in: stringValue) {
                     uuid = stringValue[uuidRange]
                 }
                 
-                if let directionRange = Range(match.range(at: 3), in: stringValue) {
+                if let directionRange = Range(match.range(at: 4), in: stringValue) {
                     direction = stringValue[directionRange]
                 }
                 

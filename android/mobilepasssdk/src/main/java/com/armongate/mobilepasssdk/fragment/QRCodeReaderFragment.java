@@ -104,10 +104,10 @@ public class QRCodeReaderFragment extends Fragment implements SurfaceHolder.Call
                 if (matcher.matches()) {
                     isQRFound = true;
 
-                    String parsedContent = matcher.group(1) + "/" + matcher.group(2);
+                    String parsedContent = matcher.group(2) + "/" + matcher.group(3);
 
-                    if (matcher.group(1).equals("rq")) {
-                        parsedContent += matcher.group(3);
+                    if (matcher.group(2).equals("rq")) {
+                        parsedContent += matcher.group(4);
                     }
 
                     if (ConfigurationManager.getInstance().getQRCodeContent(parsedContent) == null) {
