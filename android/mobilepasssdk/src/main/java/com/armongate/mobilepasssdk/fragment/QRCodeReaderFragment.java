@@ -97,7 +97,7 @@ public class QRCodeReaderFragment extends Fragment implements SurfaceHolder.Call
             SparseArray<Barcode> qrCodes = detections.getDetectedItems();
             Barcode code = qrCodes.valueAt(0);
 
-            Pattern sPattern = Pattern.compile("https://sdk.armongate.com/(rq|bd|o|s)/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})(/[0-2]{1})?()?$");
+            Pattern sPattern = Pattern.compile("https://(app|sdk).armongate.com/(rq|bd|o|s)/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})(/[0-2]{1})?()?$");
 
             if (!isQRFound) {
                 Matcher matcher = sPattern.matcher(code.displayValue);

@@ -60,7 +60,7 @@ public class QRCodeReaderCoordinator: NSObject, AVCaptureMetadataOutputObjectsDe
             
             guard isFound == false else { return }
             
-            let pattern = "https://sdk.armongate.com/(rq|bd|o|s)/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})(/[0-2]{1})?()?$"
+            let pattern = "https://(app|sdk).armongate.com/(rq|bd|o|s)/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})(/[0-2]{1})?()?$"
             let regex = try? NSRegularExpression(pattern: pattern, options: .caseInsensitive)
 
             if let match = regex?.firstMatch(in: stringValue, options: [], range: NSRange(location: 0, length: stringValue.utf16.count)) {
