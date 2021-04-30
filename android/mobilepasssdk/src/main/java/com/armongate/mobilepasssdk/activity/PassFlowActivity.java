@@ -25,6 +25,7 @@ import com.armongate.mobilepasssdk.manager.LogManager;
 import com.armongate.mobilepasssdk.manager.SettingsManager;
 import com.armongate.mobilepasssdk.model.QRCodeContent;
 import com.armongate.mobilepasssdk.model.response.ResponseAccessPointItemQRCodeItemTrigger;
+import com.google.gson.Gson;
 
 import java.security.Permission;
 import java.util.ArrayList;
@@ -227,15 +228,16 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
 
             replaceFragment(MapFragment.class, bundle);
         } else {
+            Gson gson = new Gson();
+            String deviceDetails = gson.toJson(activeQRCodeContent.accessPoint.deviceInfo);
+
             Bundle bundle = new Bundle();
             bundle.putString("type", actionCurrent);
-            bundle.putString("deviceId", activeQRCodeContent.accessPoint.deviceInfo.id);
+            bundle.putString("devices", deviceDetails);
             bundle.putString("accessPointId", activeQRCodeContent.accessPoint.id);
             bundle.putInt("direction", activeQRCodeContent.action.config.direction);
-            bundle.putString("hardwareId", activeQRCodeContent.action.config.hardwareId);
             bundle.putInt("deviceNumber", activeQRCodeContent.action.config.deviceNumber);
             bundle.putInt("relayNumber", activeQRCodeContent.action.config.relayNumber);
-            bundle.putString("publicKey", activeQRCodeContent.accessPoint.deviceInfo.publicKey);
             bundle.putString("nextAction", actionList.size() > 0 ? actionList.get(0) : "");
 
             replaceFragment(StatusFragment.class, bundle);

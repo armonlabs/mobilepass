@@ -58,13 +58,11 @@ struct PassFlowView: View, PassFlowDelegate {
                         MapView(checkPoint: viewModel.activeQRCodeContent?.accessPoint.geoLocation)
                     } else {
                         StatusView(config: ActionConfig(isRemoteAccess: viewModel.actionCurrent == PassFlowView.ACTION_REMOTEACCESS,
-                                                                        deviceId: viewModel.activeQRCodeContent?.accessPoint.deviceInfo.id,
+                                                                        devices: viewModel.activeQRCodeContent?.accessPoint.deviceInfo ?? [],
                                                                         accessPointId: viewModel.activeQRCodeContent?.accessPoint.id,
-                                                                        hardwareId: viewModel.activeQRCodeContent?.action.config.hardwareId,
                                                                         direction: viewModel.activeQRCodeContent?.action.config.direction,
                                                                         deviceNumber: viewModel.activeQRCodeContent?.action.config.deviceNumber,
                                                                         relayNumber: viewModel.activeQRCodeContent?.action.config.relayNumber,
-                                                                        devicePublicKey: viewModel.activeQRCodeContent?.accessPoint.deviceInfo.publicKey,
                                                                         nextAction: viewModel.actionList.count > 0 ? viewModel.actionList.first : nil))
                     }
                 }.navigationBarTitle(Text(""), displayMode: .inline)

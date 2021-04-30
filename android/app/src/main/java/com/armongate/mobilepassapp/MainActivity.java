@@ -20,7 +20,7 @@ public class MainActivity extends AppCompatActivity implements MobilePassDelegat
 
         Configuration config = new Configuration();
         config.memberId = "customid";
-        config.serverUrl = "https://dev3.armon.com.tr:3443";
+        config.serverUrl = "https://qr.marsathletic.com";
 
         passer = new MobilePass(this, config);
         passer.setDelegate(this);

@@ -23,22 +23,28 @@ import com.armongate.mobilepasssdk.manager.DelegateManager;
 import com.armongate.mobilepasssdk.manager.LogManager;
 import com.armongate.mobilepasssdk.model.BLEScanConfiguration;
 import com.armongate.mobilepasssdk.model.DeviceConnectionStatus;
+import com.armongate.mobilepasssdk.model.StorageDataUserDetails;
+import com.armongate.mobilepasssdk.model.request.RequestAccess;
+import com.armongate.mobilepasssdk.model.response.ResponseAccessPointItemDeviceInfo;
 import com.armongate.mobilepasssdk.service.AccessPointService;
 import com.armongate.mobilepasssdk.service.BaseService;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
+import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 public class StatusFragment extends Fragment implements BluetoothManagerDelegate {
     private String  mActionType;
-    private String  mDeviceId;
     private String  mAccessPointId;
-    private String  mHardwareId;
     private int     mDeviceNumber;
     private int     mRelayNumber;
-    private String  mDevicePublicKey;
     private int     mDirection;
     private String  mNextAction;
     private View    mCurrentView;
+    private List<ResponseAccessPointItemDeviceInfo> mDevices;
 
     private Handler mTimerHandler;
 
@@ -48,14 +54,17 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        Gson gson = new Gson();
+
+        String devicesJson = getArguments() != null ? getArguments().getString("devices") : "";
+        Type typeDeviceList = new TypeToken<List<ResponseAccessPointItemDeviceInfo>>(){}.getType();
+
+        mDevices            = gson.fromJson(devicesJson, typeDeviceList);
         mActionType         = getArguments() != null ? getArguments().getString("type") : "";
-        mDeviceId           = getArguments() != null ? getArguments().getString("deviceId") : "";
         mAccessPointId      = getArguments() != null ? getArguments().getString("accessPointId") : "";
-        mHardwareId         = getArguments() != null ? getArguments().getString("hardwareId") : "";
         mDeviceNumber       = getArguments() != null ? getArguments().getInt("deviceNumber") : 0;
         mRelayNumber        = getArguments() != null ? getArguments().getInt("relayNumber") : 0;
         mDirection          = getArguments() != null ? getArguments().getInt("direction") : 0;
-        mDevicePublicKey    = getArguments() != null ? getArguments().getString("publicKey") : "";
         mNextAction         = getArguments() != null ? getArguments().getString("nextAction") : "";
 
         // Inflate the layout for this fragment
@@ -94,7 +103,12 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
     private void runRemoteAccess() {
         BluetoothManager.getInstance().stopScan(true);
 
-        new AccessPointService().remoteOpen(mAccessPointId, mDirection, new BaseService.ServiceResultListener() {
+        RequestAccess request = new RequestAccess();
+        request.accessPointId = mAccessPointId;
+        request.clubMemberId = ConfigurationManager.getInstance().getMemberId();
+        request.direction = mDirection;
+
+        new AccessPointService().remoteOpen(request, new BaseService.ServiceResultListener() {
             @Override
             public void onCompleted(Object result) {
                 updateStatus(R.drawable.background_success, R.string.text_status_message_succeed, false, R.drawable.status_succeed);
@@ -123,7 +137,7 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
     }
 
     private void runBluetooth() {
-        BLEScanConfiguration config = new BLEScanConfiguration(Collections.singletonList(mDeviceId), mDevicePublicKey, ConfigurationManager.getInstance().getMemberId(), mHardwareId, mDeviceNumber, mDirection, mRelayNumber);
+        BLEScanConfiguration config = new BLEScanConfiguration(mDevices, ConfigurationManager.getInstance().getMemberId(), mDeviceNumber, mDirection, mRelayNumber);
 
         BluetoothManager.getInstance().startScan(config);
         startBluetoothTimer();

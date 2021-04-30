@@ -50,7 +50,7 @@ allprojects {
 
 ```
 dependencies {
-	implementation 'com.github.armonlabs:mobilepass:0.0.7'
+	implementation 'com.github.armonlabs:mobilepass:0.0.11'
 }
 ```
 

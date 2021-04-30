@@ -26,6 +26,9 @@ class ConfigurationManager: NSObject {
     private var mCurrentConfig:     Configuration?
     private var mCurrentKeyPair:    CryptoKeyPair?
     private var mCurrentQRCodes:    Dictionary<String, QRCodeContent> = [:]
+    private var mTempQRCodes:       Dictionary<String, QRCodeContent> = [:]
+    private var mPagination:        RequestPagination? = nil
+    private var mReceivedItemCount: Int = 0
     private var mUserKeyDetails:    [StorageDataUserDetails] = []
     
     // MARK: Public Methods
@@ -75,7 +78,7 @@ class ConfigurationManager: NSObject {
     }
     
     public func getToken() -> String {
-        return mCurrentConfig?.token ?? ""
+        return mCurrentConfig?.token ?? "unknown"
     }
     
     public func getLanguage() -> String {
@@ -136,7 +139,7 @@ class ConfigurationManager: NSObject {
             try checkKeyPair();
         }
         
-        DataService().sendUserInfo(request: RequestSetUserData(publicKey: mCurrentKeyPair!.publicKey, memberId: getMemberId()), completion: { (result) in
+        DataService().sendUserInfo(request: RequestSetUserData(publicKey: mCurrentKeyPair!.publicKey, clubMemberId: getMemberId()), completion: { (result) in
             if case .success(_) = result {
                 self.getAccessPoints()
             } else {
@@ -146,24 +149,37 @@ class ConfigurationManager: NSObject {
         })
     }
     
-    private func getAccessPoints() -> Void {
-        self.mCurrentQRCodes.removeAll()
-        
-        DataService().getAccessList(request: RequestPagination(take: 100, skip: 0), completion: { (result) in
-            if case .success(let receivedData) = result {
+    private func processAccessPointsResponse(result: Result<ResponseAccessPointList?, RequestError>) {
+        if case .success(let receivedData) = result {
+            if (receivedData == nil) {
+                LogManager.shared.error(message: "Empty data received for access points list")
+                return
+            }
+            
+            self.mReceivedItemCount += receivedData!.items.count
+            
+            for item in (receivedData?.items ?? []) {
+                for qrCode in item.qrCodeData {
+                    var content = QRCodeContent(code: qrCode.qrCodeData, accessPoint: item, action: qrCode)
+                    content.accessPoint.qrCodeData = []
+                    
+                    self.mTempQRCodes[qrCode.qrCodeData] = content
+                }
+            }
+            
+            for qrCode in self.mTempQRCodes {
+                LogManager.shared.debug(message: "\(qrCode.key) > Type: \(qrCode.value.action.config.trigger.type) | Direction: \(qrCode.value.action.config.direction) | Validate Location: \(String(describing: qrCode.value.action.config.trigger.validateGeoLocation))")
+            }
+            
+            
+            if (receivedData!.pagination.total > self.mReceivedItemCount) {
+                self.mPagination?.skip = self.mReceivedItemCount
+                self.fetchAccessPoints()
+            } else {
                 self.mCurrentQRCodes = [:]
                 
-                for item in (receivedData?.items ?? []) {
-                    for qrCode in item.qrCodeData {
-                        var content = QRCodeContent(code: qrCode.qrCodeData, accessPoint: item, action: qrCode)
-                        content.accessPoint.qrCodeData = []
-                        
-                        self.mCurrentQRCodes[qrCode.qrCodeData] = content
-                    }
-                }
-                
-                for qrCode in self.mCurrentQRCodes {
-                    LogManager.shared.debug(message: "\(qrCode.key) > Type: \(qrCode.value.action.config.trigger.type) | Direction: \(qrCode.value.action.config.direction) | Validate Location: \(String(describing: qrCode.value.action.config.trigger.validateGeoLocation))")
+                for qrCode in self.mTempQRCodes {
+                    self.mCurrentQRCodes[qrCode.key] = qrCode.value
                 }
                 
                 do {
@@ -174,12 +190,27 @@ class ConfigurationManager: NSObject {
                 }
                 
                 DelegateManager.shared.qrCodeListChanged(state: self.mCurrentQRCodes.count > 0 ? QRCodeListState.USING_SYNCED_DATA : QRCodeListState.EMPTY)
-            } else {
-                LogManager.shared.error(message: "Get access list failed!")
-                
-                DelegateManager.shared.qrCodeListChanged(state: self.mCurrentQRCodes.count > 0 ? QRCodeListState.USING_STORED_DATA : QRCodeListState.EMPTY)
             }
+        } else {
+            LogManager.shared.error(message: "Get access list failed!")
+            
+            DelegateManager.shared.qrCodeListChanged(state: self.mCurrentQRCodes.count > 0 ? QRCodeListState.USING_STORED_DATA : QRCodeListState.EMPTY)
+        }
+    }
+    
+    private func fetchAccessPoints() -> Void {
+        DataService().getAccessList(request: self.mPagination!, completion: { (result) in
+            self.processAccessPointsResponse(result: result)
         })
+    }
+    
+    private func getAccessPoints() -> Void {
+        self.mPagination = RequestPagination(take: 100, skip: 0)
+        
+        self.mTempQRCodes = [:]
+        self.mReceivedItemCount = 0
+        
+        self.fetchAccessPoints()
     }
     
 }

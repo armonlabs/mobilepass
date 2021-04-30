@@ -11,9 +11,10 @@ import CoreBluetooth
 struct DeviceConnection {
     var peripheral:         CBPeripheral;
     var characteristics:    Dictionary<String, CBCharacteristic> = [:];
-    var deviceId:           String?;
+    var serviceUUID:        String;
     
-    init(peripheral: CBPeripheral) {
-        self.peripheral = peripheral
+    init(peripheral: CBPeripheral, serviceUUID: String) {
+        self.peripheral     = peripheral
+        self.serviceUUID    = serviceUUID
     }
 }

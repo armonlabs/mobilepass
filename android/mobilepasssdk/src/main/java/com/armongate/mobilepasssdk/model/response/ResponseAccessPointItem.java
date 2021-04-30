@@ -5,5 +5,5 @@ public class ResponseAccessPointItem {
     public String name;
     public ResponseAccessPointItemQRCodeItem[]  qrCodeData;
     public ResponseAccessPointItemGeoLocation   geoLocation;
-    public ResponseAccessPointItemDeviceInfo    deviceInfo;
+    public ResponseAccessPointItemDeviceInfo[]  deviceInfo;
 }

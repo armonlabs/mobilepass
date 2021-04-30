@@ -30,7 +30,7 @@ class BluetoothManager: NSObject {
     private var filterServiceUUIDs:         [CBUUID] = []
     private var filterCharacteristicUUIDs:  [CBUUID] = []
     
-    private var currentDevicesInRange:      Dictionary<String, CBPeripheral> = [:]
+    private var currentDevicesInRange:      Dictionary<String, DeviceInRange> = [:]
     private var currentConnectedDevices:    Dictionary<String, DeviceConnection> = [:]
     private var currentConfiguration:       BLEScanConfiguration?
     private var currentCentralManager:      CBCentralManager!
@@ -140,7 +140,9 @@ class BluetoothManager: NSObject {
         onConnectionStateChanged(identifier: deviceIdentifier, connectionState: .connecting)
         
         LogManager.shared.info(message: "Connecting to device...")
-        self.currentCentralManager.connect(self.currentDevicesInRange[deviceIdentifier]!, options: nil)
+        let deviceInRange: DeviceInRange = self.currentDevicesInRange[deviceIdentifier]!
+        
+        self.currentCentralManager.connect(deviceInRange.device, options: nil)
     }
     
     public func disconnectFromDevice() {
@@ -177,7 +179,7 @@ class BluetoothManager: NSObject {
         self.filterServiceUUIDs = []
         self.filterCharacteristicUUIDs = []
         
-        for uuid in self.currentConfiguration!.uuidFilter {
+        for uuid in self.currentConfiguration!.deviceList.keys {
             self.filterServiceUUIDs.append(CBUUID(string: uuid))
             self.filterCharacteristicUUIDs.append(CBUUID(string: UUIDs.CHARACTERISTIC))
         }
@@ -315,7 +317,7 @@ extension BluetoothManager: CBCentralManagerDelegate {
                         }
                     }
                     
-                    self.currentDevicesInRange[peripheral.identifier.uuidString] = peripheral
+                    self.currentDevicesInRange[peripheral.identifier.uuidString] = DeviceInRange(serviceUUID: "", bluetoothDevice: peripheral)
                     LogManager.shared.info(message: "Peripheral is added to device list, current device count: " + self.currentDevicesInRange.count.description)
                     
                     connectToDevice(deviceIdentifier: peripheral.identifier.uuidString)
@@ -403,7 +405,7 @@ extension BluetoothManager: CBPeripheralDelegate {
             return
         }
         
-        self.currentConnectedDevices[peripheral.identifier.uuidString] = DeviceConnection(peripheral: peripheral)
+        self.currentConnectedDevices[peripheral.identifier.uuidString] = DeviceConnection(peripheral: peripheral, serviceUUID: service.uuid.uuidString)
         
         for characteristic: CBCharacteristic in service.characteristics! {
             LogManager.shared.debug(message: "Characteristic found for peripheral (" + peripheral.getName() + "), UUID: " + characteristic.uuid.uuidString)
@@ -452,27 +454,33 @@ extension BluetoothManager: CBPeripheralDelegate {
         }
         
         
-        let receivedData:   Data            = characteristic.value!
+        let receivedData: Data = characteristic.value!
         
         LogManager.shared.debug(message: "Received Data > " + receivedData.hexEncodedString(options: .upperCase));
         
-        let result:         BLEDataContent? = DataParserUtil.shared.parse(data: receivedData)
+        let result: BLEDataContent? = DataParserUtil.shared.parse(data: receivedData)
         
         if #available(iOS 10.0, *) {
             if (result != nil) {
                 if(result!.type == DataTypes.TYPE.AuthChallengeForPublicKey) {
                     
                     let deviceId = result!.data!["deviceId"] as? String ?? ""
-                    
-                    self.currentConnectedDevices[peripheral.identifier.uuidString]!.deviceId = deviceId
-                    
                     LogManager.shared.debug(message: "Auth challenge received, device id: " + deviceId);
                     
                     do {
-                        let resultData: Data? = try generateChallengeResponseDataWithDirection(challengeType:    result!.type,
-                                                                                               iv:               (result!.data!["iv"] as? Data)!)
+                        let connectedDevice = self.currentConnectedDevices[peripheral.identifier.uuidString]!
+                        let deviceConnectionInfo = self.currentConfiguration != nil ? self.currentConfiguration!.deviceList[connectedDevice.serviceUUID.lowercased()] : nil
                         
-                        peripheral.writeValue(resultData!, for: characteristic, type: .withResponse)
+                        if (deviceConnectionInfo != nil) {
+                            let resultData: Data? = try generateChallengeResponseDataWithDirection(challengeType:   result!.type,
+                                                                                                   iv:              (result!.data!["iv"] as? Data)!,
+                                                                                                   deviceInfo:      deviceConnectionInfo!)
+                            
+                            peripheral.writeValue(resultData!, for: characteristic, type: .withResponse)
+                        } else {
+                            LogManager.shared.error(message: "Required device info cannot be found to generate challenge response!")
+                            onConnectionStateChanged(identifier: peripheral.identifier.uuidString, connectionState: .failed)
+                        }
                     } catch {
                         LogManager.shared.error(message: "Generate challenge response failed!")
                         onConnectionStateChanged(identifier: peripheral.identifier.uuidString, connectionState: .failed)
@@ -543,7 +551,7 @@ extension BluetoothManager {
         }
     }
     
-    private func generateChallengeResponseDataWithDirection(challengeType: Int, iv: Data) throws -> Data {
+    private func generateChallengeResponseDataWithDirection(challengeType: Int, iv: Data, deviceInfo: DeviceConnectionInfo) throws -> Data {
         // MARK: Create header data
         let resultDataArray: [UInt8] = [
             UInt8(PacketHeaders.PROTOCOLV2.GROUP.AUTH),
@@ -556,14 +564,14 @@ extension BluetoothManager {
         // MARK: Ready encrypted response
         var dataIV: Data = iv
         
-        let sharedKey: Data? = CryptoManager.shared.getSecret(privateKey: ConfigurationManager.shared.getPrivateKey(), publicKey: currentConfiguration!.devicePublicKey)
+        let sharedKey: Data? = CryptoManager.shared.getSecret(privateKey: ConfigurationManager.shared.getPrivateKey(), publicKey: deviceInfo.publicKey)
         dataIV.append(sharedKey!)
         
         let encryptedResponse: Data = CryptoManager.shared.encodeWithSHA256(plainData: dataIV)
         
         // MARK: Ready result data after encryption
         resultData.append(currentConfiguration!.dataUserId.data(using: .utf8)!.fill(length: 16, repeating: 0x00))
-        resultData.append(currentConfiguration!.dataHardwareId.data(using: .utf8)!.fill(length: 16, repeating: 0x00))
+        resultData.append(deviceInfo.hardwareId.data(using: .utf8)!.fill(length: 16, repeating: 0x00))
         resultData.append(currentConfiguration!.deviceNumber.mergeToData(currentConfiguration!.dataDirection, currentConfiguration!.relayNumber)!)
         
         resultData.append(encryptedResponse)

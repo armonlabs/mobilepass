@@ -31,6 +31,7 @@ import com.armongate.mobilepasssdk.model.BLEDataContent;
 import com.armongate.mobilepasssdk.model.BLEScanConfiguration;
 import com.armongate.mobilepasssdk.model.DeviceCapability;
 import com.armongate.mobilepasssdk.model.DeviceConnection;
+import com.armongate.mobilepasssdk.model.DeviceConnectionInfo;
 import com.armongate.mobilepasssdk.model.DeviceConnectionStatus;
 import com.armongate.mobilepasssdk.model.DeviceInRange;
 import com.armongate.mobilepasssdk.model.DeviceSignalInfo;
@@ -80,7 +81,7 @@ public class BluetoothManager {
     private List<UUID>                      filterServiceUUIDs          = new ArrayList<>();
     private List<UUID>                      filterCharacteristicUUIDs   = new ArrayList<>();
 
-    private Map<String, BluetoothDevice>    currentDevicesInRange       = new HashMap<>();
+    private Map<String, DeviceInRange>      currentDevicesInRange       = new HashMap<>();
     private Map<String, DeviceConnection>   currentConnectedDevices     = new HashMap<>();
     private BLEScanConfiguration            currentConfiguration        = null;
     private BluetoothAdapter                currentBluetoothAdapter     = null;
@@ -159,7 +160,7 @@ public class BluetoothManager {
 
         // Prepare service and characteristic UUID lists for new scan
         List<ScanFilter>    scanFilters     = prepareUUIDLists();
-        ScanSettings scanSettings    = new ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY).build();
+        ScanSettings        scanSettings    = new ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY).build();
 
         LogManager.getInstance().info("Bluetooth scanner is ready");
 
@@ -218,11 +219,11 @@ public class BluetoothManager {
         onConnectionStateChanged(deviceIdentifier, DeviceConnectionStatus.ConnectionState.CONNECTING);
 
         LogManager.getInstance().info("Connecting to device...");
-        BluetoothDevice device = currentDevicesInRange.get(deviceIdentifier);
+        DeviceInRange deviceInRange = currentDevicesInRange.get(deviceIdentifier);
 
-        if (device != null) {
-            BluetoothGatt connection = device.connectGatt(activeContext, false, mBluetoothGattCallback);
-            currentConnectedDevices.put(deviceIdentifier, new DeviceConnection(device, connection));
+        if (deviceInRange != null) {
+            BluetoothGatt connection = deviceInRange.device.connectGatt(activeContext, false, mBluetoothGattCallback);
+            currentConnectedDevices.put(deviceIdentifier, new DeviceConnection(deviceInRange.device, deviceInRange.serviceUUID, connection));
         } else {
             LogManager.getInstance().warn("Connection cancelled due to empty device instance that received from range list");
         }
@@ -289,12 +290,11 @@ public class BluetoothManager {
         filterCharacteristicUUIDs.clear();
 
         for (String uuid :
-                currentConfiguration.uuidFilter) {
+                currentConfiguration.deviceList.keySet()) {
             LogManager.getInstance().info("Filter services with uuid: " + uuid);
             filterServiceUUIDs.add(UUID.fromString(uuid));
             filterCharacteristicUUIDs.add(UUID.fromString(UUIDs.CHARACTERISTIC));
         }
-
 
         List<ScanFilter> result = new ArrayList<>();
 
@@ -493,7 +493,7 @@ public class BluetoothManager {
         }
     }
 
-    private byte[] generateChallengeResponseDataWithDirection(byte[] challenge, byte[] iv) throws Exception {
+    private byte[] generateChallengeResponseDataWithDirection(byte[] challenge, byte[] iv, DeviceConnectionInfo deviceInfo) throws Exception {
         byte[] resultData = new byte[] {
                 PacketHeaders.PROTOCOLV2.GROUP.AUTH,
                 PacketHeaders.PROTOCOLV2.AUTH.DIRECTION_CHALLENGE,
@@ -501,10 +501,10 @@ public class BluetoothManager {
         };
 
         resultData = ArrayUtil.concat(resultData, ConverterUtil.stringToData(currentConfiguration.dataUserId, 16, (byte)0, false));
-        resultData = ArrayUtil.concat(resultData, ConverterUtil.stringToData(currentConfiguration.dataHardwareId, 16, (byte)0, false));
+        resultData = ArrayUtil.concat(resultData, ConverterUtil.stringToData(deviceInfo.hardwareId, 16, (byte)0, false));
         resultData = ArrayUtil.add(resultData, (byte)ConverterUtil.mergeToData(currentConfiguration.deviceNumber, currentConfiguration.direction, currentConfiguration.relayNumber));
 
-        byte[] encryptedResponse = CryptoManager.getInstance().encryptBytesWithIV(ConfigurationManager.getInstance().getPrivateKey(), currentConfiguration.devicePublicKey, challenge, iv);
+        byte[] encryptedResponse = CryptoManager.getInstance().encryptBytesWithIV(ConfigurationManager.getInstance().getPrivateKey(), deviceInfo.publicKey, challenge, iv);
         resultData = ArrayUtil.concat(resultData, encryptedResponse);
 
         return resultData;
@@ -574,6 +574,7 @@ public class BluetoothManager {
                     }
 
                     String      armonDeviceName     = scanRecord.getDeviceName();
+                    String      foundServiceUUID    = "";
                     boolean     hasValidServiceUUID = false;
 
                     List<ParcelUuid> recordServiceUUIDs = scanRecord.getServiceUuids();
@@ -582,6 +583,7 @@ public class BluetoothManager {
                         for (ParcelUuid uuid : recordServiceUUIDs) {
                             if (uuid.getUuid() != null && filterServiceUUIDs.contains(uuid.getUuid())) {
                                 hasValidServiceUUID = true;
+                                foundServiceUUID    = uuid.getUuid().toString();
                             }
                         }
                     } else {
@@ -620,7 +622,7 @@ public class BluetoothManager {
                                     }
                                 }
 
-                                currentDevicesInRange.put(result.getDevice().getAddress(), result.getDevice());
+                                currentDevicesInRange.put(result.getDevice().getAddress(), new DeviceInRange(foundServiceUUID, result.getDevice()));
                                 LogManager.getInstance().info("Peripheral is added to device list, current device count: " + currentDevicesInRange.size());
 
                                 connectToDevice(result.getDevice().getAddress());
@@ -825,16 +827,17 @@ public class BluetoothManager {
                     if (result.type == DataTypes.TYPE.AuthChallengeForPublicKey) {
                         try {
                             String deviceId = result.data.containsKey("deviceId") ? result.data.get("deviceId").toString() : "";
-                            DeviceConnection connectedDevice = currentConnectedDevices.get(gatt.getDevice().getAddress());
 
-                            if (connectedDevice != null) {
-                                connectedDevice.deviceId = deviceId;
+                            DeviceConnection        connectedDevice         = currentConnectedDevices.get(gatt.getDevice().getAddress());
+                            DeviceConnectionInfo    deviceConnectionInfo    = currentConfiguration.deviceList.get(connectedDevice.serviceUUID.toLowerCase());
 
+                            if (connectedDevice != null && deviceConnectionInfo != null) {
                                 LogManager.getInstance().debug("Auth challenge received, device id: " + deviceId);
 
                                 byte[] resultData = generateChallengeResponseDataWithDirection(
                                         result.data.containsKey("challenge") ? ConverterUtil.hexStringToBytes(result.data.get("challenge").toString()) : new byte[0],
-                                        result.data.containsKey("iv") ? ConverterUtil.hexStringToBytes(result.data.get("iv").toString()) : new byte[0]
+                                        result.data.containsKey("iv") ? ConverterUtil.hexStringToBytes(result.data.get("iv").toString()) : new byte[0],
+                                        deviceConnectionInfo
                                 );
 
                                 writeToDevice(resultData, characteristic, connectedDevice.connection);

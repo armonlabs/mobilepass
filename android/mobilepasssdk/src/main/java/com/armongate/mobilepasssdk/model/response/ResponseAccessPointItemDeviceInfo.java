@@ -5,6 +5,7 @@ public class ResponseAccessPointItemDeviceInfo {
     public int      brand;
     public String   model;
     public String   name;
+    public String   hardwareId;
     public String   location;
     public String   publicKey;
 }

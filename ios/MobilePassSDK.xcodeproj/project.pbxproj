@@ -49,6 +49,7 @@
 		DEB3116625EC2F9A00DD91AF /* DeviceConnectionStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEB3116525EC2F9A00DD91AF /* DeviceConnectionStatus.swift */; };
 		DEB3116925EC2FB600DD91AF /* DeviceInRange.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEB3116825EC2FB600DD91AF /* DeviceInRange.swift */; };
 		DEB3116C25EC2FD900DD91AF /* DeviceCapability.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEB3116B25EC2FD900DD91AF /* DeviceCapability.swift */; };
+		DEEF5AC9263172B5006004DD /* DeviceConnectionInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEF5AC8263172B5006004DD /* DeviceConnectionInfo.swift */; };
 		DEF0BF8425D2868500397D18 /* Data+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEF0BF8325D2868500397D18 /* Data+Extensions.swift */; };
 		DEF0BF8725D286A600397D18 /* String+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEF0BF8625D286A600397D18 /* String+Extensions.swift */; };
 		DEF0BF9025D28C7E00397D18 /* PacketHeaders.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEF0BF8F25D28C7E00397D18 /* PacketHeaders.swift */; };
@@ -115,6 +116,7 @@
 		DEB3116525EC2F9A00DD91AF /* DeviceConnectionStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceConnectionStatus.swift; sourceTree = "<group>"; };
 		DEB3116825EC2FB600DD91AF /* DeviceInRange.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceInRange.swift; sourceTree = "<group>"; };
 		DEB3116B25EC2FD900DD91AF /* DeviceCapability.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceCapability.swift; sourceTree = "<group>"; };
+		DEEF5AC8263172B5006004DD /* DeviceConnectionInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceConnectionInfo.swift; sourceTree = "<group>"; };
 		DEF0BF8325D2868500397D18 /* Data+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+Extensions.swift"; sourceTree = "<group>"; };
 		DEF0BF8625D286A600397D18 /* String+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Extensions.swift"; sourceTree = "<group>"; };
 		DEF0BF8F25D28C7E00397D18 /* PacketHeaders.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PacketHeaders.swift; sourceTree = "<group>"; };
@@ -220,6 +222,7 @@
 				DE30E52625DD15CD004CAED2 /* Configuration.swift */,
 				DE3BBF7625DE862E00963B80 /* QRCodeContent.swift */,
 				DEB3116125EC2F6D00DD91AF /* DeviceConnection.swift */,
+				DEEF5AC8263172B5006004DD /* DeviceConnectionInfo.swift */,
 				DEB3116525EC2F9A00DD91AF /* DeviceConnectionStatus.swift */,
 				DEB3116825EC2FB600DD91AF /* DeviceInRange.swift */,
 				DEB3116B25EC2FD900DD91AF /* DeviceCapability.swift */,
@@ -446,6 +449,7 @@
 				DE14A09A25D11C9500F8B8B3 /* MobilePass.swift in Sources */,
 				DEB3116625EC2F9A00DD91AF /* DeviceConnectionStatus.swift in Sources */,
 				DE79EEAA25D9986100D8C072 /* PassFlowController.swift in Sources */,
+				DEEF5AC9263172B5006004DD /* DeviceConnectionInfo.swift in Sources */,
 				DEF0BFB325D2AACA00397D18 /* StorageDataDevice.swift in Sources */,
 				DEF0BF9025D28C7E00397D18 /* PacketHeaders.swift in Sources */,
 				DE07C72325D181E100BD7021 /* BluetoothManager.swift in Sources */,
@@ -650,7 +654,7 @@
 					"@loader_path/Frameworks",
 					"$(SRCROOT)",
 				);
-				MARKETING_VERSION = 0.0.7;
+				MARKETING_VERSION = 0.0.11;
 				PRODUCT_BUNDLE_IDENTIFIER = com.armongate.MobilePassSDK;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
@@ -682,7 +686,7 @@
 					"@loader_path/Frameworks",
 					"$(SRCROOT)",
 				);
-				MARKETING_VERSION = 0.0.7;
+				MARKETING_VERSION = 0.0.11;
 				PRODUCT_BUNDLE_IDENTIFIER = com.armongate.MobilePassSDK;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
