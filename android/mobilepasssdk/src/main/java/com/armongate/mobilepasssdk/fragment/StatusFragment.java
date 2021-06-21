@@ -1,5 +1,6 @@
 package com.armongate.mobilepasssdk.fragment;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
@@ -13,6 +14,7 @@ import android.widget.TextView;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
 
 import com.armongate.mobilepasssdk.R;
 import com.armongate.mobilepasssdk.activity.PassFlowActivity;
@@ -24,6 +26,7 @@ import com.armongate.mobilepasssdk.manager.LogManager;
 import com.armongate.mobilepasssdk.model.BLEScanConfiguration;
 import com.armongate.mobilepasssdk.model.DeviceConnectionStatus;
 import com.armongate.mobilepasssdk.model.StorageDataUserDetails;
+import com.armongate.mobilepasssdk.model.WaitingStatusUpdate;
 import com.armongate.mobilepasssdk.model.request.RequestAccess;
 import com.armongate.mobilepasssdk.model.response.ResponseAccessPointItemDeviceInfo;
 import com.armongate.mobilepasssdk.service.AccessPointService;
@@ -48,6 +51,8 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
 
     private Handler mTimerHandler;
 
+    private FragmentActivity    mActivity;
+    private WaitingStatusUpdate mWaitingUpdate = null;
 
     private DeviceConnectionStatus.ConnectionState mLastConnectionState;
 
@@ -85,11 +90,20 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
+
+        if (context instanceof FragmentActivity){
+            mActivity = (FragmentActivity)context;
+
+            if (mWaitingUpdate != null) {
+                updateStatus(mWaitingUpdate.background, mWaitingUpdate.message, mWaitingUpdate.showSpinner, mWaitingUpdate.icon);
+            }
+        }
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
+        mActivity = null;
     }
 
     private void startAction() {
@@ -180,28 +194,33 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
     }
 
     private void updateStatus(final int background, final int message, final boolean showSpinner, final @Nullable Integer icon) {
-        getActivity().runOnUiThread(new Runnable() {
+        if (mActivity != null) {
+            mWaitingUpdate = null;
+            mActivity.runOnUiThread(new Runnable() {
 
-            @Override
-            public void run() {
-                ConstraintLayout statusBackground = mCurrentView.findViewById(R.id.status_background);
-                statusBackground.setBackgroundResource(background);
+                @Override
+                public void run() {
+                    ConstraintLayout statusBackground = mCurrentView.findViewById(R.id.status_background);
+                    statusBackground.setBackgroundResource(background);
 
-                ProgressBar spinner = mCurrentView.findViewById(R.id.progressBar);
-                spinner.setVisibility(showSpinner ? View.VISIBLE : View.GONE);
+                    ProgressBar spinner = mCurrentView.findViewById(R.id.progressBar);
+                    spinner.setVisibility(showSpinner ? View.VISIBLE : View.GONE);
 
-                ImageView statusIcon = mCurrentView.findViewById(R.id.imgStatusIcon);
+                    ImageView statusIcon = mCurrentView.findViewById(R.id.imgStatusIcon);
 
-                if (icon != null) {
-                    statusIcon.setImageResource(icon);
+                    if (icon != null) {
+                        statusIcon.setImageResource(icon);
+                    }
+
+                    statusIcon.setVisibility(showSpinner ? View.GONE : View.VISIBLE);
+
+                    TextView statusMessage = mCurrentView.findViewById(R.id.txtStatusMessage);
+                    statusMessage.setText(message);
                 }
-
-                statusIcon.setVisibility(showSpinner ? View.GONE : View.VISIBLE);
-
-                TextView statusMessage = mCurrentView.findViewById(R.id.txtStatusMessage);
-                statusMessage.setText(message);
-            }
-        });
+            });
+        } else {
+            mWaitingUpdate = new WaitingStatusUpdate(background, message, showSpinner, icon);
+        }
     }
 
     @Override
