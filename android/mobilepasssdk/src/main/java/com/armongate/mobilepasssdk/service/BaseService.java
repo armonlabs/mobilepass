@@ -97,16 +97,19 @@ public class BaseService {
         String serverUrl = ConfigurationManager.getInstance().getServerURL() + url;
 
         LogManager.getInstance().debug("New request to " + serverUrl);
+
+        /*
         if (data != null) {
             LogManager.getInstance().debug("Request: " + data.toString());
         }
+         */
 
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest
                 (method == METHOD_GET ? Request.Method.GET : Request.Method.POST, serverUrl, data, new Response.Listener<JSONObject>() {
 
                     @Override
                     public void onResponse(JSONObject response) {
-                        LogManager.getInstance().debug("Response received > " + response.toString());
+                        // LogManager.getInstance().debug("Response received > " + response.toString());
 
                         if (clazz != null) {
                             Gson gson = new Gson();
@@ -120,6 +123,7 @@ public class BaseService {
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         LogManager.getInstance().debug("Error received " + error.getLocalizedMessage());
+
                         if (error instanceof TimeoutError) {
                             listener.onError(408);
                         } else if (error instanceof AuthFailureError) {
@@ -137,6 +141,8 @@ public class BaseService {
                 params.put("Content-Type", "application/json");
                 params.put("Accept", "application/json");
                 params.put("Authorization", token);
+                params.put("If-Modified-Since", "Mon, 26 Jul 1997 05:00:00 GMT");
+                params.put("Cache-Control", "no-cache");
 
                 return params;
             }
