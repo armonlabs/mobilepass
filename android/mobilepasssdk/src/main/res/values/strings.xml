@@ -1,5 +1,5 @@
 <resources>
-	<string name="app_name">MobilePassSDK</string>
+	<string name="app_name">MobilePass SDK Test</string>
 	<string name="text_status_message_succeed">You can pass now</string>
 	<string name="text_status_message_failed">Pass request has been failed</string>
 	<string name="text_status_message_not_connected">Could not communicate with the device</string>

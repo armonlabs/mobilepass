@@ -15,6 +15,8 @@ import com.armongate.mobilepasssdk.manager.LogManager;
 import com.armongate.mobilepasssdk.model.Configuration;
 import com.armongate.mobilepasssdk.service.BaseService;
 
+import java.util.List;
+
 public class MobilePass {
 
     private final Context mActiveContext;
@@ -58,6 +60,10 @@ public class MobilePass {
     public void triggerQRCodeRead() {
         DelegateManager.getInstance().clearFlowFlags();
         showActivity();
+    }
+
+    public List<String> getLogs() {
+        return LogManager.getInstance().getLogs();
     }
 
     private void showActivity() {

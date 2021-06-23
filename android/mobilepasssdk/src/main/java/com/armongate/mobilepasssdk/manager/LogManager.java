@@ -2,6 +2,13 @@ package com.armongate.mobilepasssdk.manager;
 
 import android.util.Log;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+
 public class LogManager {
 
     public enum LogType {
@@ -10,6 +17,8 @@ public class LogManager {
         ERROR,
         DEBUG
     }
+
+    private final List<String> logItems = new ArrayList<>();
 
     // Singleton
 
@@ -46,6 +55,10 @@ public class LogManager {
         log(LogType.DEBUG, message);
     }
 
+    public List<String> getLogs() {
+        return this.logItems;
+    }
+
     // Private Functions
 
     private void log(LogType type, String message) {
@@ -69,6 +82,17 @@ public class LogManager {
                 Log.d(LOG_TAG, prefix + " | " + message);
                 break;
         }
+
+        logItems.add(now() + " | " + message);
+    }
+
+    private String now() {
+        String pattern = "HH:mm:ss:SSS";
+
+        DateFormat df = new SimpleDateFormat(pattern);
+        Date today = Calendar.getInstance().getTime();
+
+        return df.format(today);
     }
 
 }

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-	<string name="app_name">MobilePassSDK</string>
+	<string name="app_name">MobilePass SDK Test</string>
 	<string name="text_status_message_succeed">Şimdi geçiş yapabilirsiniz</string>
 	<string name="text_status_message_failed">Geçiş isteğiniz başarısız oldu</string>
 	<string name="text_status_message_not_connected">Cihaz ile iletişim kurulamadı</string>
