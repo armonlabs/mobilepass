@@ -191,7 +191,8 @@ public class ConfigurationManager {
                 QRCodeContent content = new QRCodeContent(qrCode.qrCodeData, item, qrCode);
                 mTempQRCodes.put(qrCode.qrCodeData, content);
 
-                LogManager.getInstance().debug(new Gson().toJson(content));
+                // Open to show received access point definitions
+                // LogManager.getInstance().debug(new Gson().toJson(content));
             }
         }
 

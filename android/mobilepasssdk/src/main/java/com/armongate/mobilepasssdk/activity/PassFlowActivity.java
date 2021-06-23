@@ -152,23 +152,24 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
         activeQRCodeContent = ConfigurationManager.getInstance().getQRCodeContent(code);
 
         if (activeQRCodeContent != null) {
+            LogManager.getInstance().info("QR code content for [" + code + "] is processing...");
+
             ResponseAccessPointItemQRCodeItemTrigger trigger = activeQRCodeContent.action.config != null ? activeQRCodeContent.action.config.trigger : null;
 
             if (trigger != null) {
                 boolean needLocation = trigger.validateGeoLocation != null && trigger.validateGeoLocation && activeQRCodeContent.accessPoint.geoLocation != null;
-
-                LogManager.getInstance().debug("Need location: " + needLocation);
+                LogManager.getInstance().info("Need location: " + needLocation);
 
                 actionList = new ArrayList<>();
 
                 switch (trigger.type) {
                     case QRTriggerType.Bluetooth:
-                        LogManager.getInstance().debug("Trigger Type: Bluetooth");
+                        LogManager.getInstance().info("Trigger Type: Bluetooth");
                         actionCurrent = ACTION_BLUETOOTH;
 
                         break;
                     case QRTriggerType.BluetoothThenRemote:
-                        LogManager.getInstance().debug("Trigger Type: Bluetooth Then Remote");
+                        LogManager.getInstance().info("Trigger Type: Bluetooth Then Remote");
                         actionCurrent = ACTION_BLUETOOTH;
 
                         if (needLocation) {
@@ -186,10 +187,10 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
                         }
 
                         if (trigger.type == QRTriggerType.RemoteThenBluetooth) {
-                            LogManager.getInstance().debug("Trigger Type: Remote Then Bluetooth");
+                            LogManager.getInstance().info("Trigger Type: Remote Then Bluetooth");
                             actionList.add(ACTION_BLUETOOTH);
                         } else {
-                            LogManager.getInstance().debug("Trigger Type: Remote");
+                            LogManager.getInstance().info("Trigger Type: Remote");
                         }
                         break;
                     default:
@@ -207,7 +208,11 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
                 } else {
                     replaceFragment(CheckFragment.class, null);
                 }
+            } else {
+                LogManager.getInstance().warn("Trigger definition is missing in QR code content");
             }
+        } else {
+            LogManager.getInstance().warn("QR code definition cannot be found > " + code);
         }
 
     }

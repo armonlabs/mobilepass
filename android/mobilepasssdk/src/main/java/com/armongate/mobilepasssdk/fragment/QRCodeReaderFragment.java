@@ -116,7 +116,7 @@ public class QRCodeReaderFragment extends Fragment implements SurfaceHolder.Call
                         DelegateManager.getInstance().flowQRCodeFound(parsedContent);
                     }
                 } else {
-                    LogManager.getInstance().warn("Unknown QR code format! Data: " + code.displayValue);
+                    LogManager.getInstance().warn("Unknown QR code format! > " + code.displayValue);
                 }
             }
         }
