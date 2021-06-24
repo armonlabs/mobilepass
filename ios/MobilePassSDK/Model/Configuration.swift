@@ -26,14 +26,18 @@ public class Configuration {
     /** Determines usage of mock location in flow | default: false*/
     var allowMockLocation: Bool?
     
+    /** Bluetooth connection timeout in seconds */
+    var connectionTimeout: Int?
     
-    public init(memberId: String, serverUrl: String, token: String?, language: String?, qrCodeMessage: String?, allowMockLocation: Bool?) {
+    
+    public init(memberId: String, serverUrl: String, token: String?, language: String?, qrCodeMessage: String?, allowMockLocation: Bool?, connectionTimeout: Int?) {
         self.memberId           = memberId
         self.serverUrl          = serverUrl
         self.qrCodeMessage      = qrCodeMessage
         self.token              = token
         self.language           = language
         self.allowMockLocation  = allowMockLocation
+        self.connectionTimeout  = connectionTimeout
     }
     
 }

@@ -38,4 +38,11 @@ public class Configuration {
      * @default false
      */
     public @Nullable Boolean allowMockLocation;
+
+    /**
+     * Bluetooth connection timeout in seconds
+     *
+     * @default 5 seconds
+     */
+    public @Nullable Integer connectionTimeout;
 }

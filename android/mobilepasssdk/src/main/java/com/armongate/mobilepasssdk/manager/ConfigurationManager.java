@@ -104,6 +104,10 @@ public class ConfigurationManager {
         return mCurrentConfig != null && mCurrentConfig.allowMockLocation != null ? mCurrentConfig.allowMockLocation : false;
     }
 
+    public Integer getBLEConnectionTimeout() {
+        return mCurrentConfig != null && mCurrentConfig.connectionTimeout != null ? mCurrentConfig.connectionTimeout : 5;
+    }
+
     private void getStoredQRCodes() {
         String storageQRCodes = StorageManager.getInstance().getValue(mCurrentContext, StorageKeys.QRCODES);
 

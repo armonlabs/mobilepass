@@ -165,7 +165,7 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
             }
         };
 
-        mTimerHandler.postDelayed(mTimerRunnable, 10000);
+        mTimerHandler.postDelayed(mTimerRunnable, ConfigurationManager.getInstance().getBLEConnectionTimeout() * 1000);
     }
 
     private void endBluetoothTimer() {

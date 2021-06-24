@@ -139,12 +139,11 @@ struct StatusView: View {
                                                                     relayNumber: currentConfig!.relayNumber!)
             
             BluetoothManager.shared.startScan(configuration: config)
-            // startBluetoothTimer()
         }
     }
     
     private func startBluetoothTimer() {
-        timerBluetooth = Timer.scheduledTimer(withTimeInterval: 10.0, repeats: false, block: { timer in
+        timerBluetooth = Timer.scheduledTimer(withTimeInterval: Double(ConfigurationManager.shared.bleConnectionTimeout()) , repeats: false, block: { timer in
             onBluetoothConnectionFailed()
         })
     }
