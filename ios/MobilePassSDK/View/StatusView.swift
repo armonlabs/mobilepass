@@ -40,7 +40,7 @@ struct StatusView: View {
     @Environment(\.colorScheme) var colorScheme
     @Environment(\.locale) var locale
     
-    private var currentConfig:  ActionConfig?
+    private var currentConfig: ActionConfig?
     
     @State private var timerBluetooth:      Timer?
     @State private var lastConnectionState: DeviceConnectionStatus.ConnectionState?
