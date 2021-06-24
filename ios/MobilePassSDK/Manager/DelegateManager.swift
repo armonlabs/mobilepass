@@ -24,6 +24,7 @@ class DelegateManager: NSObject {
     private var mobilePassDelegate: MobilePassDelegate?
     private var mobilePassController: UIViewController?
     private var passFlowDelegate: PassFlowDelegate?
+    private var timerAutoClose: Timer? = nil
     
     // MARK: Public Functions
     
@@ -47,6 +48,8 @@ class DelegateManager: NSObject {
         DispatchQueue.main.async {
             self.mobilePassDelegate?.onPassCompleted(succeed: succeed)
         }
+        
+        startAutoCloseTimer()
     }
     
     func onCancelled(dismiss: Bool) {
@@ -105,6 +108,8 @@ class DelegateManager: NSObject {
     }
     
     private func endFlow(dismiss: Bool, cancelReason: CancelReason) {
+        endAutoCloseTimer()
+        
         if (dismiss) {
             isDismissedManual = true
             DispatchQueue.main.async {
@@ -118,4 +123,22 @@ class DelegateManager: NSObject {
             mobilePassDelegate?.onPassCancelled(reason: cancelReason.rawValue)
         }
     }
+    
+    private func startAutoCloseTimer() {
+        if (ConfigurationManager.shared.autoCloseTimeout() != nil) {
+            DispatchQueue.main.async {
+                self.timerAutoClose = Timer.scheduledTimer(withTimeInterval: Double(ConfigurationManager.shared.autoCloseTimeout()!) , repeats: false, block: { timer in
+                    self.endFlow(dismiss: true, cancelReason: .AUTO_CLOSE)
+                })
+            }
+        }
+    }
+    
+    private func endAutoCloseTimer() {
+        if (timerAutoClose != nil) {
+            timerAutoClose!.invalidate()
+            timerAutoClose = nil
+        }
+    }
+    
 }

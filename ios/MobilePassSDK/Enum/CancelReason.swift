@@ -16,4 +16,5 @@ enum CancelReason: Int, Codable {
     case USING_MOCK_LOCATION_DATA       = 6
     case ERROR                          = 7
     case NEED_PERMISSION_BLUETOOTH      = 8
+    case AUTO_CLOSE                     = 9
 }

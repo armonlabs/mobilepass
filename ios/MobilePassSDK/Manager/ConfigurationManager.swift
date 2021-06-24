@@ -93,6 +93,10 @@ class ConfigurationManager: NSObject {
         return mCurrentConfig?.connectionTimeout ?? 5
     }
     
+    public func autoCloseTimeout() -> Int? {
+        return mCurrentConfig?.autoCloseTimeout
+    }
+    
     // MARK: Private Methods
     
     private func getStoredQRCodes() -> Void {

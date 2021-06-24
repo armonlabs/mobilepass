@@ -45,4 +45,9 @@ public class Configuration {
      * @default 5 seconds
      */
     public @Nullable Integer connectionTimeout;
+
+    /**
+     * Auto close timeout for screen after pass completed, nil means stay opened
+     */
+    public @Nullable Integer autoCloseTimeout;
 }

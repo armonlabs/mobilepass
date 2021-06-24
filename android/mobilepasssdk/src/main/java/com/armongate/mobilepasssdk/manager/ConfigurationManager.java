@@ -108,6 +108,10 @@ public class ConfigurationManager {
         return mCurrentConfig != null && mCurrentConfig.connectionTimeout != null ? mCurrentConfig.connectionTimeout : 5;
     }
 
+    public Integer autoCloseTimeout() {
+        return mCurrentConfig != null ? mCurrentConfig.autoCloseTimeout : null;
+    }
+
     private void getStoredQRCodes() {
         String storageQRCodes = StorageManager.getInstance().getValue(mCurrentContext, StorageKeys.QRCODES);
 

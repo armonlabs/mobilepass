@@ -29,8 +29,11 @@ public class Configuration {
     /** Bluetooth connection timeout in seconds */
     var connectionTimeout: Int?
     
+    /** Auto close timeout for screen after pass completed, nil means stay opened */
+    var autoCloseTimeout: Int?
     
-    public init(memberId: String, serverUrl: String, token: String?, language: String?, qrCodeMessage: String?, allowMockLocation: Bool?, connectionTimeout: Int?) {
+    
+    public init(memberId: String, serverUrl: String, token: String?, language: String?, qrCodeMessage: String?, allowMockLocation: Bool?, connectionTimeout: Int?, autoCloseTimeout: Int?) {
         self.memberId           = memberId
         self.serverUrl          = serverUrl
         self.qrCodeMessage      = qrCodeMessage
@@ -38,6 +41,7 @@ public class Configuration {
         self.language           = language
         self.allowMockLocation  = allowMockLocation
         self.connectionTimeout  = connectionTimeout
+        self.autoCloseTimeout   = autoCloseTimeout
     }
     
 }
