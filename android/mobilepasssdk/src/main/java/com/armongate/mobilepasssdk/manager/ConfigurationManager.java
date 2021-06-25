@@ -112,6 +112,10 @@ public class ConfigurationManager {
         return mCurrentConfig != null ? mCurrentConfig.autoCloseTimeout : null;
     }
 
+    public Boolean waitForBLEEnabled() {
+        return mCurrentConfig != null && mCurrentConfig.waitBLEEnabled != null ? mCurrentConfig.waitBLEEnabled : false;
+    }
+
     private void getStoredQRCodes() {
         String storageQRCodes = StorageManager.getInstance().getValue(mCurrentContext, StorageKeys.QRCODES);
 

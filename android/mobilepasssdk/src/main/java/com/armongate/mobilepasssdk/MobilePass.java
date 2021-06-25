@@ -59,6 +59,8 @@ public class MobilePass {
      */
     public void triggerQRCodeRead() {
         DelegateManager.getInstance().clearFlowFlags();
+        BluetoothManager.getInstance().setReady();
+
         showActivity();
     }
 

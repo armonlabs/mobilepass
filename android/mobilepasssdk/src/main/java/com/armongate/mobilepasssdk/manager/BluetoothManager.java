@@ -131,25 +131,22 @@ public class BluetoothManager {
         }
     }
 
+    public void setReady() {
+        if (currentBluetoothAdapter == null) {
+            readyBluetoothAdapter();
+        }
+    }
+
     public void startScan(BLEScanConfiguration configuration) {
         LogManager.getInstance().info("Bluetooth scanner is starting...");
 
         // Check current Bluetooth Adapter instance
-        if (currentBluetoothAdapter == null) {
-            readyBluetoothAdapter();
-        }
+        setReady();
 
         // Check current Bluetooth Scanner instance
         if (currentBluetoothScanner == null) {
             currentBluetoothScanner = currentBluetoothAdapter.getBluetoothLeScanner();
             LogManager.getInstance().info("Bluetooth scanner is initialized");
-        }
-
-        if (!this.bluetoothState.enabled) {
-            LogManager.getInstance().warn("Bluetooth is disabled; enable and try again");
-            DelegateManager.getInstance().onNeedEnableBluetooth();
-
-            return;
         }
 
         LogManager.getInstance().warn("Flush pending scan results for Bluetooth scanner");
@@ -264,6 +261,10 @@ public class BluetoothManager {
     private void updateBLECapability(int state) {
         LogManager.getInstance().info("Bluetooth state is changed, new state: " + (state == BluetoothAdapter.STATE_ON ? "Enabled" : "Disabled"));
         this.bluetoothState = new DeviceCapability(this.currentBluetoothAdapter != null, state == BluetoothAdapter.STATE_ON, false);
+
+        if (delegate != null) {
+            delegate.onBLEStateChanged(this.bluetoothState);
+        }
     }
 
     private void clearFieldsForNewScan(BLEScanConfiguration configuration) {
