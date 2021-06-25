@@ -97,6 +97,10 @@ class ConfigurationManager: NSObject {
         return mCurrentConfig?.autoCloseTimeout
     }
     
+    public func waitForBLEEnabled() -> Bool {
+        return mCurrentConfig?.waitBLEEnabled ?? false
+    }
+    
     // MARK: Private Methods
     
     private func getStoredQRCodes() -> Void {

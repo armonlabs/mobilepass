@@ -56,7 +56,7 @@ struct PassFlowView: View, PassFlowDelegate {
                 } else if viewModel.currentView == FlowViewType.map {
                     MapView(checkPoint: viewModel.activeQRCodeContent?.accessPoint.geoLocation)
                 } else {
-                    StatusView(config: ActionConfig(isRemoteAccess: viewModel.actionCurrent == PassFlowView.ACTION_REMOTEACCESS,
+                    StatusView(config: ActionConfig(currentAction: viewModel.actionCurrent,
                                                     devices: viewModel.activeQRCodeContent?.accessPoint.deviceInfo ?? [],
                                                     accessPointId: viewModel.activeQRCodeContent?.accessPoint.id,
                                                     direction: viewModel.activeQRCodeContent?.action.config.direction,
