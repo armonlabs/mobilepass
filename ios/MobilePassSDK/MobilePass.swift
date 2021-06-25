@@ -50,6 +50,8 @@ public class MobilePass {
         let controller: PassFlowController = PassFlowController()
         DelegateManager.shared.setMainDelegate(delegate: delegate, viewController: controller)
         
+        BluetoothManager.shared.setReady()
+        
         return controller;
     }
     

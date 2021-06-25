@@ -42,6 +42,12 @@ class BluetoothManager: NSObject {
     
     // MARK: Public Functions
     
+    public func setReady() {
+        if(self.currentCentralManager == nil) {
+            self.readyCentralManager()
+        }
+    }
+    
     public func getCurrentState() -> DeviceCapability {
         if (self.bluetoothState == nil) {
             self.bluetoothState = DeviceCapability(support: false, enabled: false, needAuthorize: false)
@@ -54,9 +60,7 @@ class BluetoothManager: NSObject {
         LogManager.shared.info(message: "Bluetooth scanner is starting...")
         
         // Check current central manager instance
-        if(self.currentCentralManager == nil) {
-            self.readyCentralManager()
-        }
+        setReady()
         
         // Ready for new scanning
         clearFieldsForNewScan(configuration: configuration)
