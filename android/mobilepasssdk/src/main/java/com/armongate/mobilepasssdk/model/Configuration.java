@@ -38,4 +38,27 @@ public class Configuration {
      * @default false
      */
     public @Nullable Boolean allowMockLocation;
+
+    /**
+     * Bluetooth connection timeout in seconds
+     *
+     * @default 5 seconds
+     */
+    public @Nullable Integer connectionTimeout;
+
+    /**
+     * Auto close timeout for screen after pass completed, nil means stay opened
+     */
+    public @Nullable Integer autoCloseTimeout;
+
+    /**
+     * Flag to decide action for disabled Bluetooth state
+     *
+     * "true" means wait user to enable Bluetooth
+     * "false" means continue to next step
+     *
+     * @default false
+     */
+    public @Nullable Boolean waitBLEEnabled;
+
 }

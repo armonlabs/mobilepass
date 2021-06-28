@@ -89,6 +89,18 @@ class ConfigurationManager: NSObject {
         return mCurrentConfig?.allowMockLocation ?? false
     }
     
+    public func bleConnectionTimeout() -> Int {
+        return mCurrentConfig?.connectionTimeout ?? 5
+    }
+    
+    public func autoCloseTimeout() -> Int? {
+        return mCurrentConfig?.autoCloseTimeout
+    }
+    
+    public func waitForBLEEnabled() -> Bool {
+        return mCurrentConfig?.waitBLEEnabled ?? false
+    }
+    
     // MARK: Private Methods
     
     private func getStoredQRCodes() -> Void {

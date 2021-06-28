@@ -1,5 +1,8 @@
 package com.armongate.mobilepasssdk.manager;
 
+import android.os.Handler;
+
+import com.armongate.mobilepasssdk.activity.PassFlowActivity;
 import com.armongate.mobilepasssdk.constant.CancelReason;
 import com.armongate.mobilepasssdk.delegate.MobilePassDelegate;
 import com.armongate.mobilepasssdk.delegate.PassFlowDelegate;
@@ -12,6 +15,7 @@ public class DelegateManager {
 
     private static boolean mFlowCompleted = false;
     private static boolean mDismissedManual = false;
+    private static boolean mFinishedBefore = false;
 
     private DelegateManager() {
 
@@ -44,6 +48,8 @@ public class DelegateManager {
         if (mCurrentMobilePassDelegate != null) {
             mCurrentMobilePassDelegate.onPassCompleted(succeed);
         }
+
+        startAutoCloseTimer();
     }
 
     public void onCancelled(boolean dismiss) {
@@ -113,7 +119,8 @@ public class DelegateManager {
         if (dismiss) {
             mDismissedManual = true;
 
-            if (mCurrentPassFlowDelegate != null) {
+            if (mCurrentPassFlowDelegate != null && !mFinishedBefore) {
+                mFinishedBefore = true;
                 mCurrentPassFlowDelegate.onFinishRequired();
             }
 
@@ -124,4 +131,16 @@ public class DelegateManager {
             mCurrentMobilePassDelegate.onPassCancelled(reason);
         }
     }
+
+    private void startAutoCloseTimer() {
+        if (ConfigurationManager.getInstance().autoCloseTimeout() != null) {
+            Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                public void run() {
+                    endFlow(true, CancelReason.AUTO_CLOSE);
+                }
+            }, ConfigurationManager.getInstance().autoCloseTimeout() * 1000);
+        }
+    }
+
 }

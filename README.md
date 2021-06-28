@@ -50,7 +50,7 @@ allprojects {
 
 ```
 dependencies {
-	implementation 'com.github.armonlabs:mobilepass:1.0.1'
+	implementation 'com.github.armonlabs:mobilepass:1.1.0'
 }
 ```
 
@@ -317,6 +317,9 @@ Library is configurable while initialization. Available props are listed below
 | token             | OAuth token value of current user's session to validate                    | String | No       |
 | language          | Language code to localize texts                                            | String | No       |
 | allowMockLocation | Allow unreliable locations or not                                          | String | No       |
+| connectionTimeout | Bluetooth connection timeout in seconds. **Default: 5 seconds**                                          | Integer | No       |
+| autoCloseTimeout | Auto close timeout for screen after pass completed, null means stay opened                                           | Integer | No       |
+| waitBLEEnabled | Flag to decide action for disabled Bluetooth state. "true" means wait user to enable Bluetooth, "false" means continue to next step. **Default: false**                                           | Bool | No       |
 
 <br />
 <br />
@@ -347,6 +350,8 @@ Library is configurable while initialization. Available props are listed below
 | Need Enable Location Services | 5     |
 | Using Mock Location           | 6     |
 | Error                         | 7     |
+| Need Permission Bluetooth     | 8     |
+| Auto Close                    | 9     |
 
 <br />
 

@@ -30,7 +30,7 @@ public class MobilePass {
     public MobilePass(Context context, Configuration config) {
         mActiveContext = context;
 
-        LogManager.getInstance().info("SDK Version: 1.0.1");
+        LogManager.getInstance().info("SDK Version: 1.1.0");
 
         BaseService.getInstance().setContext(context);
         BluetoothManager.getInstance().setContext(context);
@@ -59,6 +59,8 @@ public class MobilePass {
      */
     public void triggerQRCodeRead() {
         DelegateManager.getInstance().clearFlowFlags();
+        BluetoothManager.getInstance().setReady();
+
         showActivity();
     }
 

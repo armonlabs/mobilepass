@@ -104,6 +104,18 @@ public class ConfigurationManager {
         return mCurrentConfig != null && mCurrentConfig.allowMockLocation != null ? mCurrentConfig.allowMockLocation : false;
     }
 
+    public Integer getBLEConnectionTimeout() {
+        return mCurrentConfig != null && mCurrentConfig.connectionTimeout != null ? mCurrentConfig.connectionTimeout : 5;
+    }
+
+    public Integer autoCloseTimeout() {
+        return mCurrentConfig != null ? mCurrentConfig.autoCloseTimeout : null;
+    }
+
+    public Boolean waitForBLEEnabled() {
+        return mCurrentConfig != null && mCurrentConfig.waitBLEEnabled != null ? mCurrentConfig.waitBLEEnabled : false;
+    }
+
     private void getStoredQRCodes() {
         String storageQRCodes = StorageManager.getInstance().getValue(mCurrentContext, StorageKeys.QRCODES);
 

@@ -26,14 +26,31 @@ public class Configuration {
     /** Determines usage of mock location in flow | default: false*/
     var allowMockLocation: Bool?
     
+    /** Bluetooth connection timeout in seconds, default 5 seconds */
+    var connectionTimeout: Int?
     
-    public init(memberId: String, serverUrl: String, token: String?, language: String?, qrCodeMessage: String?, allowMockLocation: Bool?) {
+    /** Auto close timeout for screen after pass completed, nil means stay opened */
+    var autoCloseTimeout: Int?
+    
+    /**
+        Flag to decide action for disabled Bluetooth state
+        "true" means wait user to enable Bluetooth
+        "false" means continue to next step
+    
+        @default false
+     */
+    var waitBLEEnabled: Bool?
+    
+    public init(memberId: String, serverUrl: String, token: String?, language: String?, qrCodeMessage: String?, allowMockLocation: Bool?, connectionTimeout: Int?, autoCloseTimeout: Int?, waitBLEEnabled: Bool?) {
         self.memberId           = memberId
         self.serverUrl          = serverUrl
         self.qrCodeMessage      = qrCodeMessage
         self.token              = token
         self.language           = language
         self.allowMockLocation  = allowMockLocation
+        self.connectionTimeout  = connectionTimeout
+        self.autoCloseTimeout   = autoCloseTimeout
+        self.waitBLEEnabled     = waitBLEEnabled
     }
     
 }

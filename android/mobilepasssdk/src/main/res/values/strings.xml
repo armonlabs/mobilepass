@@ -7,6 +7,7 @@
 	<string name="text_status_message_scanning">Scanning for nearby devices</string>
 	<string name="text_status_message_connecting">Connecting…</string>
 	<string name="text_status_message_waiting">Your pass request is being sent…</string>
+	<string name="text_status_message_need_ble_enabled">You need to enable Bluetooth to continue</string>
 	<string name="text_location_message">You must be in a defined location to continue</string>
 	<string name="text_qrcode_message">Please read the QR code of access point</string>
 	<string name="img_content_powered_by_armon">Powered by armon</string>

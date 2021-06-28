@@ -18,7 +18,7 @@ public class MobilePass {
      */
     public init(config: Configuration) {
         do {
-            LogManager.shared.info(message: "SDK Version: 1.0.0")
+            LogManager.shared.info(message: "SDK Version: 1.1.0")
             try ConfigurationManager.shared.setConfig(data: config)
         } catch {
             LogManager.shared.error(message: "Set configuration with given parameters failed!")
@@ -49,6 +49,8 @@ public class MobilePass {
         
         let controller: PassFlowController = PassFlowController()
         DelegateManager.shared.setMainDelegate(delegate: delegate, viewController: controller)
+        
+        BluetoothManager.shared.setReady()
         
         return controller;
     }

@@ -42,6 +42,12 @@ class BluetoothManager: NSObject {
     
     // MARK: Public Functions
     
+    public func setReady() {
+        if(self.currentCentralManager == nil) {
+            self.readyCentralManager()
+        }
+    }
+    
     public func getCurrentState() -> DeviceCapability {
         if (self.bluetoothState == nil) {
             self.bluetoothState = DeviceCapability(support: false, enabled: false, needAuthorize: false)
@@ -54,9 +60,7 @@ class BluetoothManager: NSObject {
         LogManager.shared.info(message: "Bluetooth scanner is starting...")
         
         // Check current central manager instance
-        if(self.currentCentralManager == nil) {
-            self.readyCentralManager()
-        }
+        setReady()
         
         // Ready for new scanning
         clearFieldsForNewScan(configuration: configuration)
@@ -69,6 +73,7 @@ class BluetoothManager: NSObject {
         // Check active scanning status
         if(self.currentCentralManager.isScanning) {
             LogManager.shared.warn(message: "Bluetooth scanner is already scanning, new starter is ignored!")
+            self.onScanningStarted?()
             return
         }
         
@@ -262,7 +267,6 @@ extension BluetoothManager: CBCentralManagerDelegate {
         case .poweredOff:
             state = "Bluetooth on this device is currently powered off.";
             self.bluetoothState = DeviceCapability(support: true, enabled: false, needAuthorize: false)
-            DelegateManager.shared.needBluetoothEnabled() // TODO Handle in SDK
             break;
         case .resetting:
             state = "The BLE Manager is resetting; a state update is pending.";
@@ -271,9 +275,6 @@ extension BluetoothManager: CBCentralManagerDelegate {
         case .poweredOn:
             state = "Bluetooth LE is turned on and ready for communication.";
             self.bluetoothState = DeviceCapability(support: true, enabled: true, needAuthorize: false)
-            if (currentConfiguration != nil) {
-                startScan(configuration: currentConfiguration!)
-            }
             break;
         case .unknown:
             state = "The state of the BLE Manager is unknown.";

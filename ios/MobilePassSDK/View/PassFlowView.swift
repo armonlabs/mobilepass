@@ -50,39 +50,36 @@ struct PassFlowView: View, PassFlowDelegate {
     
     var body: some View {
         NavigationView {
-            GeometryReader { (geometry) in
-                Group {
-                    if viewModel.currentView == FlowViewType.qr {
-                        ScanQRCodeView()
-                    } else if viewModel.currentView == FlowViewType.map {
-                        MapView(checkPoint: viewModel.activeQRCodeContent?.accessPoint.geoLocation)
-                    } else {
-                        StatusView(config: ActionConfig(isRemoteAccess: viewModel.actionCurrent == PassFlowView.ACTION_REMOTEACCESS,
-                                                                        devices: viewModel.activeQRCodeContent?.accessPoint.deviceInfo ?? [],
-                                                                        accessPointId: viewModel.activeQRCodeContent?.accessPoint.id,
-                                                                        direction: viewModel.activeQRCodeContent?.action.config.direction,
-                                                                        deviceNumber: viewModel.activeQRCodeContent?.action.config.deviceNumber,
-                                                                        relayNumber: viewModel.activeQRCodeContent?.action.config.relayNumber,
-                                                                        nextAction: viewModel.actionList.count > 0 ? viewModel.actionList.first : nil))
-                    }
-                }.navigationBarTitle(Text(""), displayMode: .inline)
-                .navigationBarItems(leading: ZStack(alignment: .leading) {
-                    Image("poweredBy", bundle: Bundle(for: PassFlowController.self))
-                        .frame(width: geometry.size.width).padding(.trailing, 8)
-                    HStack {
-                        Spacer()
-                        Button(action: {
-                            if (!viewModel.connectionActive) {
-                                DelegateManager.shared.onCancelled(dismiss: true)
-                            }
-                        }) {
-                            Text("Close").bold()
-                        }.padding(.trailing, 10)
-                    }
-                    .frame(width: geometry.size.width)
+            Group {
+                if viewModel.currentView == FlowViewType.qr {
+                    ScanQRCodeView()
+                } else if viewModel.currentView == FlowViewType.map {
+                    MapView(checkPoint: viewModel.activeQRCodeContent?.accessPoint.geoLocation)
+                } else {
+                    StatusView(config: ActionConfig(currentAction: viewModel.actionCurrent,
+                                                    devices: viewModel.activeQRCodeContent?.accessPoint.deviceInfo ?? [],
+                                                    accessPointId: viewModel.activeQRCodeContent?.accessPoint.id,
+                                                    direction: viewModel.activeQRCodeContent?.action.config.direction,
+                                                    deviceNumber: viewModel.activeQRCodeContent?.action.config.deviceNumber,
+                                                    relayNumber: viewModel.activeQRCodeContent?.action.config.relayNumber,
+                                                    nextAction: viewModel.actionList.count > 0 ? viewModel.actionList.first : nil))
                 }
-                )
-            }
+            }.navigationBarTitle(Text(""), displayMode: .inline)
+            .navigationBarItems(leading: ZStack(alignment: .leading) {
+                Image("poweredBy", bundle: Bundle(for: PassFlowController.self))
+                    .frame(width: UIScreen.main.bounds.width).padding(.trailing, 8)
+                HStack {
+                    Spacer()
+                    Button(action: {
+                        if (!viewModel.connectionActive) {
+                            DelegateManager.shared.onCancelled(dismiss: true)
+                        }
+                    }) {
+                        Text("text_button_close".localized(ConfigurationManager.shared.getLanguage())).bold()
+                    }.padding(.trailing, 10)
+                }
+                .frame(width: UIScreen.main.bounds.width)
+            })
         }.environment(\.locale, Locale(identifier: ConfigurationManager.shared.getLanguage()))
     }
     

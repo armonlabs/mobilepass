@@ -7,4 +7,5 @@ import com.armongate.mobilepasssdk.model.DeviceSignalInfo;
 
 public interface BluetoothManagerDelegate {
     void onConnectionStateChanged(DeviceConnectionStatus state);
+    void onBLEStateChanged(DeviceCapability state);
 }

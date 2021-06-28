@@ -24,8 +24,8 @@ import com.armongate.mobilepasssdk.manager.ConfigurationManager;
 import com.armongate.mobilepasssdk.manager.DelegateManager;
 import com.armongate.mobilepasssdk.manager.LogManager;
 import com.armongate.mobilepasssdk.model.BLEScanConfiguration;
+import com.armongate.mobilepasssdk.model.DeviceCapability;
 import com.armongate.mobilepasssdk.model.DeviceConnectionStatus;
-import com.armongate.mobilepasssdk.model.StorageDataUserDetails;
 import com.armongate.mobilepasssdk.model.WaitingStatusUpdate;
 import com.armongate.mobilepasssdk.model.request.RequestAccess;
 import com.armongate.mobilepasssdk.model.response.ResponseAccessPointItemDeviceInfo;
@@ -35,8 +35,6 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class StatusFragment extends Fragment implements BluetoothManagerDelegate {
@@ -55,6 +53,7 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
     private WaitingStatusUpdate mWaitingUpdate = null;
 
     private DeviceConnectionStatus.ConnectionState mLastConnectionState;
+    private boolean mLastBluetoothState = BluetoothManager.getInstance().getCurrentState().enabled;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -74,8 +73,6 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
 
         // Inflate the layout for this fragment
         mCurrentView = inflater.inflate(R.layout.fragment_status, container, false);
-
-        BluetoothManager.getInstance().delegate = this;
 
         updateStatus(R.drawable.background_waiting,
                 mActionType.equals(PassFlowActivity.ACTION_BLUETOOTH) ? R.string.text_status_message_scanning : R.string.text_status_message_waiting,
@@ -109,7 +106,7 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
     private void startAction() {
         if (mActionType.equals(PassFlowActivity.ACTION_BLUETOOTH)) {
             runBluetooth();
-        } else {
+        } else if (mActionType.equals(PassFlowActivity.ACTION_BLUETOOTH)) {
             runRemoteAccess();
         }
     }
@@ -151,10 +148,22 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
     }
 
     private void runBluetooth() {
-        BLEScanConfiguration config = new BLEScanConfiguration(mDevices, ConfigurationManager.getInstance().getMemberId(), mDeviceNumber, mDirection, mRelayNumber);
+        BluetoothManager.getInstance().delegate = this;
 
-        BluetoothManager.getInstance().startScan(config);
-        startBluetoothTimer();
+        if (BluetoothManager.getInstance().getCurrentState().enabled) {
+            updateStatus(R.drawable.background_waiting, R.string.text_status_message_scanning,  true,  null);
+
+            BLEScanConfiguration config = new BLEScanConfiguration(mDevices, ConfigurationManager.getInstance().getMemberId(), mDeviceNumber, mDirection, mRelayNumber);
+
+            BluetoothManager.getInstance().startScan(config);
+            startBluetoothTimer();
+        } else {
+            if (ConfigurationManager.getInstance().waitForBLEEnabled() || mNextAction == null) {
+                updateStatus(R.drawable.background_wait_ble, R.string.text_status_message_need_ble_enabled, false, R.drawable.status_wait_ble);
+            } else {
+                onBluetoothConnectionFailed(false);
+            }
+        }
     }
 
     private void startBluetoothTimer() {
@@ -165,7 +174,7 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
             }
         };
 
-        mTimerHandler.postDelayed(mTimerRunnable, 10000);
+        mTimerHandler.postDelayed(mTimerRunnable, ConfigurationManager.getInstance().getBLEConnectionTimeout() * 1000);
     }
 
     private void endBluetoothTimer() {
@@ -177,8 +186,10 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
     private void onBluetoothConnectionFailed(boolean timeout) {
         if (timeout) {
             LogManager.getInstance().debug("Timeout occurred for BLE scanning");
-            BluetoothManager.getInstance().stopScan(true);
         }
+
+        BluetoothManager.getInstance().delegate = null;
+        BluetoothManager.getInstance().stopScan(true);
 
         if (mNextAction != null && mNextAction.length() > 0) {
             if (mNextAction.equals(PassFlowActivity.ACTION_LOCATION)) {
@@ -242,4 +253,13 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
         mLastConnectionState = state.state;
     }
 
+    @Override
+    public void onBLEStateChanged(DeviceCapability state) {
+        if (mActionType != null && mActionType == PassFlowActivity.ACTION_BLUETOOTH && !mLastBluetoothState && state.enabled) {
+            mLastBluetoothState = true;
+            runBluetooth();
+        } else {
+            mLastBluetoothState = state.enabled;
+        }
+    }
 }
