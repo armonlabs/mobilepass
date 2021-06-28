@@ -15,4 +15,5 @@
 "text_status_message_waiting" = "Geçiş isteğiniz gönderiliyor...";
 "text_status_message_need_ble_enabled" = "Devam edebilmek için Bluetooth etkinleştirilmiş olmalıdır";
 "text_location_message" = "Devam edebilmek için tanımlı konumda olmanız gerekmektedir";
+"text_button_close" = "Kapat";
 "text_qrcode_message" = "Geçiş yapacağınız erişim kontrol noktasının karekodunu okutunuz";

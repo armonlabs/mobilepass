@@ -15,4 +15,5 @@
 "text_status_message_waiting" = "Your pass request is being sent...";
 "text_status_message_need_ble_enabled" = "You need to enable Bluetooth to continue";
 "text_location_message" = "You must be in a defined location to continue";
+"text_button_close" = "Close";
 "text_qrcode_message" = "Please read the QR code of access point";

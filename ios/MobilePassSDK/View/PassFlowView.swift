@@ -75,7 +75,7 @@ struct PassFlowView: View, PassFlowDelegate {
                             DelegateManager.shared.onCancelled(dismiss: true)
                         }
                     }) {
-                        Text("Close").bold()
+                        Text("text_button_close".localized(ConfigurationManager.shared.getLanguage())).bold()
                     }.padding(.trailing, 10)
                 }
                 .frame(width: UIScreen.main.bounds.width)
