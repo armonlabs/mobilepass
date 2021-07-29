@@ -143,9 +143,10 @@ public class ConfigurationManager {
         }
     }
 
-    private void checkKeyPair() {
+    private boolean checkKeyPair() {
         String storedUserKeys = StorageManager.getInstance().getValue(mCurrentContext, StorageKeys.USER_DETAILS, new SecureAreaManager(mCurrentContext));
 
+        boolean newlyCreated = false;
         Gson gson = new Gson();
 
         if (storedUserKeys != null && !storedUserKeys.isEmpty()) {
@@ -165,31 +166,49 @@ public class ConfigurationManager {
             mUserKeyDetails.add(new StorageDataUserDetails(getMemberId(), mCurrentKeyPair.publicKey, mCurrentKeyPair.privateKey));
 
             StorageManager.getInstance().setValue(mCurrentContext, StorageKeys.USER_DETAILS, gson.toJson(mUserKeyDetails), new SecureAreaManager(mCurrentContext));
+
+            newlyCreated = true;
         }
+
+        return newlyCreated;
     }
 
     private void sendUserData() {
         if (mCurrentContext != null) {
+            boolean needUpdate = false;
+
             if (mCurrentKeyPair == null) {
-                checkKeyPair();
+                needUpdate = checkKeyPair();
             }
 
-            RequestSetUserData request = new RequestSetUserData();
-            request.clubMemberId = getMemberId();
-            request.publicKey = mCurrentKeyPair.getPublicKeyWithoutHead();
+            String storedMemberId = StorageManager.getInstance().getValue(mCurrentContext, StorageKeys.MEMBERID);
 
-            new DataService().sendUserInfo(request, new BaseService.ServiceResultListener<Object>() {
-                @Override
-                public void onCompleted(Object response) {
-                    getAccessPoints();
-                }
+            if (storedMemberId == null || storedMemberId.isEmpty() || !storedMemberId.equals(getMemberId())) {
+                StorageManager.getInstance().setValue(mCurrentContext, StorageKeys.MEMBERID, getMemberId());
+                needUpdate = true;
+            }
 
-                @Override
-                public void onError(int statusCode) {
-                    LogManager.getInstance().error("Send user info failed with status code " + statusCode);
-                    getAccessPoints();
-                }
-            });
+            if (needUpdate) {
+                RequestSetUserData request = new RequestSetUserData();
+                request.clubMemberId = getMemberId();
+                request.publicKey = mCurrentKeyPair.getPublicKeyWithoutHead();
+
+                new DataService().sendUserInfo(request, new BaseService.ServiceResultListener<Object>() {
+                    @Override
+                    public void onCompleted(Object response) {
+                        getAccessPoints();
+                    }
+
+                    @Override
+                    public void onError(int statusCode) {
+                        LogManager.getInstance().error("Send user info failed with status code " + statusCode);
+                        getAccessPoints();
+                    }
+                });
+            } else {
+                LogManager.getInstance().info("User info is already sent to server");
+                getAccessPoints();
+            }
         }
     }
 

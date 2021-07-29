@@ -122,7 +122,8 @@ class ConfigurationManager: NSObject {
         }
     }
     
-    private func checkKeyPair() throws -> Void {
+    private func checkKeyPair() throws -> Bool {
+        var newlyCreated: Bool = false
         let storedUserKeys: String = try StorageManager.shared.getValue(key: StorageKeys.USER_DETAILS, secure: true)
         
         if (storedUserKeys.count > 0) {
@@ -137,6 +138,8 @@ class ConfigurationManager: NSObject {
         }
         
         if (mCurrentKeyPair == nil) {
+            newlyCreated = true
+            
             mCurrentKeyPair = CryptoManager.shared.generateKeyPair()
             
             mUserKeyDetails.append(StorageDataUserDetails(userId: getMemberId(), publicKey: mCurrentKeyPair!.publicKey, privateKey: mCurrentKeyPair!.privateKey))
@@ -144,21 +147,36 @@ class ConfigurationManager: NSObject {
             
             _ = try StorageManager.shared.setValue(key: StorageKeys.USER_DETAILS, value: jsonString, secure: true)
         }
+        
+        return newlyCreated
     }
     
     private func sendUserData() throws -> Void {
+        var needUpdate: Bool = false
+        
         if (mCurrentKeyPair == nil) {
-            try checkKeyPair();
+            needUpdate = try checkKeyPair();
         }
         
-        DataService().sendUserInfo(request: RequestSetUserData(publicKey: mCurrentKeyPair!.publicKey, clubMemberId: getMemberId()), completion: { (result) in
-            if case .success(_) = result {
-                self.getAccessPoints()
-            } else {
-                LogManager.shared.error(message: "Send user info to server failed!")
-                self.getAccessPoints()
-            }
-        })
+        let storedMemberId: String? = try? StorageManager.shared.getValue(key: StorageKeys.MEMBERID, secure: false)
+        if (storedMemberId == nil || storedMemberId!.count == 0 || storedMemberId! != getMemberId()) {
+            _ = try StorageManager.shared.setValue(key: StorageKeys.MEMBERID, value: getMemberId(), secure: false)
+            needUpdate = true
+        }
+        
+        if (needUpdate) {
+            DataService().sendUserInfo(request: RequestSetUserData(publicKey: mCurrentKeyPair!.publicKey, clubMemberId: getMemberId()), completion: { (result) in
+                if case .success(_) = result {
+                    self.getAccessPoints()
+                } else {
+                    LogManager.shared.error(message: "Send user info to server failed!")
+                    self.getAccessPoints()
+                }
+            })
+        } else {
+            LogManager.shared.info(message: "User info is already sent to server")
+            self.getAccessPoints()
+        }
     }
     
     private func processAccessPointsResponse(result: Result<ResponseAccessPointList?, RequestError>) {
