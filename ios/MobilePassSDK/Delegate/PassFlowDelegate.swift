@@ -10,4 +10,5 @@ public protocol PassFlowDelegate {
     func onLocationValidated()
     func onNextActionRequired()
     func onConnectionStateChanged(isActive: Bool)
+    func onNeedPermissionMessage(type: Int)
 }

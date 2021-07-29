@@ -1,15 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-	<string name="app_name">MobilePass SDK Test</string>
-	<string name="text_status_message_succeed">You can pass now</string>
-	<string name="text_status_message_failed">Pass request has been failed</string>
-	<string name="text_status_message_not_connected">Could not communicate with the device</string>
-	<string name="text_status_message_unauthorized">You are not authorized to pass</string>
-	<string name="text_status_message_scanning">Scanning for nearby devices</string>
-	<string name="text_status_message_connecting">Connecting…</string>
-	<string name="text_status_message_waiting">Your pass request is being sent…</string>
-	<string name="text_status_message_need_ble_enabled">You need to enable Bluetooth to continue</string>
-	<string name="text_location_message">You must be in a defined location to continue</string>
-	<string name="text_qrcode_message">Please read the QR code of access point</string>
-	<string name="img_content_powered_by_armon">Powered by armon</string>
-	<string name="img_content_status_icon">status icon</string>
+    <string name="app_name">MobilePass SDK Test</string>
+    <string name="text_status_message_succeed">You can pass now</string>
+    <string name="text_status_message_failed">Pass request has been failed</string>
+    <string name="text_status_message_not_connected">Could not communicate with the device</string>
+    <string name="text_status_message_unauthorized">You are not authorized to pass</string>
+    <string name="text_status_message_scanning">Scanning for nearby devices</string>
+    <string name="text_status_message_connecting">Connecting…</string>
+    <string name="text_status_message_waiting">Your pass request is being sent…</string>
+    <string name="text_status_message_need_ble_enabled">You need to enable Bluetooth to continue</string>
+    <string name="text_location_message">You must be in a defined location to continue</string>
+    <string name="text_qrcode_message">Please read the QR code of access point</string>
+    <string name="img_content_powered_by_armon">Powered by armon</string>
+    <string name="img_content_status_icon">status icon</string>
+    <string name="text_permission_camera">"In order to scan QR code, you need to give camera access permission to the application. You can make the necessary change by tapping the \'Settings\' button.</string>
+    <string name="text_permission_location">Your location needs to be verified before you can continue and you need to grant Location permission to the application. You can make the necessary change by tapping the \'Settings\' button.</string>
+    <string name="text_permission_location_service">Your location needs to be verified before you can continue, and location services must be turned on for this. You can re-scan the QR code after activating the location service by tapping the \'Settings\' button or from the control center.</string>
 </resources>

@@ -4,6 +4,7 @@ import android.os.Handler;
 
 import com.armongate.mobilepasssdk.activity.PassFlowActivity;
 import com.armongate.mobilepasssdk.constant.CancelReason;
+import com.armongate.mobilepasssdk.constant.NeedPermissionType;
 import com.armongate.mobilepasssdk.delegate.MobilePassDelegate;
 import com.armongate.mobilepasssdk.delegate.PassFlowDelegate;
 
@@ -91,24 +92,14 @@ public class DelegateManager {
         endFlow(true, CancelReason.ERROR);
     }
 
-    public void onNeedPermissionCamera() {
-        endFlow(true, CancelReason.NEED_PERMISSION_CAMERA);
+    public void onNeedPermission(int type) {
+        if (mCurrentMobilePassDelegate != null) {
+            mCurrentMobilePassDelegate.onNeedPermission(type);
+        }
     }
 
-    public void onNeedPermissionLocation() {
-        endFlow(true, CancelReason.NEED_PERMISSION_LOCATION);
-    }
-
-    public void onNeedPermissionBluetooth() {
-        endFlow(true, CancelReason.NEED_PERMISSION_BLUETOOTH);
-    }
-
-    public void onNeedLocationSettingsChange() {
-        endFlow(true, CancelReason.NEED_ENABLE_LOCATION_SERVICES);
-    }
-
-    public void onNeedEnableBluetooth() {
-        endFlow(true, CancelReason.NEED_ENABLE_BLE);
+    public void goToSettings() {
+        endFlow(true, -1);
     }
 
     public void onMockLocationDetected() {
@@ -124,10 +115,10 @@ public class DelegateManager {
                 mCurrentPassFlowDelegate.onFinishRequired();
             }
 
-            if (mCurrentMobilePassDelegate != null && !mFlowCompleted) {
+            if (mCurrentMobilePassDelegate != null && !mFlowCompleted && reason >= 0) {
                 mCurrentMobilePassDelegate.onPassCancelled(reason);
             }
-        } else if (mCurrentMobilePassDelegate != null && !mFlowCompleted && !mDismissedManual) {
+        } else if (mCurrentMobilePassDelegate != null && !mFlowCompleted && !mDismissedManual && reason >= 0) {
             mCurrentMobilePassDelegate.onPassCancelled(reason);
         }
     }
@@ -137,7 +128,7 @@ public class DelegateManager {
             Handler handler = new Handler();
             handler.postDelayed(new Runnable() {
                 public void run() {
-                    endFlow(true, CancelReason.AUTO_CLOSE);
+                    endFlow(true, -1);
                 }
             }, ConfigurationManager.getInstance().autoCloseTimeout() * 1000);
         }

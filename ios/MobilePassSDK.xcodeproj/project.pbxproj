@@ -44,6 +44,8 @@
 		DE79EE7025D8899400D8C072 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DE79EE6F25D8899400D8C072 /* Images.xcassets */; };
 		DE79EEAA25D9986100D8C072 /* PassFlowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE79EEA925D9986100D8C072 /* PassFlowController.swift */; };
 		DE79EEAE25D9988300D8C072 /* PassFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE79EEAD25D9988300D8C072 /* PassFlowView.swift */; };
+		DE90899D26B1FB4500C33845 /* PermissionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE90899C26B1FB4500C33845 /* PermissionView.swift */; };
+		DE90899F26B2BA5B00C33845 /* NeedPermissionType.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE90899E26B2BA5B00C33845 /* NeedPermissionType.swift */; };
 		DEB3115F25EC2F0500DD91AF /* BLEScanConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEB3115E25EC2F0500DD91AF /* BLEScanConfiguration.swift */; };
 		DEB3116225EC2F6D00DD91AF /* DeviceConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEB3116125EC2F6D00DD91AF /* DeviceConnection.swift */; };
 		DEB3116625EC2F9A00DD91AF /* DeviceConnectionStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEB3116525EC2F9A00DD91AF /* DeviceConnectionStatus.swift */; };
@@ -111,6 +113,8 @@
 		DE79EE6F25D8899400D8C072 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		DE79EEA925D9986100D8C072 /* PassFlowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PassFlowController.swift; sourceTree = "<group>"; };
 		DE79EEAD25D9988300D8C072 /* PassFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PassFlowView.swift; sourceTree = "<group>"; };
+		DE90899C26B1FB4500C33845 /* PermissionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionView.swift; sourceTree = "<group>"; };
+		DE90899E26B2BA5B00C33845 /* NeedPermissionType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NeedPermissionType.swift; sourceTree = "<group>"; };
 		DEB3115E25EC2F0500DD91AF /* BLEScanConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLEScanConfiguration.swift; sourceTree = "<group>"; };
 		DEB3116125EC2F6D00DD91AF /* DeviceConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceConnection.swift; sourceTree = "<group>"; };
 		DEB3116525EC2F9A00DD91AF /* DeviceConnectionStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceConnectionStatus.swift; sourceTree = "<group>"; };
@@ -245,6 +249,7 @@
 				DE27229C25D86E8800E1F8F7 /* QRCodeReaderView.swift */,
 				DE27229F25D871EC00E1F8F7 /* ScanQRCodeView.swift */,
 				DE79EEAD25D9988300D8C072 /* PassFlowView.swift */,
+				DE90899C26B1FB4500C33845 /* PermissionView.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -290,6 +295,7 @@
 				DE30E55325DD3C26004CAED2 /* QRTriggerType.swift */,
 				DE46BB7E25E2A8F6006A727A /* CancelReason.swift */,
 				DE46BB8125E2A971006A727A /* QRCodeListState.swift */,
+				DE90899E26B2BA5B00C33845 /* NeedPermissionType.swift */,
 			);
 			path = Enum;
 			sourceTree = "<group>";
@@ -443,10 +449,12 @@
 				DEB3116225EC2F6D00DD91AF /* DeviceConnection.swift in Sources */,
 				DE30E55F25DD43A4004CAED2 /* DataService.swift in Sources */,
 				DE30E55125DD3BF3004CAED2 /* ResponseAccessPointItemQRCodeItemTrigger.swift in Sources */,
+				DE90899D26B1FB4500C33845 /* PermissionView.swift in Sources */,
 				DE14A09E25D11DCB00F8B8B3 /* CryptoManager.swift in Sources */,
 				DE2722A025D871EC00E1F8F7 /* ScanQRCodeView.swift in Sources */,
 				DEF0BFA325D292C100397D18 /* UUIDs.swift in Sources */,
 				DE14A09A25D11C9500F8B8B3 /* MobilePass.swift in Sources */,
+				DE90899F26B2BA5B00C33845 /* NeedPermissionType.swift in Sources */,
 				DEB3116625EC2F9A00DD91AF /* DeviceConnectionStatus.swift in Sources */,
 				DE79EEAA25D9986100D8C072 /* PassFlowController.swift in Sources */,
 				DEEF5AC9263172B5006004DD /* DeviceConnectionInfo.swift in Sources */,

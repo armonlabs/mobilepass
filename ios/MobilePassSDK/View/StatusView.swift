@@ -82,6 +82,10 @@ struct StatusView: View {
     }
     
     private func runRemoteAccess() {
+        if (DelegateManager.shared.isPassFlowCompleted) {
+            return
+        }
+        
         if (currentConfig?.accessPointId != nil && currentConfig?.direction != nil) {
             AccessPointService().remoteOpen(request: RequestAccess(accessPointId: currentConfig!.accessPointId!, clubMemberId: ConfigurationManager.shared.getMemberId(), direction: currentConfig!.direction!), completion: { (result) in
                 if case .success(_) = result {
@@ -109,6 +113,10 @@ struct StatusView: View {
     }
     
     private func runBluetooth() {
+        if (DelegateManager.shared.isPassFlowCompleted) {
+            return
+        }
+        
         BluetoothManager.shared.onScanningStarted = {[self] () -> () in
             LogManager.shared.debug(message: "Bluetooth scanning is started")
             self.startBluetoothTimer()
@@ -154,7 +162,12 @@ struct StatusView: View {
             }
         } else {
             if (ConfigurationManager.shared.waitForBLEEnabled() || currentConfig?.nextAction == nil) {
-                self.viewModel.update(color: .orange, message: "text_status_message_need_ble_enabled", showSpinner: false, icon: "exclamationmark.triangle.fill")
+                if (BluetoothManager.shared.getCurrentState().needAuthorize) {
+                    DelegateManager.shared.needPermission(type: NeedPermissionType.NEED_PERMISSION_BLUETOOTH, showMessage: true)
+                } else {
+                    DelegateManager.shared.needPermission(type: NeedPermissionType.NEED_ENABLE_BLE, showMessage: false)
+                    self.viewModel.update(color: .orange, message: "text_status_message_need_ble_enabled", showSpinner: false, icon: "exclamationmark.triangle.fill")
+                }
             } else {
                 self.onBluetoothConnectionFailed()
             }

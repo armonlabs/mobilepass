@@ -9,7 +9,7 @@ import SwiftUI
 import AVFoundation
 
 public enum FlowViewType {
-    case qr, map, action
+    case qr, map, action, permission
 }
 
 class ActiveActionModel: ObservableObject {
@@ -18,6 +18,7 @@ class ActiveActionModel: ObservableObject {
     @Published var actionCurrent:       String = ""
     @Published var connectionActive:    Bool = false
     @Published var activeQRCodeContent: QRCodeContent? = nil
+    @Published var needPermissionType:  Int = NeedPermissionType.NEED_ENABLE_BLE.rawValue
     
     func setView(viewType: FlowViewType) {
         self.currentView = viewType
@@ -34,6 +35,11 @@ class ActiveActionModel: ObservableObject {
     
     func changeConnectionState(isActive: Bool) {
         self.connectionActive = isActive
+    }
+    
+    func setNeedPermissionType(type: Int) {
+        self.needPermissionType = type
+        self.currentView = FlowViewType.permission
     }
 }
 
@@ -55,7 +61,7 @@ struct PassFlowView: View, PassFlowDelegate {
                     ScanQRCodeView()
                 } else if viewModel.currentView == FlowViewType.map {
                     MapView(checkPoint: viewModel.activeQRCodeContent?.accessPoint.geoLocation)
-                } else {
+                } else if viewModel.currentView == FlowViewType.action {
                     StatusView(config: ActionConfig(currentAction: viewModel.actionCurrent,
                                                     devices: viewModel.activeQRCodeContent?.accessPoint.deviceInfo ?? [],
                                                     accessPointId: viewModel.activeQRCodeContent?.accessPoint.id,
@@ -63,6 +69,8 @@ struct PassFlowView: View, PassFlowDelegate {
                                                     deviceNumber: viewModel.activeQRCodeContent?.action.config.deviceNumber,
                                                     relayNumber: viewModel.activeQRCodeContent?.action.config.relayNumber,
                                                     nextAction: viewModel.actionList.count > 0 ? viewModel.actionList.first : nil))
+                } else {
+                    PermissionView(type: viewModel.needPermissionType)
                 }
             }.navigationBarTitle(Text(""), displayMode: .inline)
             .navigationBarItems(leading: ZStack(alignment: .leading) {
@@ -103,6 +111,10 @@ struct PassFlowView: View, PassFlowDelegate {
         checkNextAction()
     }
     
+    func onNeedPermissionMessage(type: Int) {
+        viewModel.setNeedPermissionType(type: type)
+    }
+    
     func onConnectionStateChanged(isActive: Bool) {
         viewModel.changeConnectionState(isActive: isActive)
         // TODO Call that from related points
@@ -117,7 +129,7 @@ struct PassFlowView: View, PassFlowDelegate {
             
         case .denied, .restricted:
             LogManager.shared.info(message: "Camera Permission Status: Denied or Restricted, needs to be changed in settings to continue")
-            DelegateManager.shared.needPermissionCamera()
+            DelegateManager.shared.needPermission(type: NeedPermissionType.NEED_PERMISSION_CAMERA, showMessage: true)
             break
             
         case .notDetermined:
@@ -125,7 +137,7 @@ struct PassFlowView: View, PassFlowDelegate {
                 
                 guard granted else {
                     LogManager.shared.info(message: "Camera Permission Status: Denied, needs to be changed in settings to continue")
-                    DelegateManager.shared.needPermissionCamera()
+                    DelegateManager.shared.needPermission(type: NeedPermissionType.NEED_PERMISSION_CAMERA, showMessage: true)
                     return
                 }
                 
@@ -134,7 +146,7 @@ struct PassFlowView: View, PassFlowDelegate {
             break
         @unknown default:
             LogManager.shared.info(message: "Camera Permission Status: Unknown!")
-            DelegateManager.shared.needPermissionCamera()
+            DelegateManager.shared.needPermission(type: NeedPermissionType.NEED_PERMISSION_CAMERA, showMessage: true)
         }
     }
     

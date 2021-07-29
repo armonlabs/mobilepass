@@ -13,10 +13,12 @@ import androidx.fragment.app.FragmentManager;
 
 import com.armongate.mobilepasssdk.R;
 import com.armongate.mobilepasssdk.constant.CancelReason;
+import com.armongate.mobilepasssdk.constant.NeedPermissionType;
 import com.armongate.mobilepasssdk.constant.QRTriggerType;
 import com.armongate.mobilepasssdk.delegate.PassFlowDelegate;
 import com.armongate.mobilepasssdk.fragment.CheckFragment;
 import com.armongate.mobilepasssdk.fragment.MapFragment;
+import com.armongate.mobilepasssdk.fragment.PermissionFragment;
 import com.armongate.mobilepasssdk.fragment.QRCodeReaderFragment;
 import com.armongate.mobilepasssdk.fragment.StatusFragment;
 import com.armongate.mobilepasssdk.manager.ConfigurationManager;
@@ -89,13 +91,13 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
             if (permissionGranted) {
                 replaceFragment(QRCodeReaderFragment.class, null);
             } else {
-                DelegateManager.getInstance().onNeedPermissionCamera();
+                showPermissionMessage(NeedPermissionType.NEED_PERMISSION_CAMERA);
             }
         } else if (requestCode == SettingsManager.REQUEST_CODE_LOCATION) {
             if (permissionGranted) {
                 processAction();
             } else {
-                DelegateManager.getInstance().onNeedPermissionLocation();
+                showPermissionMessage(NeedPermissionType.NEED_PERMISSION_LOCATION);
             }
         }
 
@@ -146,6 +148,15 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
                 .replace(R.id.fragment, newFragment, args)
                 .setReorderingAllowed(true)
                 .commit();
+    }
+
+    private void showPermissionMessage(int needPermissionType) {
+        DelegateManager.getInstance().onNeedPermission(needPermissionType);
+
+        Bundle bundle = new Bundle();
+        bundle.putInt("type", needPermissionType);
+
+        replaceFragment(PermissionFragment.class, bundle);
     }
 
     private void processQRCodeData(String code) {
@@ -200,13 +211,13 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
                 boolean needLocationPermission = actionCurrent.equals(ACTION_BLUETOOTH) || actionCurrent.equals(ACTION_LOCATION) || actionList.contains(ACTION_BLUETOOTH) || actionList.contains(ACTION_LOCATION);
 
                 if (needLocationPermission && !SettingsManager.getInstance().checkLocationEnabled(getApplicationContext())) {
-                    DelegateManager.getInstance().onNeedLocationSettingsChange();
-                }
-
-                if (!needLocationPermission || SettingsManager.getInstance().checkLocationPermission(getApplicationContext(), this)) {
-                    processAction();
+                    showPermissionMessage(NeedPermissionType.NEED_ENABLE_LOCATION_SERVICES);
                 } else {
-                    replaceFragment(CheckFragment.class, null);
+                    if (!needLocationPermission || SettingsManager.getInstance().checkLocationPermission(getApplicationContext(), this)) {
+                        processAction();
+                    } else {
+                        replaceFragment(CheckFragment.class, null);
+                    }
                 }
             } else {
                 LogManager.getInstance().warn("Trigger definition is missing in QR code content");

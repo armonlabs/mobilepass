@@ -13,7 +13,12 @@
 "text_status_message_scanning" = "Scanning for nearby devices";
 "text_status_message_connecting" = "Connecting...";
 "text_status_message_waiting" = "Your pass request is being sent...";
-"text_status_message_need_ble_enabled" = "You need to enable Bluetooth to continue";
+"text_status_message_need_ble_enabled" = "Bluetooth must be enabled to continue.";
+"text_status_message_need_location_enabled" = "Your location needs to be verified before you can continue, and location services must be turned on for this. You can change this setting in Settings > Privacy > Location Services";
+"text_status_message_need_permission_location" = "Your location needs to be verified before you can continue and you need to grant Location permission to the application";
+"text_status_message_need_permission_bluetooth" = "To pass with Bluetooth, you need to give Bluetooth permission to the application";
+"text_status_message_need_permission_camera" = "In order to scan QR code, you need to give Camera Access permission to the application";
 "text_location_message" = "You must be in a defined location to continue";
 "text_button_close" = "Close";
+"text_button_app_permissions" = "App Permissions";
 "text_qrcode_message" = "Please read the QR code of access point";

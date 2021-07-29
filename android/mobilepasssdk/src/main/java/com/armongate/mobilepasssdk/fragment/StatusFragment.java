@@ -18,6 +18,7 @@ import androidx.fragment.app.FragmentActivity;
 
 import com.armongate.mobilepasssdk.R;
 import com.armongate.mobilepasssdk.activity.PassFlowActivity;
+import com.armongate.mobilepasssdk.constant.NeedPermissionType;
 import com.armongate.mobilepasssdk.delegate.BluetoothManagerDelegate;
 import com.armongate.mobilepasssdk.manager.BluetoothManager;
 import com.armongate.mobilepasssdk.manager.ConfigurationManager;
@@ -159,6 +160,7 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
             startBluetoothTimer();
         } else {
             if (ConfigurationManager.getInstance().waitForBLEEnabled() || mNextAction == null) {
+                DelegateManager.getInstance().onNeedPermission(NeedPermissionType.NEED_ENABLE_BLE);
                 updateStatus(R.drawable.background_wait_ble, R.string.text_status_message_need_ble_enabled, false, R.drawable.status_wait_ble);
             } else {
                 onBluetoothConnectionFailed(false);

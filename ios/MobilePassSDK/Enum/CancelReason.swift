@@ -8,13 +8,7 @@
 import Foundation
 
 enum CancelReason: Int, Codable {
-    case NEED_PERMISSION_CAMERA         = 1
-    case NEED_PERMISSION_LOCATION       = 2
-    case USER_CLOSED                    = 3
-    case NEED_ENABLE_BLE                = 4
-    case NEED_ENABLE_LOCATION_SERVICES  = 5
-    case USING_MOCK_LOCATION_DATA       = 6
-    case ERROR                          = 7
-    case NEED_PERMISSION_BLUETOOTH      = 8
-    case AUTO_CLOSE                     = 9
+    case USER_CLOSED                    = 1
+    case USING_MOCK_LOCATION_DATA       = 2
+    case ERROR                          = 3
 }

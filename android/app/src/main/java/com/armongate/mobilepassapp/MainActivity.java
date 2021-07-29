@@ -100,6 +100,11 @@ public class MainActivity extends AppCompatActivity implements MobilePassDelegat
     }
 
     @Override
+    public void onNeedPermission(int type) {
+        Log.i("MobilePass", "Main - Need Permission, Type: " + type);
+    }
+
+    @Override
     public void onQRCodeListStateChanged(int state) {
         Log.i("MobilePass", "Main - QR Code List Changed, State: " + state);
     }
