@@ -123,6 +123,8 @@ class ConfigurationManager: NSObject {
     }
     
     private func checkKeyPair() throws -> Bool {
+        mCurrentKeyPair = nil
+        
         var newlyCreated: Bool = false
         let storedUserKeys: String = try StorageManager.shared.getValue(key: StorageKeys.USER_DETAILS, secure: true)
         
@@ -152,21 +154,22 @@ class ConfigurationManager: NSObject {
     }
     
     private func sendUserData() throws -> Void {
-        var needUpdate: Bool = false
-        
-        if (mCurrentKeyPair == nil) {
-            needUpdate = try checkKeyPair();
-        }
+        var needUpdate: Bool = try checkKeyPair();
         
         let storedMemberId: String? = try? StorageManager.shared.getValue(key: StorageKeys.MEMBERID, secure: false)
         if (storedMemberId == nil || storedMemberId!.count == 0 || storedMemberId! != getMemberId()) {
-            _ = try StorageManager.shared.setValue(key: StorageKeys.MEMBERID, value: getMemberId(), secure: false)
             needUpdate = true
         }
         
         if (needUpdate) {
             DataService().sendUserInfo(request: RequestSetUserData(publicKey: mCurrentKeyPair!.publicKey, clubMemberId: getMemberId()), completion: { (result) in
                 if case .success(_) = result {
+                    do {
+                        _ = try StorageManager.shared.setValue(key: StorageKeys.MEMBERID, value: self.getMemberId(), secure: false)
+                        LogManager.shared.info(message: "Member id is stored successfully")
+                    } catch {
+                        LogManager.shared.error(message: "Error occurred while storing member id")
+                    }
                     self.getAccessPoints()
                 } else {
                     LogManager.shared.error(message: "Send user info to server failed!")
@@ -197,9 +200,11 @@ class ConfigurationManager: NSObject {
                 }
             }
             
+            /* Open to show qr codes list
             for qrCode in self.mTempQRCodes {
                 LogManager.shared.debug(message: "\(qrCode.key) > Type: \(qrCode.value.action.config.trigger.type) | Direction: \(qrCode.value.action.config.direction) | Validate Location: \(String(describing: qrCode.value.action.config.trigger.validateGeoLocation))")
             }
+            */
             
             
             if (receivedData!.pagination.total > self.mReceivedItemCount) {

@@ -144,6 +144,8 @@ public class ConfigurationManager {
     }
 
     private boolean checkKeyPair() {
+        mCurrentKeyPair = null;
+
         String storedUserKeys = StorageManager.getInstance().getValue(mCurrentContext, StorageKeys.USER_DETAILS, new SecureAreaManager(mCurrentContext));
 
         boolean newlyCreated = false;
@@ -175,16 +177,11 @@ public class ConfigurationManager {
 
     private void sendUserData() {
         if (mCurrentContext != null) {
-            boolean needUpdate = false;
-
-            if (mCurrentKeyPair == null) {
-                needUpdate = checkKeyPair();
-            }
+            boolean needUpdate = checkKeyPair();
 
             String storedMemberId = StorageManager.getInstance().getValue(mCurrentContext, StorageKeys.MEMBERID);
 
             if (storedMemberId == null || storedMemberId.isEmpty() || !storedMemberId.equals(getMemberId())) {
-                StorageManager.getInstance().setValue(mCurrentContext, StorageKeys.MEMBERID, getMemberId());
                 needUpdate = true;
             }
 
@@ -196,6 +193,8 @@ public class ConfigurationManager {
                 new DataService().sendUserInfo(request, new BaseService.ServiceResultListener<Object>() {
                     @Override
                     public void onCompleted(Object response) {
+                        StorageManager.getInstance().setValue(mCurrentContext, StorageKeys.MEMBERID, getMemberId());
+                        LogManager.getInstance().info("Member id is stored successfully");
                         getAccessPoints();
                     }
 
