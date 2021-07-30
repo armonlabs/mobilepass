@@ -111,12 +111,12 @@ struct StatusView: View {
         
         BluetoothManager.shared.onScanningStarted = {[self] () -> () in
             LogManager.shared.debug(message: "Bluetooth scanning is started")
-            self.startBluetoothTimer()
+            self.startConnectionTimer()
         }
         
         BluetoothManager.shared.onConnectionStateChanged = {[self] (state: DeviceConnectionStatus) -> () in
             if (state.state != .connecting) {
-                self.endBluetoothTimer()
+                self.endConnectionTimer()
             }
             
             if (state.state == .connected) {
@@ -166,13 +166,23 @@ struct StatusView: View {
         }
     }
     
-    private func startBluetoothTimer() {
+    private func startConnectionTimer() {
         timerBluetooth = Timer.scheduledTimer(withTimeInterval: Double(ConfigurationManager.shared.bleConnectionTimeout()) , repeats: false, block: { timer in
-            onBluetoothConnectionFailed()
+            if (currentConfig != nil && currentConfig!.currentAction == PassFlowView.ACTION_REMOTEACCESS) {
+                if (currentConfig?.nextAction != nil && currentConfig?.nextAction! == PassFlowView.ACTION_BLUETOOTH) {
+                    self.viewModel.update(message: "text_status_message_scanning", icon: "waiting")
+                    runBluetooth()
+                } else {
+                    self.viewModel.update(message: "text_status_message_timeout", icon: "error")
+                    DelegateManager.shared.onCompleted(succeed: false)
+                }
+            } else {
+                onBluetoothConnectionFailed()
+            }
         })
     }
     
-    private func endBluetoothTimer() {
+    private func endConnectionTimer() {
         if (timerBluetooth != nil) {
             timerBluetooth!.invalidate()
             timerBluetooth = nil
@@ -180,7 +190,7 @@ struct StatusView: View {
     }
     
     private func onBluetoothConnectionFailed() {
-        endBluetoothTimer()
+        endConnectionTimer()
         BluetoothManager.shared.stopScan(disconnect: true)
         
         BluetoothManager.shared.onScanningStarted = nil

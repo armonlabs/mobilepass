@@ -116,15 +116,21 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
         request.clubMemberId = ConfigurationManager.getInstance().getMemberId();
         request.direction = mDirection;
 
+        this.startConnectionTimer();
+
         new AccessPointService().remoteOpen(request, new BaseService.ServiceResultListener() {
             @Override
             public void onCompleted(Object result) {
+                endConnectionTimer();
+
                 updateStatus( R.string.text_status_message_succeed,"", R.drawable.success);
                 DelegateManager.getInstance().onCompleted(true);
             }
 
             @Override
             public void onError(int statusCode, String message) {
+                endConnectionTimer();
+
                 if (statusCode != 401 && mNextAction != null && mNextAction.equals(PassFlowActivity.ACTION_BLUETOOTH)) {
                     updateStatus( R.string.text_status_message_scanning, "",  R.drawable.waiting);
                     runBluetooth();
@@ -136,6 +142,8 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
                             failMessage = R.string.text_status_message_unauthorized;
                         } else if (statusCode == 404) {
                             failMessage = R.string.text_status_message_not_connected;
+                        } else if (statusCode == 408) {
+                            failMessage = R.string.text_status_message_timeout;
                         } else if (statusCode == 0) {
                             failMessage = R.string.text_status_message_no_connection;
                         }
@@ -159,7 +167,7 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
             BLEScanConfiguration config = new BLEScanConfiguration(mDevices, ConfigurationManager.getInstance().getMemberId(), mDeviceNumber, mDirection, mRelayNumber);
 
             BluetoothManager.getInstance().startScan(config);
-            startBluetoothTimer();
+            startConnectionTimer();
         } else {
             if (ConfigurationManager.getInstance().waitForBLEEnabled() || mNextAction == null) {
                 DelegateManager.getInstance().onNeedPermission(NeedPermissionType.NEED_ENABLE_BLE);
@@ -170,18 +178,28 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
         }
     }
 
-    private void startBluetoothTimer() {
+    private void startConnectionTimer() {
         mTimerHandler =  new Handler();
         Runnable mTimerRunnable = new Runnable() {
             public void run() {
-                onBluetoothConnectionFailed(true);
+                if (mActionType.equals(PassFlowActivity.ACTION_BLUETOOTH)) {
+                    onBluetoothConnectionFailed(true);
+                } else {
+                    if (mNextAction != null && mNextAction.equals(PassFlowActivity.ACTION_BLUETOOTH)) {
+                        updateStatus( R.string.text_status_message_scanning, "",  R.drawable.waiting);
+                        runBluetooth();
+                    } else {
+                        updateStatus(R.string.text_status_message_timeout, "", R.drawable.error);
+                        DelegateManager.getInstance().onCompleted(false);
+                    }
+                }
             }
         };
 
         mTimerHandler.postDelayed(mTimerRunnable, ConfigurationManager.getInstance().getBLEConnectionTimeout() * 1000);
     }
 
-    private void endBluetoothTimer() {
+    private void endConnectionTimer() {
         if (mTimerHandler != null) {
             mTimerHandler.removeCallbacksAndMessages(null);
         }
@@ -249,7 +267,7 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
     @Override
     public void onConnectionStateChanged(DeviceConnectionStatus state) {
         if (state.state != DeviceConnectionStatus.ConnectionState.CONNECTING) {
-            this.endBluetoothTimer();
+            this.endConnectionTimer();
         }
 
         if (state.state == DeviceConnectionStatus.ConnectionState.CONNECTED) {

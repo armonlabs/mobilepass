@@ -11,6 +11,7 @@
 "text_status_message_not_connected" = "Could not communicate with the device";
 "text_status_message_unauthorized" = "You are not authorized to pass";
 "text_status_message_scanning" = "Scanning for nearby devices";
+"text_status_message_timeout" = "Request timed out";
 "text_status_message_connecting" = "Connecting...";
 "text_status_message_waiting" = "Your pass request is being sent...";
 "text_status_message_need_ble_enabled" = "Bluetooth must be enabled to continue.";

@@ -11,6 +11,7 @@
 "text_status_message_not_connected" = "Cihaz ile iletişim kurulamadı";
 "text_status_message_unauthorized" = "Geçiş yetkiniz bulunmamaktadır";
 "text_status_message_scanning" = "Yakındaki cihazlar taranıyor";
+"text_status_message_timeout" = "İstek zaman aşımına uğradı";
 "text_status_message_connecting" = "Bağlantı kuruluyor...";
 "text_status_message_waiting" = "Geçiş isteğiniz gönderiliyor...";
 "text_status_message_need_ble_enabled" = "Devam edebilmek için Bluetooth etkinleştirilmiş olmalıdır.";

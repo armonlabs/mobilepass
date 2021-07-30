@@ -6,6 +6,7 @@
     <string name="text_status_message_not_connected">Could not communicate with the device</string>
     <string name="text_status_message_unauthorized">You are not authorized to pass</string>
     <string name="text_status_message_no_connection">Please check your internet connection</string>
+    <string name="text_status_message_timeout">Request timed out</string>
     <string name="text_status_message_scanning">Scanning for nearby devices</string>
     <string name="text_status_message_connecting">Connecting…</string>
     <string name="text_status_message_waiting">Your pass request is being sent…</string>
