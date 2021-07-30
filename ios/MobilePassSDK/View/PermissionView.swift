@@ -54,19 +54,19 @@ struct PermissionView: View {
     var body: some View {
         GeometryReader { (geometry) in
             VStack(alignment: .center) {
-                Image(systemName: "exclamationmark.triangle.fill").resizable().frame(width: geometry.size.width * 0.25, height: geometry.size.width * 0.25, alignment: .center).foregroundColor(Color.orange)
-                Text(self.viewModel.message.localized(locale.identifier)).padding(.top, 48).padding(.bottom, self.viewModel.showButton ?  24 : geometry.size.height * 0.25).multilineTextAlignment(.center)
+                Image("warning", bundle: Bundle(for: PassFlowController.self)).resizable().frame(width: geometry.size.width * 0.5, height: geometry.size.width * 0.5, alignment: .center)
+                Text(self.viewModel.message.localized(locale.identifier)).padding(.top, 48).padding(.bottom, self.viewModel.showButton ?  24 : geometry.size.height * 0.35).multilineTextAlignment(.center)
                 if self.viewModel.showButton {
                     Button(action: {
                         DelegateManager.shared.goToSettings()
                         UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!)
                     }) {
                         Text("text_button_app_permissions".localized(ConfigurationManager.shared.getLanguage())).bold()
-                    }.padding(.bottom, geometry.size.height * 0.25)
+                    }.padding(.bottom, geometry.size.height * 0.35)
                 }
             }.padding(.horizontal, 14)
             .frame(width: geometry.size.width, height: geometry.size.height, alignment: .bottom)
-        }.background(LinearGradient(gradient: Gradient(colors: [Color.orange, colorScheme == .dark ? Color.black.opacity(0.0) : Color.white.opacity(0.0)]), startPoint: .top, endPoint: .center)).edgesIgnoringSafeArea(.all)
+        }.edgesIgnoringSafeArea(.all)
     }
 }
 

@@ -7,6 +7,7 @@ import androidx.annotation.Nullable;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
+import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -17,6 +18,7 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.armongate.mobilepasssdk.manager.ConfigurationManager;
 import com.armongate.mobilepasssdk.manager.LogManager;
+import com.armongate.mobilepasssdk.model.response.ResponseMessage;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
@@ -45,7 +47,7 @@ public class BaseService {
     public interface ServiceResultListener<T> {
         void onCompleted(T result);
 
-        void onError(int errorCode);
+        void onError(int errorCode, String message);
     }
 
     // Singleton
@@ -86,9 +88,8 @@ public class BaseService {
         try {
             String jsonInString = new Gson().toJson(data);
             this.request(METHOD_POST, url, new JSONObject(jsonInString), listener, clazz);
-
         } catch (Exception ex) {
-            listener.onError(0);
+            listener.onError(-1, "");
         }
     }
 
@@ -120,14 +121,29 @@ public class BaseService {
 
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        LogManager.getInstance().debug("Error received " + error.getLocalizedMessage());
+                        LogManager.getInstance().debug("Error received " + (error.networkResponse != null ? error.networkResponse.statusCode : "NoNetwork"));
+
+                        String message = "";
+
+                        if (error.networkResponse != null && error.networkResponse.data != null) {
+                            try {
+                                LogManager.getInstance().debug(new String(error.networkResponse.data));
+
+                                Gson gson = new Gson();
+                                ResponseMessage responseMsg = gson.fromJson(new String(error.networkResponse.data), ResponseMessage.class);
+
+                                message = responseMsg.message;
+                            } catch (Exception ex) {
+                                LogManager.getInstance().error(ex.getMessage());
+                            }
+                        }
 
                         if (error instanceof TimeoutError) {
-                            listener.onError(408);
+                            listener.onError(408, message);
                         } else if (error instanceof AuthFailureError) {
-                            listener.onError(401);
+                            listener.onError(401, message);
                         } else {
-                            listener.onError(error.networkResponse != null ? error.networkResponse.statusCode : 0);
+                            listener.onError(error.networkResponse != null ? error.networkResponse.statusCode : 0, message);
                         }
                     }
                 }) {

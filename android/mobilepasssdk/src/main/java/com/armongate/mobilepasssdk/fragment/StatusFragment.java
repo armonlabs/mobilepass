@@ -1,6 +1,5 @@
 package com.armongate.mobilepasssdk.fragment;
 
-import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
@@ -8,11 +7,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 
@@ -75,10 +72,9 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
         // Inflate the layout for this fragment
         mCurrentView = inflater.inflate(R.layout.fragment_status, container, false);
 
-        updateStatus(R.drawable.background_waiting,
-                mActionType.equals(PassFlowActivity.ACTION_BLUETOOTH) ? R.string.text_status_message_scanning : R.string.text_status_message_waiting,
-                true,
-                null);
+        updateStatus(mActionType.equals(PassFlowActivity.ACTION_BLUETOOTH) ? R.string.text_status_message_scanning : R.string.text_status_message_waiting,
+                "",
+                R.drawable.waiting);
 
         startAction();
 
@@ -93,7 +89,7 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
             mActivity = (FragmentActivity)context;
 
             if (mWaitingUpdate != null) {
-                updateStatus(mWaitingUpdate.background, mWaitingUpdate.message, mWaitingUpdate.showSpinner, mWaitingUpdate.icon);
+                updateStatus(mWaitingUpdate.messageId, mWaitingUpdate.messageText, mWaitingUpdate.icon);
             }
         }
     }
@@ -107,7 +103,7 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
     private void startAction() {
         if (mActionType.equals(PassFlowActivity.ACTION_BLUETOOTH)) {
             runBluetooth();
-        } else if (mActionType.equals(PassFlowActivity.ACTION_BLUETOOTH)) {
+        } else if (mActionType.equals(PassFlowActivity.ACTION_REMOTEACCESS)) {
             runRemoteAccess();
         }
     }
@@ -123,25 +119,31 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
         new AccessPointService().remoteOpen(request, new BaseService.ServiceResultListener() {
             @Override
             public void onCompleted(Object result) {
-                updateStatus(R.drawable.background_success, R.string.text_status_message_succeed, false, R.drawable.status_succeed);
+                updateStatus( R.string.text_status_message_succeed,"", R.drawable.success);
                 DelegateManager.getInstance().onCompleted(true);
             }
 
             @Override
-            public void onError(int statusCode) {
+            public void onError(int statusCode, String message) {
                 if (statusCode != 401 && mNextAction != null && mNextAction.equals(PassFlowActivity.ACTION_BLUETOOTH)) {
-                    updateStatus(R.drawable.background_waiting, R.string.text_status_message_scanning, true, null);
+                    updateStatus( R.string.text_status_message_scanning, "",  R.drawable.waiting);
                     runBluetooth();
                 } else {
-                    int failMessage = R.string.text_status_message_failed;
+                    if (message == null || message.isEmpty()) {
+                        int failMessage = R.string.text_status_message_failed;
 
-                    if (statusCode == 401) {
-                        failMessage = R.string.text_status_message_unauthorized;
-                    } else if (statusCode == 404) {
-                        failMessage = R.string.text_status_message_not_connected;
+                        if (statusCode == 401) {
+                            failMessage = R.string.text_status_message_unauthorized;
+                        } else if (statusCode == 404) {
+                            failMessage = R.string.text_status_message_not_connected;
+                        } else if (statusCode == 0) {
+                            failMessage = R.string.text_status_message_no_connection;
+                        }
+
+                        updateStatus(failMessage, "", R.drawable.error);
+                    } else {
+                        updateStatus(-1, message, R.drawable.error);
                     }
-
-                    updateStatus(R.drawable.background_failed, failMessage, false, R.drawable.status_failed);
                     DelegateManager.getInstance().onCompleted(false);
                 }
             }
@@ -152,7 +154,7 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
         BluetoothManager.getInstance().delegate = this;
 
         if (BluetoothManager.getInstance().getCurrentState().enabled) {
-            updateStatus(R.drawable.background_waiting, R.string.text_status_message_scanning,  true,  null);
+            updateStatus( R.string.text_status_message_scanning, "", R.drawable.waiting);
 
             BLEScanConfiguration config = new BLEScanConfiguration(mDevices, ConfigurationManager.getInstance().getMemberId(), mDeviceNumber, mDirection, mRelayNumber);
 
@@ -161,7 +163,7 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
         } else {
             if (ConfigurationManager.getInstance().waitForBLEEnabled() || mNextAction == null) {
                 DelegateManager.getInstance().onNeedPermission(NeedPermissionType.NEED_ENABLE_BLE);
-                updateStatus(R.drawable.background_wait_ble, R.string.text_status_message_need_ble_enabled, false, R.drawable.status_wait_ble);
+                updateStatus( R.string.text_status_message_need_ble_enabled,"", R.drawable.warning);
             } else {
                 onBluetoothConnectionFailed(false);
             }
@@ -197,27 +199,31 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
             if (mNextAction.equals(PassFlowActivity.ACTION_LOCATION)) {
                 DelegateManager.getInstance().flowNextActionRequired();
             } else if (mNextAction.equals(PassFlowActivity.ACTION_REMOTEACCESS)) {
-                updateStatus(R.drawable.background_waiting, R.string.text_status_message_waiting, true, null);
+                updateStatus(R.string.text_status_message_waiting,"", R.drawable.waiting);
                 runRemoteAccess();
             }
         } else {
-            updateStatus(R.drawable.background_failed, R.string.text_status_message_failed, false, R.drawable.status_failed);
+            updateStatus( R.string.text_status_message_failed, "", R.drawable.error);
             DelegateManager.getInstance().onCompleted(false);
         }
     }
 
-    private void updateStatus(final int background, final int message, final boolean showSpinner, final @Nullable Integer icon) {
+    private void updateStatus(final int messageId, final String messageText, final @Nullable Integer icon) {
         if (mActivity != null) {
             mWaitingUpdate = null;
             mActivity.runOnUiThread(new Runnable() {
 
                 @Override
                 public void run() {
+                    /*
                     ConstraintLayout statusBackground = mCurrentView.findViewById(R.id.status_background);
                     statusBackground.setBackgroundResource(background);
+                     */
 
+                    /*
                     ProgressBar spinner = mCurrentView.findViewById(R.id.progressBar);
                     spinner.setVisibility(showSpinner ? View.VISIBLE : View.GONE);
+                     */
 
                     ImageView statusIcon = mCurrentView.findViewById(R.id.imgStatusIcon);
 
@@ -225,14 +231,18 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
                         statusIcon.setImageResource(icon);
                     }
 
-                    statusIcon.setVisibility(showSpinner ? View.GONE : View.VISIBLE);
+                    // statusIcon.setVisibility(showSpinner ? View.GONE : View.VISIBLE);
 
                     TextView statusMessage = mCurrentView.findViewById(R.id.txtStatusMessage);
-                    statusMessage.setText(message);
+                    if (messageId != -1) {
+                        statusMessage.setText(messageId);
+                    } else {
+                        statusMessage.setText(messageText);
+                    }
                 }
             });
         } else {
-            mWaitingUpdate = new WaitingStatusUpdate(background, message, showSpinner, icon);
+            mWaitingUpdate = new WaitingStatusUpdate(messageId, messageText, icon);
         }
     }
 
@@ -243,7 +253,7 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
         }
 
         if (state.state == DeviceConnectionStatus.ConnectionState.CONNECTED) {
-            updateStatus(R.drawable.background_success, R.string.text_status_message_succeed, false, R.drawable.status_succeed);
+            updateStatus( R.string.text_status_message_succeed, "", R.drawable.success);
             DelegateManager.getInstance().onCompleted(true);
         } else if (state.state == DeviceConnectionStatus.ConnectionState.FAILED
                 || state.state == DeviceConnectionStatus.ConnectionState.NOT_FOUND

@@ -16,12 +16,12 @@
 
         <ImageView
             android:id="@+id/imgStatusIcon"
-            android:layout_width="75dp"
-            android:layout_height="75dp"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
             android:layout_marginBottom="36dp"
             android:contentDescription="@string/img_content_status_icon"
             android:scaleType="fitCenter"
-            app:srcCompat="@drawable/status_wait_ble" />
+            app:srcCompat="@drawable/warning" />
 
         <TextView
             android:id="@+id/txtMessage"

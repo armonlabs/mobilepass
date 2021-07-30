@@ -47,7 +47,7 @@ class BaseService: NSObject {
         
         if (serverAddress == nil || serverAddress?.count == 0) {
             LogManager.shared.warn(message: "Server address is empty, request is cancelled")
-            completion(.failure(RequestError(message: "Server address cannot be found!", reason: .invalidServer, code: nil)))
+            completion(.failure(RequestError(message: "", reason: .invalidServer, code: nil)))
             return URL(string: "")!
         }
         
@@ -79,13 +79,19 @@ class BaseService: NSObject {
             
             guard let data = data, error == nil, statusCode != nil else {
                 LogManager.shared.info(message: "Request failed: \(error?.localizedDescription ?? "No data")")
-                completion(.failure(RequestError(message: error!.localizedDescription, reason: .other, code: statusCode ?? 0)))
+                completion(.failure(RequestError(message: "", reason: .other, code: statusCode ?? 0)))
                 return
             }
             
             if (statusCode != 200) {
+                var message = "";
+
+                let responseMsg: ResponseMessage? = self.getResponse(fromData: data)
+                message = responseMsg != nil ? responseMsg!.message : ""
+                
+                LogManager.shared.info(message: "Request completed with message: \(message)")
                 LogManager.shared.info(message: "Request completed with status code: \(statusCode!)")
-                completion(.failure(RequestError(message: "Request failed with status code: \(statusCode!)", reason: .other, code: statusCode!)))
+                completion(.failure(RequestError(message: message, reason: .errorCode, code: statusCode!)))
                 return
             }
             

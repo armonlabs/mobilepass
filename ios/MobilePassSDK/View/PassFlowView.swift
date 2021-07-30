@@ -92,10 +92,10 @@ struct PassFlowView: View, PassFlowDelegate {
     }
     
     init(key: String) {
-        self.checkCameraPermission()
-        
         self.key = key
         DelegateManager.shared.setPassFlowDelegate(delegate: self)
+        
+        self.checkCameraPermission()
     }
     
     

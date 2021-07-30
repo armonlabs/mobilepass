@@ -199,7 +199,7 @@ public class ConfigurationManager {
                     }
 
                     @Override
-                    public void onError(int statusCode) {
+                    public void onError(int statusCode, String message) {
                         LogManager.getInstance().error("Send user info failed with status code " + statusCode);
                         getAccessPoints();
                     }
@@ -248,7 +248,7 @@ public class ConfigurationManager {
             }
 
             @Override
-            public void onError(int statusCode) {
+            public void onError(int statusCode, String message) {
                 LogManager.getInstance().error("Get access list failed with status code " + statusCode);
                 DelegateManager.getInstance().onQRCodeListStateChanged(mCurrentQRCodes.size() > 0 ? QRCodeListState.USING_STORED_DATA : QRCodeListState.EMPTY);
             }

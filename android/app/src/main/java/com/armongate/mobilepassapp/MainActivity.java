@@ -42,6 +42,7 @@ public class MainActivity extends AppCompatActivity implements MobilePassDelegat
             config.memberId = txtMemberId.getText().toString();
             config.serverUrl = "https://qr.marsathletic.com";
             config.language = "tr";
+            config.waitBLEEnabled = true;
 
             passer = new MobilePass(this, config);
             passer.setDelegate(this);
