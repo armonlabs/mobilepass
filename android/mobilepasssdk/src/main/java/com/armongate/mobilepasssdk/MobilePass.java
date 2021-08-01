@@ -31,7 +31,7 @@ public class MobilePass {
     public MobilePass(Context context, Configuration config) {
         mActiveContext = context;
 
-        LogManager.getInstance().info("SDK Version: 1.1.1");
+        LogManager.getInstance().info("SDK Version: 1.2.0");
         LogManager.getInstance().info("Configuration: " + new Gson().toJson(config));
 
         BaseService.getInstance().setContext(context);
