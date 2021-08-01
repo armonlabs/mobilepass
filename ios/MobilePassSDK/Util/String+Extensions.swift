@@ -33,7 +33,7 @@ extension String {
     }
     
     func localized(withComment comment: String = "") -> String {
-        return Bundle(for: PassFlowController.self).localizedString(forKey: self, value: "**\(self)**", table: nil)
+        return Bundle(for: PassFlowController.self).localizedString(forKey: self, value: "\(self)", table: nil)
     }
     
     func localized(_ language: String) -> String {
@@ -45,6 +45,6 @@ extension String {
             bundle = Bundle(for: PassFlowController.self)
         }
         
-        return bundle.localizedString(forKey: self, value: "**\(self)**", table: nil)
+        return bundle.localizedString(forKey: self, value: "\(self)", table: nil)
     }
 }

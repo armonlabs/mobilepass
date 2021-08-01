@@ -19,7 +19,7 @@ class DelegateManager: NSObject {
     
     // MARK: Private Fields
     
-    private var isPassFlowCompleted: Bool = false
+    public var isPassFlowCompleted: Bool = false
     private var isDismissedManual: Bool = false
     private var mobilePassDelegate: MobilePassDelegate?
     private var mobilePassController: UIViewController?
@@ -65,32 +65,25 @@ class DelegateManager: NSObject {
     }
 
     func flowNextActionRequired() {
-        passFlowDelegate?.onNextActionRequired()
+        if (!isPassFlowCompleted) {
+            passFlowDelegate?.onNextActionRequired()
+        }
     }
 
     func flowConnectionStateChanged(isActive: Bool) {
         passFlowDelegate?.onConnectionStateChanged(isActive: isActive)
     }
 
-    
-    func needPermissionLocation() {
-        endFlow(dismiss: true, cancelReason: CancelReason.NEED_PERMISSION_LOCATION)
+    func needPermission(type: NeedPermissionType, showMessage: Bool) {
+        self.mobilePassDelegate?.onNeedPermission(type: type.rawValue)
+        
+        if (showMessage) {
+            passFlowDelegate?.onNeedPermissionMessage(type: type.rawValue)
+        }
     }
     
-    func needPermissionCamera() {
-        endFlow(dismiss: true, cancelReason: CancelReason.NEED_PERMISSION_CAMERA)
-    }
-    
-    func needPermissionBluetooth() {
-        endFlow(dismiss: true, cancelReason: CancelReason.NEED_PERMISSION_BLUETOOTH)
-    }
-    
-    func needLocationServicesEnabled() {
-        endFlow(dismiss: true, cancelReason: CancelReason.NEED_ENABLE_LOCATION_SERVICES)
-    }
-    
-    func needBluetoothEnabled() {
-        endFlow(dismiss: true, cancelReason: CancelReason.NEED_ENABLE_BLE)
+    func goToSettings() {
+        self.endFlow(dismiss: true, cancelReason: nil)
     }
     
     func errorOccurred() {
@@ -107,7 +100,7 @@ class DelegateManager: NSObject {
         endFlow(dismiss: true, cancelReason: CancelReason.USING_MOCK_LOCATION_DATA)
     }
     
-    private func endFlow(dismiss: Bool, cancelReason: CancelReason) {
+    private func endFlow(dismiss: Bool, cancelReason: CancelReason?) {
         endAutoCloseTimer()
         
         if (dismiss) {
@@ -115,12 +108,18 @@ class DelegateManager: NSObject {
             DispatchQueue.main.async {
                 self.mobilePassController?.dismiss(animated: true, completion: {
                     if (!self.isPassFlowCompleted) {
-                        self.mobilePassDelegate?.onPassCancelled(reason: cancelReason.rawValue)
+                        if (cancelReason != nil) {
+                            self.mobilePassDelegate?.onPassCancelled(reason: cancelReason!.rawValue)
+                        }
+                        self.isPassFlowCompleted = true;
                     }
                 })
             }
         } else if (!isPassFlowCompleted && !isDismissedManual) {
-            mobilePassDelegate?.onPassCancelled(reason: cancelReason.rawValue)
+            if (cancelReason != nil) {
+                mobilePassDelegate?.onPassCancelled(reason: cancelReason!.rawValue)
+            }
+            self.isPassFlowCompleted = true;
         }
     }
     
@@ -128,7 +127,7 @@ class DelegateManager: NSObject {
         if (ConfigurationManager.shared.autoCloseTimeout() != nil) {
             DispatchQueue.main.async {
                 self.timerAutoClose = Timer.scheduledTimer(withTimeInterval: Double(ConfigurationManager.shared.autoCloseTimeout()!) , repeats: false, block: { timer in
-                    self.endFlow(dismiss: true, cancelReason: .AUTO_CLOSE)
+                    self.endFlow(dismiss: true, cancelReason: nil)
                 })
             }
         }

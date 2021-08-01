@@ -10,23 +10,26 @@ import Foundation
 struct RequestError: Error {
     
     enum Reason {
-      case invalidServer
-      case missingToken
-      case other
+        case invalidServer
+        case missingToken
+        case errorCode
+        case other
     }
     
-  var message:  String
-  var code:     Int
-  var reason:   Reason
+    var message:  String
+    var code:     Int
+    var reason:   Reason
     
     private var reasonTag: String {
         switch self.reason {
         case .invalidServer:
-          return "Invalid Server Address"
+            return "Invalid Server Address"
         case .missingToken:
-          return "Missing Refreh Token"
+            return "Missing Refresh Token"
+        case .errorCode:
+            return "Server Error"
         case .other:
-          return "Error"
+            return "Error"
         }
     }
     

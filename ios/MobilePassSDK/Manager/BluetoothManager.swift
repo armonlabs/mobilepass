@@ -106,7 +106,7 @@ class BluetoothManager: NSObject {
                 LogManager.shared.info(message: "Bluetooth authorization status is allowed, but state is not powered on yet")
             }
         } else if (authorizationStatus != .notDetermined) {
-            DelegateManager.shared.needPermissionBluetooth()
+            DelegateManager.shared.needPermission(type: NeedPermissionType.NEED_PERMISSION_BLUETOOTH, showMessage: true)
         }
     }
     
@@ -262,7 +262,6 @@ extension BluetoothManager: CBCentralManagerDelegate {
         case .unauthorized:
             state = "This app is not authorized to use Bluetooth Low Energy.";
             self.bluetoothState = DeviceCapability(support: true, enabled: false, needAuthorize: true)
-            DelegateManager.shared.needPermissionBluetooth()
             break;
         case .poweredOff:
             state = "Bluetooth on this device is currently powered off.";

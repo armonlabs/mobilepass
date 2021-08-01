@@ -143,9 +143,12 @@ public class ConfigurationManager {
         }
     }
 
-    private void checkKeyPair() {
+    private boolean checkKeyPair() {
+        mCurrentKeyPair = null;
+
         String storedUserKeys = StorageManager.getInstance().getValue(mCurrentContext, StorageKeys.USER_DETAILS, new SecureAreaManager(mCurrentContext));
 
+        boolean newlyCreated = false;
         Gson gson = new Gson();
 
         if (storedUserKeys != null && !storedUserKeys.isEmpty()) {
@@ -165,31 +168,46 @@ public class ConfigurationManager {
             mUserKeyDetails.add(new StorageDataUserDetails(getMemberId(), mCurrentKeyPair.publicKey, mCurrentKeyPair.privateKey));
 
             StorageManager.getInstance().setValue(mCurrentContext, StorageKeys.USER_DETAILS, gson.toJson(mUserKeyDetails), new SecureAreaManager(mCurrentContext));
+
+            newlyCreated = true;
         }
+
+        return newlyCreated;
     }
 
     private void sendUserData() {
         if (mCurrentContext != null) {
-            if (mCurrentKeyPair == null) {
-                checkKeyPair();
+            boolean needUpdate = checkKeyPair();
+
+            String storedMemberId = StorageManager.getInstance().getValue(mCurrentContext, StorageKeys.MEMBERID);
+
+            if (storedMemberId == null || storedMemberId.isEmpty() || !storedMemberId.equals(getMemberId())) {
+                needUpdate = true;
             }
 
-            RequestSetUserData request = new RequestSetUserData();
-            request.clubMemberId = getMemberId();
-            request.publicKey = mCurrentKeyPair.getPublicKeyWithoutHead();
+            if (needUpdate) {
+                RequestSetUserData request = new RequestSetUserData();
+                request.clubMemberId = getMemberId();
+                request.publicKey = mCurrentKeyPair.getPublicKeyWithoutHead();
 
-            new DataService().sendUserInfo(request, new BaseService.ServiceResultListener<Object>() {
-                @Override
-                public void onCompleted(Object response) {
-                    getAccessPoints();
-                }
+                new DataService().sendUserInfo(request, new BaseService.ServiceResultListener<Object>() {
+                    @Override
+                    public void onCompleted(Object response) {
+                        StorageManager.getInstance().setValue(mCurrentContext, StorageKeys.MEMBERID, getMemberId());
+                        LogManager.getInstance().info("Member id is stored successfully");
+                        getAccessPoints();
+                    }
 
-                @Override
-                public void onError(int statusCode) {
-                    LogManager.getInstance().error("Send user info failed with status code " + statusCode);
-                    getAccessPoints();
-                }
-            });
+                    @Override
+                    public void onError(int statusCode, String message) {
+                        LogManager.getInstance().error("Send user info failed with status code " + statusCode);
+                        getAccessPoints();
+                    }
+                });
+            } else {
+                LogManager.getInstance().info("User info is already sent to server");
+                getAccessPoints();
+            }
         }
     }
 
@@ -230,7 +248,7 @@ public class ConfigurationManager {
             }
 
             @Override
-            public void onError(int statusCode) {
+            public void onError(int statusCode, String message) {
                 LogManager.getInstance().error("Get access list failed with status code " + statusCode);
                 DelegateManager.getInstance().onQRCodeListStateChanged(mCurrentQRCodes.size() > 0 ? QRCodeListState.USING_STORED_DATA : QRCodeListState.EMPTY);
             }

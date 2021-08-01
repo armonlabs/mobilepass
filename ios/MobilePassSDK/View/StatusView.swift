@@ -23,16 +23,12 @@ public struct ActionConfig: Codable {
 }
 
 class CurrentStatusModel: ObservableObject {
-    @Published var color:       Color   = Color.gray
-    @Published var icon:        String  = "checkmark.circle"
-    @Published var showSpinner: Bool    = true
+    @Published var icon:        String  = "waiting"
     @Published var message:     String  = "text_status_message_waiting"
     
-    func update(color: Color, message: String, showSpinner: Bool, icon: String) {
-        self.color          = color
-        self.message        = message
-        self.showSpinner    = showSpinner
-        self.icon           = icon
+    func update(message: String, icon: String) {
+        self.message    = message
+        self.icon       = icon
     }
 }
 
@@ -60,15 +56,11 @@ struct StatusView: View {
     var body: some View {
         GeometryReader { (geometry) in
             VStack(alignment: .center) {
-                if self.viewModel.showSpinner {
-                    LoadingView(size: .constant(geometry.size.width * 0.22))
-                } else {
-                    Image(systemName: self.viewModel.icon).resizable().frame(width: geometry.size.width * 0.25, height: geometry.size.width * 0.25, alignment: .center).foregroundColor(self.viewModel.color)
-                }
-                Text(self.viewModel.message.localized(locale.identifier)).padding(.top, 48).padding(.bottom, geometry.size.height * 0.25).multilineTextAlignment(.center)
+                Image(self.viewModel.icon, bundle: Bundle(for: PassFlowController.self)).resizable().frame(width: geometry.size.width * 0.5, height: geometry.size.width * 0.5, alignment: .center)
+                Text(self.viewModel.message.localized(locale.identifier)).fontWeight(.medium).padding(.top, 48).padding(.bottom, geometry.size.height * 0.35).multilineTextAlignment(.center)
             }.padding(.horizontal, 14)
             .frame(width: geometry.size.width, height: geometry.size.height, alignment: .bottom)
-        }.background(LinearGradient(gradient: Gradient(colors: [self.viewModel.color, colorScheme == .dark ? Color.black.opacity(0.0) : Color.white.opacity(0.0)]), startPoint: .top, endPoint: .center)).edgesIgnoringSafeArea(.all)
+        }.edgesIgnoringSafeArea(.all)
     }
     
     private func startAction() {
@@ -82,14 +74,18 @@ struct StatusView: View {
     }
     
     private func runRemoteAccess() {
+        if (DelegateManager.shared.isPassFlowCompleted) {
+            return
+        }
+        
         if (currentConfig?.accessPointId != nil && currentConfig?.direction != nil) {
             AccessPointService().remoteOpen(request: RequestAccess(accessPointId: currentConfig!.accessPointId!, clubMemberId: ConfigurationManager.shared.getMemberId(), direction: currentConfig!.direction!), completion: { (result) in
                 if case .success(_) = result {
-                    self.viewModel.update(color: .green, message: "text_status_message_succeed", showSpinner: false, icon: "checkmark.circle")
+                    self.viewModel.update(message: "text_status_message_succeed", icon: "success")
                     DelegateManager.shared.onCompleted(succeed: true)
                 } else if case .failure(let error) = result {
                     if (error.code != 401 && currentConfig?.nextAction != nil && currentConfig?.nextAction! == PassFlowView.ACTION_BLUETOOTH) {
-                        self.viewModel.update(color: .gray, message: "text_status_message_scanning", showSpinner: true, icon: "")
+                        self.viewModel.update(message: "text_status_message_scanning", icon: "waiting")
                         runBluetooth()
                     } else {
                         var failMessage = "text_status_message_failed"
@@ -100,7 +96,7 @@ struct StatusView: View {
                             failMessage = "text_status_message_not_connected"
                         }
                         
-                        self.viewModel.update(color: .red, message: failMessage, showSpinner: false, icon: "multiply.circle.fill")
+                        self.viewModel.update(message: error.message.isEmpty ? failMessage : error.message, icon: "error")
                         DelegateManager.shared.onCompleted(succeed: false)
                     }
                 }
@@ -109,18 +105,22 @@ struct StatusView: View {
     }
     
     private func runBluetooth() {
+        if (DelegateManager.shared.isPassFlowCompleted) {
+            return
+        }
+        
         BluetoothManager.shared.onScanningStarted = {[self] () -> () in
             LogManager.shared.debug(message: "Bluetooth scanning is started")
-            self.startBluetoothTimer()
+            self.startConnectionTimer()
         }
         
         BluetoothManager.shared.onConnectionStateChanged = {[self] (state: DeviceConnectionStatus) -> () in
             if (state.state != .connecting) {
-                self.endBluetoothTimer()
+                self.endConnectionTimer()
             }
             
             if (state.state == .connected) {
-                self.viewModel.update(color: .green, message: "text_status_message_succeed", showSpinner: false, icon: "checkmark.circle")
+                self.viewModel.update(message: "text_status_message_succeed", icon: "success")
                 DelegateManager.shared.onCompleted(succeed: true)
             } else if (state.state == .failed
                         || state.state == .notFound
@@ -141,7 +141,7 @@ struct StatusView: View {
         }
         
         if (BluetoothManager.shared.getCurrentState().enabled) {
-            self.viewModel.update(color: .gray, message: "text_status_message_scanning", showSpinner: true, icon: "")
+            self.viewModel.update(message: "text_status_message_scanning", icon: "waiting")
             
             if (currentConfig != nil) {
                 let config: BLEScanConfiguration = BLEScanConfiguration(devices: currentConfig!.devices,
@@ -154,20 +154,35 @@ struct StatusView: View {
             }
         } else {
             if (ConfigurationManager.shared.waitForBLEEnabled() || currentConfig?.nextAction == nil) {
-                self.viewModel.update(color: .orange, message: "text_status_message_need_ble_enabled", showSpinner: false, icon: "exclamationmark.triangle.fill")
+                if (BluetoothManager.shared.getCurrentState().needAuthorize) {
+                    DelegateManager.shared.needPermission(type: NeedPermissionType.NEED_PERMISSION_BLUETOOTH, showMessage: true)
+                } else {
+                    DelegateManager.shared.needPermission(type: NeedPermissionType.NEED_ENABLE_BLE, showMessage: false)
+                    self.viewModel.update(message: "text_status_message_need_ble_enabled", icon: "warning")
+                }
             } else {
                 self.onBluetoothConnectionFailed()
             }
         }
     }
     
-    private func startBluetoothTimer() {
+    private func startConnectionTimer() {
         timerBluetooth = Timer.scheduledTimer(withTimeInterval: Double(ConfigurationManager.shared.bleConnectionTimeout()) , repeats: false, block: { timer in
-            onBluetoothConnectionFailed()
+            if (currentConfig != nil && currentConfig!.currentAction == PassFlowView.ACTION_REMOTEACCESS) {
+                if (currentConfig?.nextAction != nil && currentConfig?.nextAction! == PassFlowView.ACTION_BLUETOOTH) {
+                    self.viewModel.update(message: "text_status_message_scanning", icon: "waiting")
+                    runBluetooth()
+                } else {
+                    self.viewModel.update(message: "text_status_message_timeout", icon: "error")
+                    DelegateManager.shared.onCompleted(succeed: false)
+                }
+            } else {
+                onBluetoothConnectionFailed()
+            }
         })
     }
     
-    private func endBluetoothTimer() {
+    private func endConnectionTimer() {
         if (timerBluetooth != nil) {
             timerBluetooth!.invalidate()
             timerBluetooth = nil
@@ -175,7 +190,7 @@ struct StatusView: View {
     }
     
     private func onBluetoothConnectionFailed() {
-        endBluetoothTimer()
+        endConnectionTimer()
         BluetoothManager.shared.stopScan(disconnect: true)
         
         BluetoothManager.shared.onScanningStarted = nil
@@ -186,11 +201,11 @@ struct StatusView: View {
             if (currentConfig!.nextAction! == PassFlowView.ACTION_LOCATION) {
                 DelegateManager.shared.flowNextActionRequired()
             } else if (currentConfig!.nextAction! == PassFlowView.ACTION_REMOTEACCESS) {
-                self.viewModel.update(color: .gray, message: "text_status_message_waiting", showSpinner: true, icon: "")
+                self.viewModel.update(message: "text_status_message_waiting", icon: "waiting")
                 runRemoteAccess()
             }
         } else {
-            self.viewModel.update(color: .red, message: "text_status_message_failed", showSpinner: false, icon: "multiply.circle.fill")
+            self.viewModel.update(message: "text_status_message_failed", icon: "error")
             DelegateManager.shared.onCompleted(succeed: false)
         }
     }

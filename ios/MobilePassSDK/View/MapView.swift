@@ -128,7 +128,7 @@ class MapViewCoordinator: NSObject, MKMapViewDelegate, CLLocationManagerDelegate
         super.init()
         
         self.locationManager.delegate = self
-        self.checkLocationPermission()
+        self.checkLocationServices()
         
         NotificationCenter.default.addObserver(self, selector: #selector(self.onMapDisappeared(notification:)), name: Notification.Name("OnMapDisappear"), object: nil)
     }
@@ -180,20 +180,19 @@ class MapViewCoordinator: NSObject, MKMapViewDelegate, CLLocationManagerDelegate
         }
     }
     
-    private func checkLocationPermission() {
+    private func checkLocationServices() {
         guard CLLocationManager.locationServicesEnabled() else {
             LogManager.shared.info(message: "Location services disabled, needs to be changed in settings to continue")
-            DelegateManager.shared.needLocationServicesEnabled()
+            DelegateManager.shared.needPermission(type: NeedPermissionType.NEED_ENABLE_LOCATION_SERVICES, showMessage: true)
             return
         }
-        
-        let status: CLAuthorizationStatus = CLLocationManager.authorizationStatus()
-        self.processAuthorizationStatus(status: status)
     }
     
     func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
-        LogManager.shared.info(message: "Location authorization status changed")
-        processAuthorizationStatus(status: status)
+        if (CLLocationManager.locationServicesEnabled()) {
+            LogManager.shared.info(message: "Location authorization status changed")
+            processAuthorizationStatus(status: status)
+        }
     }
     
     private func processAuthorizationStatus(status: CLAuthorizationStatus) {
@@ -203,7 +202,7 @@ class MapViewCoordinator: NSObject, MKMapViewDelegate, CLLocationManagerDelegate
             break
         case .restricted, .denied:
             LogManager.shared.info(message: "Location Permission Status: Denied or Restricted, needs to be changed in settings to continue")
-            DelegateManager.shared.needPermissionLocation()
+            DelegateManager.shared.needPermission(type: NeedPermissionType.NEED_PERMISSION_LOCATION, showMessage: true)
             break
         case .notDetermined:
             LogManager.shared.info(message: "Location Permission Status: Not Determined, request now!")

@@ -11,9 +11,15 @@
 "text_status_message_not_connected" = "Cihaz ile iletişim kurulamadı";
 "text_status_message_unauthorized" = "Geçiş yetkiniz bulunmamaktadır";
 "text_status_message_scanning" = "Yakındaki cihazlar taranıyor";
+"text_status_message_timeout" = "İstek zaman aşımına uğradı";
 "text_status_message_connecting" = "Bağlantı kuruluyor...";
 "text_status_message_waiting" = "Geçiş isteğiniz gönderiliyor...";
-"text_status_message_need_ble_enabled" = "Devam edebilmek için Bluetooth etkinleştirilmiş olmalıdır";
+"text_status_message_need_ble_enabled" = "Devam edebilmek için Bluetooth etkinleştirilmiş olmalıdır.";
+"text_status_message_need_location_enabled" = "İşleme devam edebilmeniz için konum servislerinin açık olması gerekmektedir. Ayarlar > Gizlilik > Konum Servisleri bölümünde bu ayarı değiştirebilirsiniz";
+"text_status_message_need_permission_location" = "İşleme devam edebilmeniz için uygulamaya konum erişim izni vermeniz gerekmektedir.";
+"text_status_message_need_permission_bluetooth" = "Bluetooth ile geçiş için uygulamaya Bluetooth izni vermeniz gerekmektedir";
+"text_status_message_need_permission_camera" = "Karekodu tarayabilmek için uygulamaya kamera erişim izni vermeniz gerekmektedir.";
 "text_location_message" = "Devam edebilmek için tanımlı konumda olmanız gerekmektedir";
 "text_button_close" = "Kapat";
+"text_button_app_permissions" = "Uygulama İzinleri";
 "text_qrcode_message" = "Geçiş yapacağınız erişim kontrol noktasının karekodunu okutunuz";

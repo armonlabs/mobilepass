@@ -50,7 +50,7 @@ allprojects {
 
 ```
 dependencies {
-	implementation 'com.github.armonlabs:mobilepass:1.1.1'
+	implementation 'com.github.armonlabs:mobilepass:1.2.0'
 }
 ```
 
@@ -326,11 +326,12 @@ Library is configurable while initialization. Available props are listed below
 
 ### **Events**
 
-| Name                      | Description                                         | Type                          |
-| ------------------------- | --------------------------------------------------- | ----------------------------- |
-| onPassCompleted           | Passing operation completed                         | boolean                       |
-| onPassCancelled           | Operation has been cancelled with given reason code | [CancelReason](#CancelReason) |
-| onQRCodeListStateChanged  | QR code definition list updated                     | [QRCodeState](QRCodeState)    |
+| Name                      | Description                                                                    | Type                                      |
+| ------------------------- | ------------------------------------------------------------------------------ | ----------------------------------------- |
+| onPassCompleted           | Passing operation completed                                                    | boolean                                   |
+| onPassCancelled           | Operation has been cancelled with given reason code                            | [CancelReason](#CancelReason)             |
+| onNeedPermission          | User has been informed about permission or disabled state of required function | [NeedPermissionType](#NeedPermissionType) |
+| onQRCodeListStateChanged  | QR code definition list updated                                                | [QRCodeState](QRCodeState)                |
 
 <br />
 <br />
@@ -341,17 +342,23 @@ Library is configurable while initialization. Available props are listed below
 
 ### `CancelReason`
 
+| Name                | Value |
+| ------------------- | ----- |
+| User Closed         | 1     |
+| Using Mock Location | 2     |
+| Error               | 3     |
+
+<br />
+
+### `NeedPermissionType`
+
 | Name                          | Value |
 | ----------------------------- | ----- |
 | Need Permission for Camera    | 1     |
 | Need Permission for Location  | 2     |
-| User Closed                   | 3     |
+| Need Permission Bluetooth     | 3     |
 | Need Enable Bluetooth         | 4     |
 | Need Enable Location Services | 5     |
-| Using Mock Location           | 6     |
-| Error                         | 7     |
-| Need Permission Bluetooth     | 8     |
-| Auto Close                    | 9     |
 
 <br />
 

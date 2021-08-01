@@ -5,6 +5,8 @@
 	<string name="text_status_message_failed">Geçiş isteğiniz başarısız oldu</string>
 	<string name="text_status_message_not_connected">Cihaz ile iletişim kurulamadı</string>
 	<string name="text_status_message_unauthorized">Geçiş yetkiniz bulunmamaktadır</string>
+	<string name="text_status_message_no_connection">İnternet bağlantınızı kontrol ediniz</string>
+	<string name="text_status_message_timeout">İstek zaman aşımına uğradı</string>
 	<string name="text_status_message_scanning">Yakındaki cihazlar taranıyor</string>
 	<string name="text_status_message_connecting">Bağlantı kuruluyor…</string>
 	<string name="text_status_message_waiting">Geçiş isteğiniz gönderiliyor…</string>
@@ -13,4 +15,7 @@
 	<string name="text_qrcode_message">Geçiş yapacağınız erişim kontrol noktasının karekodunu okutunuz</string>
 	<string name="img_content_powered_by_armon">Powered by armon</string>
 	<string name="img_content_status_icon">status icon</string>
+	<string name="text_permission_camera">Karekodu tarayabilmek için uygulamaya kamera erişim izni vermeniz gerekmektedir. \'Ayarlar\' butonuna dokunarak gerekli değişikliği gerçekleştirebilirsiniz.</string>
+	<string name="text_permission_location">İşleme devam edebilmeniz için uygulamaya konum erişim izni vermeniz gerekmektedir. \'Ayarlar\' butonuna dokunarak gerekli değişikliği gerçekleştirebilirsiniz.</string>
+	<string name="text_permission_location_service">İşleme devam edebilmeniz için konum servislerinin açık olması gerekmektedir. Konum servisini \'Ayarlar\' butonuna dokunarak veya denetim merkezinden aktifleştirdikten sonra karekodu yeniden okutabilirsiniz.</string>
 </resources>

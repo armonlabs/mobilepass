@@ -4,15 +4,13 @@ import androidx.annotation.Nullable;
 
 public class WaitingStatusUpdate {
 
-    public int background;
-    public int message;
-    public boolean showSpinner;
+    public int messageId;
+    public String messageText;
     public @Nullable Integer icon;
 
-    public WaitingStatusUpdate(int background, int message, boolean showSpinner, @Nullable Integer icon) {
-        this.background = background;
-        this.message = message;
-        this.showSpinner = showSpinner;
+    public WaitingStatusUpdate(int messageId, String messageText, @Nullable Integer icon) {
+        this.messageId = messageId;
+        this.messageText = messageText;
         this.icon = icon;
     }
 }

@@ -122,7 +122,10 @@ class ConfigurationManager: NSObject {
         }
     }
     
-    private func checkKeyPair() throws -> Void {
+    private func checkKeyPair() throws -> Bool {
+        mCurrentKeyPair = nil
+        
+        var newlyCreated: Bool = false
         let storedUserKeys: String = try StorageManager.shared.getValue(key: StorageKeys.USER_DETAILS, secure: true)
         
         if (storedUserKeys.count > 0) {
@@ -137,6 +140,8 @@ class ConfigurationManager: NSObject {
         }
         
         if (mCurrentKeyPair == nil) {
+            newlyCreated = true
+            
             mCurrentKeyPair = CryptoManager.shared.generateKeyPair()
             
             mUserKeyDetails.append(StorageDataUserDetails(userId: getMemberId(), publicKey: mCurrentKeyPair!.publicKey, privateKey: mCurrentKeyPair!.privateKey))
@@ -144,21 +149,37 @@ class ConfigurationManager: NSObject {
             
             _ = try StorageManager.shared.setValue(key: StorageKeys.USER_DETAILS, value: jsonString, secure: true)
         }
+        
+        return newlyCreated
     }
     
     private func sendUserData() throws -> Void {
-        if (mCurrentKeyPair == nil) {
-            try checkKeyPair();
+        var needUpdate: Bool = try checkKeyPair();
+        
+        let storedMemberId: String? = try? StorageManager.shared.getValue(key: StorageKeys.MEMBERID, secure: false)
+        if (storedMemberId == nil || storedMemberId!.count == 0 || storedMemberId! != getMemberId()) {
+            needUpdate = true
         }
         
-        DataService().sendUserInfo(request: RequestSetUserData(publicKey: mCurrentKeyPair!.publicKey, clubMemberId: getMemberId()), completion: { (result) in
-            if case .success(_) = result {
-                self.getAccessPoints()
-            } else {
-                LogManager.shared.error(message: "Send user info to server failed!")
-                self.getAccessPoints()
-            }
-        })
+        if (needUpdate) {
+            DataService().sendUserInfo(request: RequestSetUserData(publicKey: mCurrentKeyPair!.publicKey, clubMemberId: getMemberId()), completion: { (result) in
+                if case .success(_) = result {
+                    do {
+                        _ = try StorageManager.shared.setValue(key: StorageKeys.MEMBERID, value: self.getMemberId(), secure: false)
+                        LogManager.shared.info(message: "Member id is stored successfully")
+                    } catch {
+                        LogManager.shared.error(message: "Error occurred while storing member id")
+                    }
+                    self.getAccessPoints()
+                } else {
+                    LogManager.shared.error(message: "Send user info to server failed!")
+                    self.getAccessPoints()
+                }
+            })
+        } else {
+            LogManager.shared.info(message: "User info is already sent to server")
+            self.getAccessPoints()
+        }
     }
     
     private func processAccessPointsResponse(result: Result<ResponseAccessPointList?, RequestError>) {
@@ -179,9 +200,11 @@ class ConfigurationManager: NSObject {
                 }
             }
             
+            /* Open to show qr codes list
             for qrCode in self.mTempQRCodes {
                 LogManager.shared.debug(message: "\(qrCode.key) > Type: \(qrCode.value.action.config.trigger.type) | Direction: \(qrCode.value.action.config.direction) | Validate Location: \(String(describing: qrCode.value.action.config.trigger.validateGeoLocation))")
             }
+            */
             
             
             if (receivedData!.pagination.total > self.mReceivedItemCount) {
