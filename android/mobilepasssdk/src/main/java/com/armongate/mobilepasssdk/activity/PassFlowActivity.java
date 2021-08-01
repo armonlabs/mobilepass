@@ -49,6 +49,9 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
     private QRCodeContent   activeQRCodeContent = null;
     private boolean         connectionActive    = false;
 
+    private int     activePermissionCode    = -1;
+    private boolean activePermissionGranted = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -64,6 +67,30 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
         }
 
         setLocale(ConfigurationManager.getInstance().getLanguage());
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (activePermissionCode > 0) {
+            if (activePermissionCode == SettingsManager.REQUEST_CODE_CAMERA) {
+                if (activePermissionGranted) {
+                    replaceFragment(QRCodeReaderFragment.class, null);
+                } else {
+                    showPermissionMessage(NeedPermissionType.NEED_PERMISSION_CAMERA);
+                }
+            } else if (activePermissionCode == SettingsManager.REQUEST_CODE_LOCATION) {
+                if (activePermissionGranted) {
+                    processAction();
+                } else {
+                    showPermissionMessage(NeedPermissionType.NEED_PERMISSION_LOCATION);
+                }
+            }
+
+            activePermissionCode = -1;
+            activePermissionGranted = false;
+        }
     }
 
     private void setLocale(String languageCode) {
@@ -87,19 +114,8 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         boolean permissionGranted = grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED;
 
-        if (requestCode == SettingsManager.REQUEST_CODE_CAMERA) {
-            if (permissionGranted) {
-                replaceFragment(QRCodeReaderFragment.class, null);
-            } else {
-                showPermissionMessage(NeedPermissionType.NEED_PERMISSION_CAMERA);
-            }
-        } else if (requestCode == SettingsManager.REQUEST_CODE_LOCATION) {
-            if (permissionGranted) {
-                processAction();
-            } else {
-                showPermissionMessage(NeedPermissionType.NEED_PERMISSION_LOCATION);
-            }
-        }
+        activePermissionCode    = requestCode;
+        activePermissionGranted = permissionGranted;
 
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
