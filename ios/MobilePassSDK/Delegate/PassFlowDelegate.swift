@@ -9,6 +9,5 @@ public protocol PassFlowDelegate {
     func onQRCodeFound(code: String)
     func onLocationValidated()
     func onNextActionRequired()
-    func onConnectionStateChanged(isActive: Bool)
     func onNeedPermissionMessage(type: Int)
 }

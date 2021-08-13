@@ -20,6 +20,7 @@ class DelegateManager: NSObject {
     // MARK: Private Fields
     
     public var isPassFlowCompleted: Bool = false
+    public var isPassConnectionActive: Bool = false
     private var isDismissedManual: Bool = false
     private var mobilePassDelegate: MobilePassDelegate?
     private var mobilePassController: UIViewController?
@@ -30,6 +31,7 @@ class DelegateManager: NSObject {
     
     func clearFlags() {
         isPassFlowCompleted = false
+        isPassConnectionActive = false
         isDismissedManual = false
     }
     
@@ -71,7 +73,7 @@ class DelegateManager: NSObject {
     }
 
     func flowConnectionStateChanged(isActive: Bool) {
-        passFlowDelegate?.onConnectionStateChanged(isActive: isActive)
+        isPassConnectionActive = isActive
     }
 
     func needPermission(type: NeedPermissionType, showMessage: Bool) {

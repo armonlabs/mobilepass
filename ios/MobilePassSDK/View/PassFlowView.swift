@@ -16,7 +16,6 @@ class ActiveActionModel: ObservableObject {
     @Published var currentView:         FlowViewType = FlowViewType.qr
     @Published var actionList:          [String] = []
     @Published var actionCurrent:       String = ""
-    @Published var connectionActive:    Bool = false
     @Published var activeQRCodeContent: QRCodeContent? = nil
     @Published var needPermissionType:  Int = NeedPermissionType.NEED_ENABLE_BLE.rawValue
     
@@ -33,10 +32,6 @@ class ActiveActionModel: ObservableObject {
         self.activeQRCodeContent = content
     }
     
-    func changeConnectionState(isActive: Bool) {
-        self.connectionActive = isActive
-    }
-    
     func setNeedPermissionType(type: Int) {
         self.needPermissionType = type
         self.currentView = FlowViewType.permission
@@ -44,8 +39,6 @@ class ActiveActionModel: ObservableObject {
 }
 
 struct PassFlowView: View, PassFlowDelegate {
-    // @State private var currentView = FlowViewType.qr
-    
     @ObservedObject var viewModel: ActiveActionModel = ActiveActionModel()
     
     public static let ACTION_BLUETOOTH      = "bluetooth"
@@ -79,16 +72,18 @@ struct PassFlowView: View, PassFlowDelegate {
                 HStack {
                     Spacer()
                     Button(action: {
-                        if (!viewModel.connectionActive) {
-                            DelegateManager.shared.onCancelled(dismiss: true)
-                        }
+                        DelegateManager.shared.onCancelled(dismiss: true)
                     }) {
                         Text("text_button_close".localized(ConfigurationManager.shared.getLanguage())).bold()
                     }.padding(.trailing, 10)
                 }
                 .frame(width: UIScreen.main.bounds.width)
             })
-        }.environment(\.locale, Locale(identifier: ConfigurationManager.shared.getLanguage()))
+        }.environment(\.locale, Locale(identifier: ConfigurationManager.shared.getLanguage())).edgesIgnoringSafeArea(.all).onReceive(NotificationCenter.default.publisher(for: UIApplication.willResignActiveNotification)) { _ in
+            if (DelegateManager.shared.isPassConnectionActive) {
+                DelegateManager.shared.onCancelled(dismiss: true)
+            }
+        }
     }
     
     init(key: String) {
@@ -113,11 +108,6 @@ struct PassFlowView: View, PassFlowDelegate {
     
     func onNeedPermissionMessage(type: Int) {
         viewModel.setNeedPermissionType(type: type)
-    }
-    
-    func onConnectionStateChanged(isActive: Bool) {
-        viewModel.changeConnectionState(isActive: isActive)
-        // TODO Call that from related points
     }
     
     private func checkCameraPermission() -> Void {
