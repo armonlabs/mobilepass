@@ -98,6 +98,11 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
     public void onDetach() {
         super.onDetach();
         mActivity = null;
+
+        endConnectionTimer();
+
+        BluetoothManager.getInstance().delegate = null;
+        BluetoothManager.getInstance().stopScan(false);
     }
 
     private void startAction() {
@@ -109,6 +114,7 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
     }
 
     private void runRemoteAccess() {
+        DelegateManager.getInstance().flowConnectionStateChanged(true);
         BluetoothManager.getInstance().stopScan(true);
 
         RequestAccess request = new RequestAccess();
@@ -125,6 +131,8 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
 
                 updateStatus( R.string.text_status_message_succeed,"", R.drawable.success);
                 DelegateManager.getInstance().onCompleted(true);
+
+                DelegateManager.getInstance().flowConnectionStateChanged(false);
             }
 
             @Override
@@ -154,6 +162,8 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
                     }
                     DelegateManager.getInstance().onCompleted(false);
                 }
+
+                DelegateManager.getInstance().flowConnectionStateChanged(false);
             }
         });
     }
@@ -162,6 +172,8 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
         BluetoothManager.getInstance().delegate = this;
 
         if (BluetoothManager.getInstance().getCurrentState().enabled) {
+            DelegateManager.getInstance().flowConnectionStateChanged(true);
+
             updateStatus( R.string.text_status_message_scanning, "", R.drawable.waiting);
 
             BLEScanConfiguration config = new BLEScanConfiguration(mDevices, ConfigurationManager.getInstance().getMemberId(), mDeviceNumber, mDirection, mRelayNumber);
@@ -182,6 +194,8 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
         mTimerHandler =  new Handler();
         Runnable mTimerRunnable = new Runnable() {
             public void run() {
+                DelegateManager.getInstance().flowConnectionStateChanged(false);
+
                 if (mActionType.equals(PassFlowActivity.ACTION_BLUETOOTH)) {
                     onBluetoothConnectionFailed(true);
                 } else {
@@ -205,13 +219,23 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
         }
     }
 
+    private void onBluetoothFlowCompleted() {
+        DelegateManager.getInstance().flowConnectionStateChanged(false);
+
+        BluetoothManager.getInstance().delegate = null;
+        BluetoothManager.getInstance().stopScan(true);
+    }
+
+    private void onBluetoothConnectionSucceed() {
+        onBluetoothFlowCompleted();
+    }
+
     private void onBluetoothConnectionFailed(boolean timeout) {
         if (timeout) {
             LogManager.getInstance().debug("Timeout occurred for BLE scanning");
         }
 
-        BluetoothManager.getInstance().delegate = null;
-        BluetoothManager.getInstance().stopScan(true);
+        onBluetoothFlowCompleted();
 
         if (mNextAction != null && mNextAction.length() > 0) {
             if (mNextAction.equals(PassFlowActivity.ACTION_LOCATION)) {
@@ -233,23 +257,11 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
 
                 @Override
                 public void run() {
-                    /*
-                    ConstraintLayout statusBackground = mCurrentView.findViewById(R.id.status_background);
-                    statusBackground.setBackgroundResource(background);
-                     */
-
-                    /*
-                    ProgressBar spinner = mCurrentView.findViewById(R.id.progressBar);
-                    spinner.setVisibility(showSpinner ? View.VISIBLE : View.GONE);
-                     */
-
                     ImageView statusIcon = mCurrentView.findViewById(R.id.imgStatusIcon);
 
                     if (icon != null) {
                         statusIcon.setImageResource(icon);
                     }
-
-                    // statusIcon.setVisibility(showSpinner ? View.GONE : View.VISIBLE);
 
                     TextView statusMessage = mCurrentView.findViewById(R.id.txtStatusMessage);
                     if (messageId != -1) {
@@ -273,6 +285,8 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
         if (state.state == DeviceConnectionStatus.ConnectionState.CONNECTED) {
             updateStatus( R.string.text_status_message_succeed, "", R.drawable.success);
             DelegateManager.getInstance().onCompleted(true);
+
+            onBluetoothConnectionSucceed();
         } else if (state.state == DeviceConnectionStatus.ConnectionState.FAILED
                 || state.state == DeviceConnectionStatus.ConnectionState.NOT_FOUND
                 || (mLastConnectionState == DeviceConnectionStatus.ConnectionState.CONNECTING && state.state == DeviceConnectionStatus.ConnectionState.DISCONNECTED)) {
@@ -285,9 +299,12 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
 
     @Override
     public void onBLEStateChanged(DeviceCapability state) {
-        if (mActionType != null && mActionType == PassFlowActivity.ACTION_BLUETOOTH && !mLastBluetoothState && state.enabled) {
+        if (mActionType != null && mActionType.equals(PassFlowActivity.ACTION_BLUETOOTH) && !mLastBluetoothState && state.enabled) {
             mLastBluetoothState = true;
-            runBluetooth();
+
+            if (isVisible()) {
+                runBluetooth();
+            }
         } else {
             mLastBluetoothState = state.enabled;
         }

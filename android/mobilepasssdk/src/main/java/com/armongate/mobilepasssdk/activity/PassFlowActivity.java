@@ -70,6 +70,15 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
     }
 
     @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+
+        if (!hasFocus && connectionActive) {
+            finish();
+        }
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
 
@@ -104,10 +113,8 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
 
     @Override
     public void onBackPressed() {
-        if (!connectionActive) {
-            super.onBackPressed();
-            DelegateManager.getInstance().onCancelled(false);
-        }
+        super.onBackPressed();
+        DelegateManager.getInstance().onCancelled(false);
     }
 
     @Override
@@ -138,8 +145,6 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
     @Override
     public void onConnectionStateChanged(boolean isActive) {
         connectionActive = isActive;
-
-        // TODO Call this from Status fragment while waiting remote access response and ble connection
     }
 
     @Override
