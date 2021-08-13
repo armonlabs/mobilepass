@@ -70,7 +70,7 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
         mNextAction         = getArguments() != null ? getArguments().getString("nextAction") : "";
 
         // Inflate the layout for this fragment
-        mCurrentView = inflater.inflate(R.layout.fragment_status, container, false);
+        mCurrentView = inflater.inflate(R.layout.fragment_armon_status, container, false);
 
         updateStatus(mActionType.equals(PassFlowActivity.ACTION_BLUETOOTH) ? R.string.text_status_message_scanning : R.string.text_status_message_waiting,
                 "",
@@ -257,13 +257,13 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
 
                 @Override
                 public void run() {
-                    ImageView statusIcon = mCurrentView.findViewById(R.id.imgStatusIcon);
+                    ImageView statusIcon = mCurrentView.findViewById(R.id.armon_mp_imgStatusIcon);
 
                     if (icon != null) {
                         statusIcon.setImageResource(icon);
                     }
 
-                    TextView statusMessage = mCurrentView.findViewById(R.id.txtStatusMessage);
+                    TextView statusMessage = mCurrentView.findViewById(R.id.armon_mp_txtStatusMessage);
                     if (messageId != -1) {
                         statusMessage.setText(messageId);
                     } else {

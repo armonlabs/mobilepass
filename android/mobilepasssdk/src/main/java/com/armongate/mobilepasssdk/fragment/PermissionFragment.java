@@ -34,7 +34,7 @@ public class PermissionFragment extends Fragment  {
         }
 
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_permission, container, false);
+        View view = inflater.inflate(R.layout.fragment_armon_permission, container, false);
 
         int resMessageId = R.string.text_permission_camera;
 
@@ -44,10 +44,10 @@ public class PermissionFragment extends Fragment  {
             resMessageId = R.string.text_permission_location_service;
         }
 
-        TextView txtMessage = (TextView) view.findViewById(R.id.txtMessage);
+        TextView txtMessage = (TextView) view.findViewById(R.id.armon_mp_txtMessage);
         txtMessage.setText(resMessageId);
 
-        Button button = (Button) view.findViewById(R.id.btnSettings);
+        Button button = (Button) view.findViewById(R.id.armon_mp_btnSettings);
         button.setOnClickListener(new View.OnClickListener()
         {
             @Override

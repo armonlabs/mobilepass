@@ -1,12 +1,8 @@
 package com.armongate.mobilepasssdk.fragment;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.util.Log;
-import android.util.Size;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.SurfaceHolder;
@@ -39,14 +35,14 @@ public class QRCodeReaderFragment extends Fragment implements SurfaceHolder.Call
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_qrcode_reader, container, false);
+        View view = inflater.inflate(R.layout.fragment_armon_qrcode_reader, container, false);
 
         if (ConfigurationManager.getInstance().getMessageQRCode().length() > 0) {
-            TextView txtQRCodeMessage = view.findViewById(R.id.txtQRInfoMessage);
+            TextView txtQRCodeMessage = view.findViewById(R.id.armon_mp_txtQRInfoMessage);
             txtQRCodeMessage.setText(ConfigurationManager.getInstance().getMessageQRCode());
         }
 
-        setupControls((SurfaceView)view.findViewById(R.id.qrSurfaceView));
+        setupControls((SurfaceView)view.findViewById(R.id.armon_mp_qrSurfaceView));
 
         return view;
     }

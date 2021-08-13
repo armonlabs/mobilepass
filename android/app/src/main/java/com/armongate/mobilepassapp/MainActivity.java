@@ -28,12 +28,12 @@ public class MainActivity extends AppCompatActivity implements MobilePassDelegat
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        TextView txtLogs = findViewById(R.id.txtLogs);
+        TextView txtLogs = findViewById(R.id.armon_test_txtLogs);
         txtLogs.setMovementMethod(new ScrollingMovementMethod());
     }
 
     public void onButtonStartClicked(View v) {
-        EditText txtMemberId = findViewById(R.id.inputMemberId);
+        EditText txtMemberId = findViewById(R.id.armon_test_inputMemberId);
 
         if (txtMemberId.getText().toString().isEmpty()) {
             Toast.makeText(this, "Üye numaranızı giriniz", Toast.LENGTH_SHORT).show();
@@ -52,10 +52,10 @@ public class MainActivity extends AppCompatActivity implements MobilePassDelegat
     }
 
     public void onButtonGetLogsClicked(View v) {
-        Button btnShare = findViewById(R.id.btnShare);
+        Button btnShare = findViewById(R.id.armon_test_btnShare);
 
         if(passer != null) {
-            TextView txtLogs = findViewById(R.id.txtLogs);
+            TextView txtLogs = findViewById(R.id.armon_test_txtLogs);
 
             String logs = getLogs();
             txtLogs.setText(logs);

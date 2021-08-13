@@ -4,7 +4,6 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Bundle;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -12,7 +11,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
 
 import com.armongate.mobilepasssdk.R;
-import com.armongate.mobilepasssdk.constant.CancelReason;
 import com.armongate.mobilepasssdk.constant.NeedPermissionType;
 import com.armongate.mobilepasssdk.constant.QRTriggerType;
 import com.armongate.mobilepasssdk.delegate.PassFlowDelegate;
@@ -29,7 +27,6 @@ import com.armongate.mobilepasssdk.model.QRCodeContent;
 import com.armongate.mobilepasssdk.model.response.ResponseAccessPointItemQRCodeItemTrigger;
 import com.google.gson.Gson;
 
-import java.security.Permission;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -37,7 +34,7 @@ import java.util.Locale;
 public class PassFlowActivity extends AppCompatActivity implements PassFlowDelegate {
 
     public PassFlowActivity() {
-        super(R.layout.activity_pass_flow);
+        super(R.layout.activity_armon_pass_flow);
     }
 
     public static final String ACTION_BLUETOOTH    = "bluetooth";
@@ -62,7 +59,7 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
                     .setReorderingAllowed(true)
-                    .add(R.id.fragment, SettingsManager.getInstance().checkCameraPermission(getApplicationContext(), this) ? QRCodeReaderFragment.class : CheckFragment.class, null)
+                    .add(R.id.armon_mp_fragment_container, SettingsManager.getInstance().checkCameraPermission(getApplicationContext(), this) ? QRCodeReaderFragment.class : CheckFragment.class, null)
                     .commit();
         }
 
@@ -166,7 +163,7 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
     private void replaceFragment(Class<? extends androidx.fragment.app.Fragment> newFragment, @Nullable Bundle args) {
         FragmentManager fragmentManager = getSupportFragmentManager();
         fragmentManager.beginTransaction()
-                .replace(R.id.fragment, newFragment, args)
+                .replace(R.id.armon_mp_fragment_container, newFragment, args)
                 .setReorderingAllowed(true)
                 .commit();
     }

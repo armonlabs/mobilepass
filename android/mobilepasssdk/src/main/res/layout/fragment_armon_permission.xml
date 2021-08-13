@@ -15,7 +15,7 @@
         android:orientation="vertical">
 
         <ImageView
-            android:id="@+id/imgStatusIcon"
+            android:id="@+id/armon_mp_imgStatusIcon"
             android:layout_width="100dp"
             android:layout_height="100dp"
             android:layout_marginBottom="36dp"
@@ -24,7 +24,7 @@
             app:srcCompat="@drawable/warning" />
 
         <TextView
-            android:id="@+id/txtMessage"
+            android:id="@+id/armon_mp_txtMessage"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="20dp"
@@ -34,16 +34,16 @@
             android:text="@string/text_permission_camera" />
 
         <Button
-            android:id="@+id/btnSettings"
+            android:id="@+id/armon_mp_btnSettings"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="36dp"
             android:minWidth="150dp"
-            android:text="Ayarlar" />
+            android:text="@string/btn_label_settings" />
     </LinearLayout>
 
     <ImageView
-        android:id="@+id/imgCheckPoweredBy"
+        android:id="@+id/armon_mp_imgPermissionPoweredBy"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="24dp"

@@ -9,13 +9,13 @@
     tools:context=".fragment.StatusFragment">
 
     <ImageView
-        android:id="@+id/imgStatusIcon"
+        android:id="@+id/armon_mp_imgStatusIcon"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginTop="96dp"
         android:contentDescription="@string/img_content_status_icon"
         android:scaleType="fitCenter"
-        app:layout_constraintBottom_toTopOf="@id/txtStatusMessage"
+        app:layout_constraintBottom_toTopOf="@id/armon_mp_txtStatusMessage"
         app:layout_constraintHeight_percent="0.3"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
@@ -24,7 +24,7 @@
         app:srcCompat="@drawable/success" />
 
     <TextView
-        android:id="@+id/txtStatusMessage"
+        android:id="@+id/armon_mp_txtStatusMessage"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginLeft="14dp"
@@ -38,14 +38,14 @@
         android:textAllCaps="false"
         android:textColor="#000000"
         android:textSize="14sp"
-        app:layout_constraintBottom_toTopOf="@id/imgStatusPoweredBy"
+        app:layout_constraintBottom_toTopOf="@id/armon_mp_imgStatusPoweredBy"
         app:layout_constraintHorizontal_bias="0.1"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="@id/imgStatusIcon" />
+        app:layout_constraintTop_toTopOf="@id/armon_mp_imgStatusIcon" />
 
     <ImageView
-        android:id="@+id/imgStatusPoweredBy"
+        android:id="@+id/armon_mp_imgStatusPoweredBy"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="24dp"

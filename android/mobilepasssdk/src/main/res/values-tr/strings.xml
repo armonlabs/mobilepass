@@ -15,6 +15,7 @@
 	<string name="text_qrcode_message">Geçiş yapacağınız erişim kontrol noktasının karekodunu okutunuz</string>
 	<string name="img_content_powered_by_armon">Powered by armon</string>
 	<string name="img_content_status_icon">status icon</string>
+	<string name="btn_label_settings">Ayarlar</string>
 	<string name="text_permission_camera">Karekodu tarayabilmek için uygulamaya kamera erişim izni vermeniz gerekmektedir. \'Ayarlar\' butonuna dokunarak gerekli değişikliği gerçekleştirebilirsiniz.</string>
 	<string name="text_permission_location">İşleme devam edebilmeniz için uygulamaya konum erişim izni vermeniz gerekmektedir. \'Ayarlar\' butonuna dokunarak gerekli değişikliği gerçekleştirebilirsiniz.</string>
 	<string name="text_permission_location_service">İşleme devam edebilmeniz için konum servislerinin açık olması gerekmektedir. Konum servisini \'Ayarlar\' butonuna dokunarak veya denetim merkezinden aktifleştirdikten sonra karekodu yeniden okutabilirsiniz.</string>
