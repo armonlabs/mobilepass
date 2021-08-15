@@ -11,6 +11,8 @@ import MapKit
 struct MapView: View {
     @Environment(\.locale) var locale
     
+    @State private var isPrecisedLocation = true
+    
     fileprivate var checkPoint: ResponseAccessPointItemGeoLocation?
     
     init(checkPoint: ResponseAccessPointItemGeoLocation?) {
@@ -20,13 +22,18 @@ struct MapView: View {
     var body: some View {
         ZStack(alignment: .bottom) {
             MapViewContent(checkPoint: checkPoint, completion: { result in
-                if case let .success(distance) = result {
+                if case .success(_) = result {
+                    // _ = distance
                     DelegateManager.shared.flowLocationValidated()
+                }
+            }, isPrecisedLocation: { result in
+                if (result != $isPrecisedLocation.wrappedValue) {
+                    self.isPrecisedLocation.toggle()
                 }
             }).edgesIgnoringSafeArea(.all)
             GeometryReader { (geometry) in
                 VStack {
-                    Text("text_location_message".localized(locale.identifier)).foregroundColor(.white).fontWeight(.medium).multilineTextAlignment(.center)
+                    Text(($isPrecisedLocation.wrappedValue ? "text_location_message" : "text_location_message_reduced").localized(locale.identifier)).foregroundColor(.white).fontWeight(.medium).font(.system(size: 14)).multilineTextAlignment(.center)
                 }
                 .padding(.bottom, geometry.safeAreaInsets.bottom + 16)
                 .padding(.horizontal, 14)
@@ -55,11 +62,13 @@ struct MapViewContent: UIViewRepresentable {
     }
     
     public var completion: (Result<Double, Error>) -> Void
+    public var isPrecised: (Bool) -> Void
     public var checkPoint: ResponseAccessPointItemGeoLocation?
     
-    public init(checkPoint: ResponseAccessPointItemGeoLocation?, completion: @escaping (Result<Double, Error>) -> Void) {
+    public init(checkPoint: ResponseAccessPointItemGeoLocation?, completion: @escaping (Result<Double, Error>) -> Void, isPrecisedLocation: @escaping (Bool) -> Void) {
         self.completion = completion
         self.checkPoint = checkPoint
+        self.isPrecised = isPrecisedLocation
     }
     
     func makeUIView(context: Context) -> MKMapView {
@@ -144,13 +153,32 @@ class MapViewCoordinator: NSObject, MKMapViewDelegate, CLLocationManagerDelegate
     public func mapView(_ mapView: MKMapView, didUpdate userLocation: MKUserLocation) {
         LogManager.shared.debug(message: "User location changed: \(userLocation.coordinate.latitude), \(userLocation.coordinate.longitude)")
         
+        var isPrecised: Bool = true
+        
+        do {
+            if #available(iOS 14.0, *) {
+                switch locationManager.accuracyAuthorization {
+                case .fullAccuracy:
+                    LogManager.shared.debug(message: "Location has full accuracy")
+                    break
+                case .reducedAccuracy:
+                    LogManager.shared.debug(message: "Location has reduced accuracy")
+                    isPrecised = false
+                    break
+                @unknown default:
+                    LogManager.shared.debug(message: "Location has unknown accuracy")
+                }
+            }
+        } catch { }
+        
         if (isInitialLocation) {
             isInitialLocation = false
             mapView.zoomToLocation(mapView.userLocation.location)
         }
         
         if (!isLocationFound && self.parent.checkPoint != nil) {
-            if (userLocation.location?.altitude == 0 && !ConfigurationManager.shared.isMockLocationAllowed()) {
+            // TODO: false is added to handle 'precise location' and mock location conflict, check here
+            if (userLocation.location?.altitude == 0 && !ConfigurationManager.shared.isMockLocationAllowed() && false) {
                 DelegateManager.shared.onMockLocationDetected()
             } else {
                 let pinLoc = CLLocationCoordinate2D(latitude: self.parent.checkPoint!.latitude, longitude: self.parent.checkPoint!.longitude)
@@ -163,12 +191,13 @@ class MapViewCoordinator: NSObject, MKMapViewDelegate, CLLocationManagerDelegate
                     parent.completion(.success(distance))
                 } else {
                     LogManager.shared.debug(message: "Distance: \(distance)")
+                    parent.isPrecised(isPrecised)
                 }
             }
         }
     }
     
-    func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer! {
+    func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
         if overlay is MKCircle {
             let circle = MKCircleRenderer(overlay: overlay)
             circle.strokeColor = UIColor.red
@@ -176,7 +205,7 @@ class MapViewCoordinator: NSObject, MKMapViewDelegate, CLLocationManagerDelegate
             circle.lineWidth = 1
             return circle
         } else {
-            return nil
+            return MKOverlayRenderer()
         }
     }
     

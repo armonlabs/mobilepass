@@ -20,6 +20,7 @@
 "text_status_message_need_permission_bluetooth" = "Bluetooth ile geçiş için uygulamaya Bluetooth izni vermeniz gerekmektedir";
 "text_status_message_need_permission_camera" = "Karekodu tarayabilmek için uygulamaya kamera erişim izni vermeniz gerekmektedir.";
 "text_location_message" = "Devam edebilmek için tanımlı konumda olmanız gerekmektedir";
+"text_location_message_reduced" = "Devam edebilmek için tanımlı konumda olmanız gerekmektedir\n\Uygulama izinlerinde 'Tam Konum'u etkinleştirmek, konum doğrulamanızı hızlandıracaktır";
 "text_button_close" = "Kapat";
 "text_button_app_permissions" = "Uygulama İzinleri";
 "text_qrcode_message" = "Geçiş yapacağınız erişim kontrol noktasının karekodunu okutunuz";
