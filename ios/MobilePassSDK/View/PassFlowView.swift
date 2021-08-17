@@ -53,14 +53,11 @@ struct PassFlowView: View, PassFlowDelegate {
                 if viewModel.currentView == FlowViewType.qr {
                     ScanQRCodeView()
                 } else if viewModel.currentView == FlowViewType.map {
-                    MapView(checkPoint: viewModel.activeQRCodeContent?.accessPoint.geoLocation)
+                    MapView(checkPoint: viewModel.activeQRCodeContent?.geoLocation)
                 } else if viewModel.currentView == FlowViewType.action {
                     StatusView(config: ActionConfig(currentAction: viewModel.actionCurrent,
-                                                    devices: viewModel.activeQRCodeContent?.accessPoint.deviceInfo ?? [],
-                                                    accessPointId: viewModel.activeQRCodeContent?.accessPoint.id,
-                                                    direction: viewModel.activeQRCodeContent?.action.config.direction,
-                                                    deviceNumber: viewModel.activeQRCodeContent?.action.config.deviceNumber,
-                                                    relayNumber: viewModel.activeQRCodeContent?.action.config.relayNumber,
+                                                    devices: viewModel.activeQRCodeContent?.terminals ?? [],
+                                                    qrCode: viewModel.activeQRCodeContent?.qrCode,
                                                     nextAction: viewModel.actionList.count > 0 ? viewModel.actionList.first : nil))
                 } else {
                     PermissionView(type: viewModel.needPermissionType)
@@ -155,15 +152,13 @@ struct PassFlowView: View, PassFlowDelegate {
         viewModel.activeQRCodeContent = ConfigurationManager.shared.getQRCodeContent(qrCodeData: code)
         
         if (viewModel.activeQRCodeContent != nil) {
-            let trigger: ResponseAccessPointItemQRCodeItemTrigger = viewModel.activeQRCodeContent!.action.config.trigger
-            
-            let needLocation: Bool = trigger.validateGeoLocation == true && viewModel.activeQRCodeContent!.accessPoint.geoLocation != nil
+            let needLocation: Bool = viewModel.activeQRCodeContent!.qrCode.v == true && viewModel.activeQRCodeContent!.geoLocation != nil
             LogManager.shared.debug(message: "Need location: \(needLocation)")
             
             var actionList: [String] = []
             var actionCurrent: String = ""
             
-            switch trigger.type {
+            switch viewModel.activeQRCodeContent!.qrCode.t {
             case QRTriggerType.Bluetooth:
                 LogManager.shared.debug(message: "Trigger Type: Bluetooth");
                 actionCurrent = PassFlowView.ACTION_BLUETOOTH
@@ -185,7 +180,7 @@ struct PassFlowView: View, PassFlowDelegate {
                     actionList.append(PassFlowView.ACTION_REMOTEACCESS)
                 }
                 
-                if (trigger.type == QRTriggerType.RemoteThenBluetooth) {
+                if (viewModel.activeQRCodeContent!.qrCode.t == QRTriggerType.RemoteThenBluetooth) {
                     LogManager.shared.debug(message: "Trigger Type: Remote Then Bluetooth");
                     actionList.append(PassFlowView.ACTION_BLUETOOTH);
                 } else {

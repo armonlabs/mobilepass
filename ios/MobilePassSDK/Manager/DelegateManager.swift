@@ -21,10 +21,12 @@ class DelegateManager: NSObject {
     
     public var isPassFlowCompleted: Bool = false
     public var isPassConnectionActive: Bool = false
+    public var qrCodeListState: QRCodeListState = .INITIALIZING
     private var isDismissedManual: Bool = false
     private var mobilePassDelegate: MobilePassDelegate?
     private var mobilePassController: UIViewController?
     private var passFlowDelegate: PassFlowDelegate?
+    private var qrCodeListStateDelegate: QRCodeListStateDelegate?
     private var timerAutoClose: Timer? = nil
     
     // MARK: Public Functions
@@ -43,6 +45,10 @@ class DelegateManager: NSObject {
     func setMainDelegate(delegate: MobilePassDelegate?, viewController: UIViewController) {
         mobilePassDelegate = delegate
         mobilePassController = viewController
+    }
+    
+    func setQRCodeStateDelegate(delegate: QRCodeListStateDelegate?) {
+        qrCodeListStateDelegate = delegate
     }
     
     func onCompleted(succeed: Bool) {
@@ -93,9 +99,13 @@ class DelegateManager: NSObject {
     }
     
     func qrCodeListChanged(state: QRCodeListState) {
+        qrCodeListState = state
+        
         DispatchQueue.main.async {
             self.mobilePassDelegate?.onQRCodeListStateChanged(state: state.rawValue)
         }
+        
+        self.qrCodeListStateDelegate?.onStateChanged(state: state.rawValue)
     }
     
     func onMockLocationDetected() {

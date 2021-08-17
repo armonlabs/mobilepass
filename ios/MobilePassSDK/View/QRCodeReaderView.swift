@@ -10,7 +10,7 @@ import AVFoundation
 import SwiftUI
 
 public enum ScanError: Error {
-    case addInputFailed, addOutputFailed
+    case addInputFailed, addOutputFailed, noMatching, invalidFormat
 }
 
 public struct QRCodeReaderView: UIViewControllerRepresentable {
@@ -87,11 +87,13 @@ public class QRCodeReaderCoordinator: NSObject, AVCaptureMetadataOutputObjectsDe
 
                 if (ConfigurationManager.shared.getQRCodeContent(qrCodeData: qrCodeContent) == nil) {
                     isFound = false
+                    parent.completion(.failure(.noMatching))
                 } else {
                     // Send event for qr code
                     parent.completion(.success(qrCodeContent))
                 }
             } else {
+                parent.completion(.failure(.invalidFormat))
                 LogManager.shared.warn(message: "Unknown QR code format")
             }
         }

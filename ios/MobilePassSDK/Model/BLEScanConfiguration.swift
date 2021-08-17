@@ -11,19 +11,21 @@ public struct BLEScanConfiguration {
     var deviceList:         Dictionary<String, DeviceConnectionInfo>
     var dataUserId:         String
     var dataDirection:      Int
+    var hardwareId:         String
     var deviceNumber:       Int
     var relayNumber:        Int
     
-    init(devices: [ResponseAccessPointItemDeviceInfo], userId: String, direction: Int, deviceNumber: Int, relayNumber: Int) {
+    init(devices: [ResponseAccessPointListTerminal], userId: String, direction: Int, hardwareId: String, relayNumber: Int) {
         self.dataUserId     = userId
         self.dataDirection  = direction
-        self.deviceNumber   = deviceNumber
+        self.hardwareId     = hardwareId
+        self.deviceNumber   = 0 // Default value
         self.relayNumber    = relayNumber
         
         self.deviceList = [:]
         
         for device in devices {
-            self.deviceList[device.id.lowercased()] = DeviceConnectionInfo(deviceId: device.id, publicKey: device.publicKey ?? "", hardwareId: device.hardwareId ?? "")
+            self.deviceList[device.i.lowercased()] = DeviceConnectionInfo(deviceId: device.i, publicKey: device.p)
         }
     }
 }

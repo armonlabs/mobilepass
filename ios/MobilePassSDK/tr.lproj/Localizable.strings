@@ -24,3 +24,8 @@
 "text_button_close" = "Kapat";
 "text_button_app_permissions" = "Uygulama İzinleri";
 "text_qrcode_message" = "Geçiş yapacağınız erişim kontrol noktasının karekodunu okutunuz";
+"text_qrcode_list_state_initializing" = "Karekod listesi hazırlanıyor";
+"text_qrcode_list_state_syncing" = "Karekod listesi güncelleniyor";
+"text_qrcode_list_state_empty" = "Karekod tanımlaması bulunmamaktadır";
+"text_qrcode_list_state_synced_data" = "Karekod tanımlaması güncel";
+"text_qrcode_list_state_stored_data" = "Karekod tanımlaması güncellenemedi";

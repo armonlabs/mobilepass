@@ -8,15 +8,13 @@
 import Foundation
 
 struct RequestAccess: Codable {
-    var accessPointId:  String;
+    var qrCodeId:       String;
     var clubMemberId:   String;
-    var direction:      Direction;
     
     var dictionary: [String: Any] {
         return [
-            "accessPointId": accessPointId,
-            "clubMemberId": clubMemberId,
-            "direction": direction.rawValue
+            "qrCodeId": qrCodeId,
+            "clubMemberId": clubMemberId
         ]
     }
 }

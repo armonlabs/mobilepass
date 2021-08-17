@@ -24,7 +24,6 @@ import com.armongate.mobilepasssdk.manager.DelegateManager;
 import com.armongate.mobilepasssdk.manager.LogManager;
 import com.armongate.mobilepasssdk.manager.SettingsManager;
 import com.armongate.mobilepasssdk.model.QRCodeContent;
-import com.armongate.mobilepasssdk.model.response.ResponseAccessPointItemQRCodeItemTrigger;
 import com.google.gson.Gson;
 
 import java.util.ArrayList;
@@ -183,15 +182,12 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
         if (activeQRCodeContent != null) {
             LogManager.getInstance().info("QR code content for [" + code + "] is processing...");
 
-            ResponseAccessPointItemQRCodeItemTrigger trigger = activeQRCodeContent.action.config != null ? activeQRCodeContent.action.config.trigger : null;
-
-            if (trigger != null) {
-                boolean needLocation = trigger.validateGeoLocation != null && trigger.validateGeoLocation && activeQRCodeContent.accessPoint.geoLocation != null;
+                boolean needLocation = activeQRCodeContent.qrCode.v != null && activeQRCodeContent.qrCode.v && activeQRCodeContent.geoLocation != null;
                 LogManager.getInstance().info("Need location: " + needLocation);
 
                 actionList = new ArrayList<>();
 
-                switch (trigger.type) {
+                switch (activeQRCodeContent.qrCode.t) {
                     case QRTriggerType.Bluetooth:
                         LogManager.getInstance().info("Trigger Type: Bluetooth");
                         actionCurrent = ACTION_BLUETOOTH;
@@ -215,7 +211,7 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
                             actionList.add(ACTION_REMOTEACCESS);
                         }
 
-                        if (trigger.type == QRTriggerType.RemoteThenBluetooth) {
+                        if (activeQRCodeContent.qrCode.t == QRTriggerType.RemoteThenBluetooth) {
                             LogManager.getInstance().info("Trigger Type: Remote Then Bluetooth");
                             actionList.add(ACTION_BLUETOOTH);
                         } else {
@@ -223,7 +219,7 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
                         }
                         break;
                     default:
-                        LogManager.getInstance().warn("Unknown QR code trigger type! > " + trigger.type);
+                        LogManager.getInstance().warn("Unknown QR code trigger type! > " + activeQRCodeContent.qrCode.t);
                 }
 
                 boolean needLocationPermission = actionCurrent.equals(ACTION_BLUETOOTH) || actionCurrent.equals(ACTION_LOCATION) || actionList.contains(ACTION_BLUETOOTH) || actionList.contains(ACTION_LOCATION);
@@ -237,9 +233,6 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
                         replaceFragment(CheckFragment.class, null);
                     }
                 }
-            } else {
-                LogManager.getInstance().warn("Trigger definition is missing in QR code content");
-            }
         } else {
             LogManager.getInstance().warn("QR code definition cannot be found > " + code);
         }
@@ -256,22 +249,20 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
 
         if (actionCurrent.equals(ACTION_LOCATION)) {
             Bundle bundle = new Bundle();
-            bundle.putDouble("latitude", activeQRCodeContent.accessPoint.geoLocation.latitude);
-            bundle.putDouble("longitude", activeQRCodeContent.accessPoint.geoLocation.longitude);
-            bundle.putInt("radius", activeQRCodeContent.accessPoint.geoLocation.radius);
+            bundle.putDouble("latitude", activeQRCodeContent.geoLocation.la);
+            bundle.putDouble("longitude", activeQRCodeContent.geoLocation.lo);
+            bundle.putInt("radius", activeQRCodeContent.geoLocation.r);
 
             replaceFragment(MapFragment.class, bundle);
         } else {
             Gson gson = new Gson();
-            String deviceDetails = gson.toJson(activeQRCodeContent.accessPoint.deviceInfo);
+            String deviceDetails = gson.toJson(activeQRCodeContent.terminals);
+            String qrCodeInfo = gson.toJson(activeQRCodeContent.qrCode);
 
             Bundle bundle = new Bundle();
             bundle.putString("type", actionCurrent);
             bundle.putString("devices", deviceDetails);
-            bundle.putString("accessPointId", activeQRCodeContent.accessPoint.id);
-            bundle.putInt("direction", activeQRCodeContent.action.config.direction);
-            bundle.putInt("deviceNumber", activeQRCodeContent.action.config.deviceNumber);
-            bundle.putInt("relayNumber", activeQRCodeContent.action.config.relayNumber);
+            bundle.putString("qrCode", qrCodeInfo);
             bundle.putString("nextAction", actionList.size() > 0 ? actionList.get(0) : "");
 
             replaceFragment(StatusFragment.class, bundle);

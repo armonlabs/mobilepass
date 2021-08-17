@@ -19,4 +19,9 @@
 	<string name="text_permission_camera">Karekodu tarayabilmek için uygulamaya kamera erişim izni vermeniz gerekmektedir. \'Ayarlar\' butonuna dokunarak gerekli değişikliği gerçekleştirebilirsiniz.</string>
 	<string name="text_permission_location">İşleme devam edebilmeniz için uygulamaya konum erişim izni vermeniz gerekmektedir. \'Ayarlar\' butonuna dokunarak gerekli değişikliği gerçekleştirebilirsiniz.</string>
 	<string name="text_permission_location_service">İşleme devam edebilmeniz için konum servislerinin açık olması gerekmektedir. Konum servisini \'Ayarlar\' butonuna dokunarak veya denetim merkezinden aktifleştirdikten sonra karekodu yeniden okutabilirsiniz.</string>
+	<string name="text_qrcode_list_state_initializing">Karekod listesi hazırlanıyor</string>
+	<string name="text_qrcode_list_state_syncing">Karekod listesi güncelleniyor</string>
+	<string name="text_qrcode_list_state_empty">Karekod tanımlaması bulunmamaktadır</string>
+	<string name="text_qrcode_list_state_synced_data">Karekod tanımlaması güncel</string>
+	<string name="text_qrcode_list_state_stored_data">Karekod tanımlaması güncellenemedi</string>
 </resources>

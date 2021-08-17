@@ -1,7 +1,6 @@
 package com.armongate.mobilepasssdk.manager;
 
 import android.content.Context;
-import android.util.Log;
 
 import com.armongate.mobilepasssdk.constant.QRCodeListState;
 import com.armongate.mobilepasssdk.constant.StorageKeys;
@@ -11,9 +10,9 @@ import com.armongate.mobilepasssdk.model.QRCodeContent;
 import com.armongate.mobilepasssdk.model.StorageDataUserDetails;
 import com.armongate.mobilepasssdk.model.request.RequestPagination;
 import com.armongate.mobilepasssdk.model.request.RequestSetUserData;
-import com.armongate.mobilepasssdk.model.response.ResponseAccessPointItem;
-import com.armongate.mobilepasssdk.model.response.ResponseAccessPointItemQRCodeItem;
 import com.armongate.mobilepasssdk.model.response.ResponseAccessPointList;
+import com.armongate.mobilepasssdk.model.response.ResponseAccessPointListItem;
+import com.armongate.mobilepasssdk.model.response.ResponseAccessPointListQRCode;
 import com.armongate.mobilepasssdk.service.BaseService;
 import com.armongate.mobilepasssdk.service.DataService;
 import com.google.gson.Gson;
@@ -21,6 +20,7 @@ import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -36,6 +36,7 @@ public class ConfigurationManager {
 
     private int mReceivedItemCount = 0;
     private RequestPagination mPagination = null;
+    private Long mListSyncDate = null;
 
     private ConfigurationManager() { }
 
@@ -117,7 +118,9 @@ public class ConfigurationManager {
     }
 
     private void getStoredQRCodes() {
-        String storageQRCodes = StorageManager.getInstance().getValue(mCurrentContext, StorageKeys.QRCODES);
+        StorageManager.getInstance().deleteValue(mCurrentContext, StorageKeys.QRCODES);
+
+        String storageQRCodes = StorageManager.getInstance().getValue(mCurrentContext, StorageKeys.LIST_QRCODES);
 
         Gson gson = new Gson();
 
@@ -211,15 +214,13 @@ public class ConfigurationManager {
         }
     }
 
-    private void processAccessPointsResponse(ResponseAccessPointList response) {
+    private void processQRCodesResponse(ResponseAccessPointList response) {
         mReceivedItemCount += response.items.length;
 
-        for (ResponseAccessPointItem item:
-                response.items) {
-            for (ResponseAccessPointItemQRCodeItem qrCode :
-                    item.qrCodeData) {
-                QRCodeContent content = new QRCodeContent(qrCode.qrCodeData, item, qrCode);
-                mTempQRCodes.put(qrCode.qrCodeData, content);
+        for (ResponseAccessPointListItem item: response.items) {
+            for (ResponseAccessPointListQRCode qrCode : item.q) {
+                QRCodeContent content = new QRCodeContent(qrCode, item.t, item.g);
+                mTempQRCodes.put(qrCode.q, content);
 
                 // Open to show received access point definitions
                 // LogManager.getInstance().debug(new Gson().toJson(content));
@@ -234,17 +235,18 @@ public class ConfigurationManager {
             mCurrentQRCodes.putAll(mTempQRCodes);
 
             String valueQRCodesToStore = new Gson().toJson(mCurrentQRCodes);
-            StorageManager.getInstance().setValue(mCurrentContext, StorageKeys.QRCODES, valueQRCodesToStore);
+            StorageManager.getInstance().setValue(mCurrentContext, StorageKeys.LIST_QRCODES, valueQRCodesToStore);
+            StorageManager.getInstance().setValue(mCurrentContext, StorageKeys.LIST_SYNC_DATE, new Date().getTime() + "");
 
             DelegateManager.getInstance().onQRCodeListStateChanged(mCurrentQRCodes.size() > 0 ? QRCodeListState.USING_SYNCED_DATA : QRCodeListState.EMPTY);
         }
     }
 
     private void fetchAccessPoints() {
-        new DataService().getAccessList(mPagination, new BaseService.ServiceResultListener<ResponseAccessPointList>() {
+        new DataService().getAccessList(mPagination, mListSyncDate, new BaseService.ServiceResultListener<ResponseAccessPointList>() {
             @Override
             public void onCompleted(ResponseAccessPointList response) {
-               processAccessPointsResponse(response);
+                processQRCodesResponse(response);
             }
 
             @Override
@@ -256,6 +258,14 @@ public class ConfigurationManager {
     }
 
     private void getAccessPoints() {
+        DelegateManager.getInstance().onQRCodeListStateChanged(QRCodeListState.SYNCING);
+
+        String storedSyncDate = StorageManager.getInstance().getValue(mCurrentContext, StorageKeys.LIST_SYNC_DATE);
+
+        if (storedSyncDate != null && !storedSyncDate.isEmpty()) {
+            mListSyncDate = Long.getLong(storedSyncDate);
+        }
+
         mPagination = new RequestPagination();
         mPagination.take = 100;
         mPagination.skip = 0;

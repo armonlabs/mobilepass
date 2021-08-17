@@ -4,4 +4,5 @@
 	<color name="white">#FFFFFF</color>
 	<color name="black">#000000</color>
 	<color name="qrcode_mask">#92000000</color>
+	<color name="qrcode_mask_invalid">#92FF0000</color>
 </resources>

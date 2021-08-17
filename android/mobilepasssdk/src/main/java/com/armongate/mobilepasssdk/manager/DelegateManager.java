@@ -5,18 +5,23 @@ import android.os.Handler;
 import com.armongate.mobilepasssdk.activity.PassFlowActivity;
 import com.armongate.mobilepasssdk.constant.CancelReason;
 import com.armongate.mobilepasssdk.constant.NeedPermissionType;
+import com.armongate.mobilepasssdk.constant.QRCodeListState;
 import com.armongate.mobilepasssdk.delegate.MobilePassDelegate;
 import com.armongate.mobilepasssdk.delegate.PassFlowDelegate;
+import com.armongate.mobilepasssdk.delegate.QRCodeListStateDelegate;
 
 public class DelegateManager {
 
-    private static DelegateManager      mInstance                   = null;
-    private static PassFlowDelegate     mCurrentPassFlowDelegate    = null;
-    private static MobilePassDelegate   mCurrentMobilePassDelegate  = null;
+    private static DelegateManager          mInstance                       = null;
+    private static PassFlowDelegate         mCurrentPassFlowDelegate        = null;
+    private static MobilePassDelegate       mCurrentMobilePassDelegate      = null;
+    private static QRCodeListStateDelegate  mCurrentQRCodeListStateDelegate = null;
 
     private static boolean mFlowCompleted = false;
     private static boolean mDismissedManual = false;
     private static boolean mFinishedBefore = false;
+
+    private int mQRCodeListState = QRCodeListState.INITIALIZING;
 
     private DelegateManager() {
 
@@ -30,12 +35,20 @@ public class DelegateManager {
         return mInstance;
     }
 
+    public int getQRCodeListState() {
+        return mQRCodeListState;
+    }
+
     public void setCurrentPassFlowDelegate(PassFlowDelegate listener) {
         mCurrentPassFlowDelegate = listener;
     }
 
     public void setCurrentMobilePassDelegate(MobilePassDelegate listener) {
         mCurrentMobilePassDelegate = listener;
+    }
+
+    public void setCurrentQRCodeListStateDelegate(QRCodeListStateDelegate listener) {
+        mCurrentQRCodeListStateDelegate = listener;
     }
 
     public void clearFlowFlags() {
@@ -58,8 +71,14 @@ public class DelegateManager {
     }
 
     public void onQRCodeListStateChanged(int state) {
+        mQRCodeListState = state;
+
         if (mCurrentMobilePassDelegate != null) {
             mCurrentMobilePassDelegate.onQRCodeListStateChanged(state);
+        }
+
+        if (mCurrentQRCodeListStateDelegate != null) {
+            mCurrentQRCodeListStateDelegate.onStateChanged(state);
         }
     }
 

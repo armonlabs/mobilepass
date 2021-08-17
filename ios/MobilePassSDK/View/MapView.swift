@@ -13,9 +13,9 @@ struct MapView: View {
     
     @State private var isPrecisedLocation = true
     
-    fileprivate var checkPoint: ResponseAccessPointItemGeoLocation?
+    fileprivate var checkPoint: ResponseAccessPointListGeoLocation?
     
-    init(checkPoint: ResponseAccessPointItemGeoLocation?) {
+    init(checkPoint: ResponseAccessPointListGeoLocation?) {
         self.checkPoint = checkPoint
     }
     
@@ -63,9 +63,9 @@ struct MapViewContent: UIViewRepresentable {
     
     public var completion: (Result<Double, Error>) -> Void
     public var isPrecised: (Bool) -> Void
-    public var checkPoint: ResponseAccessPointItemGeoLocation?
+    public var checkPoint: ResponseAccessPointListGeoLocation?
     
-    public init(checkPoint: ResponseAccessPointItemGeoLocation?, completion: @escaping (Result<Double, Error>) -> Void, isPrecisedLocation: @escaping (Bool) -> Void) {
+    public init(checkPoint: ResponseAccessPointListGeoLocation?, completion: @escaping (Result<Double, Error>) -> Void, isPrecisedLocation: @escaping (Bool) -> Void) {
         self.completion = completion
         self.checkPoint = checkPoint
         self.isPrecised = isPrecisedLocation
@@ -82,9 +82,9 @@ struct MapViewContent: UIViewRepresentable {
         mapView.showsUserLocation = true
         
         if (checkPoint != nil) {
-            let location = CLLocationCoordinate2D(latitude: checkPoint!.latitude, longitude: checkPoint!.longitude)
+            let location = CLLocationCoordinate2D(latitude: checkPoint!.la, longitude: checkPoint!.lo)
             
-            addRadiusOverlay(forLocation: location, radius: CLLocationDistance(checkPoint!.radius))
+            addRadiusOverlay(forLocation: location, radius: CLLocationDistance(checkPoint!.r))
             
             let annotation = MKPointAnnotation()
             annotation.coordinate = location
@@ -181,12 +181,12 @@ class MapViewCoordinator: NSObject, MKMapViewDelegate, CLLocationManagerDelegate
             if (userLocation.location?.altitude == 0 && !ConfigurationManager.shared.isMockLocationAllowed() && false) {
                 DelegateManager.shared.onMockLocationDetected()
             } else {
-                let pinLoc = CLLocationCoordinate2D(latitude: self.parent.checkPoint!.latitude, longitude: self.parent.checkPoint!.longitude)
+                let pinLoc = CLLocationCoordinate2D(latitude: self.parent.checkPoint!.la, longitude: self.parent.checkPoint!.lo)
                 let userLoc = CLLocationCoordinate2D(latitude: userLocation.coordinate.latitude, longitude: userLocation.coordinate.longitude)
                 
                 let distance = MKMapPoint(userLoc).distance(to: MKMapPoint(pinLoc))
                 
-                if (distance < CLLocationDistance(self.parent.checkPoint!.radius)) {
+                if (distance < CLLocationDistance(self.parent.checkPoint!.r)) {
                     isLocationFound = true
                     parent.completion(.success(distance))
                 } else {

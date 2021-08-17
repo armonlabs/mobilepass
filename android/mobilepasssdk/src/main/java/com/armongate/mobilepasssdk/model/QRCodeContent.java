@@ -1,20 +1,17 @@
 package com.armongate.mobilepasssdk.model;
 
-import com.armongate.mobilepasssdk.model.response.ResponseAccessPointItem;
-import com.armongate.mobilepasssdk.model.response.ResponseAccessPointItemQRCodeItem;
-
-import java.util.ArrayList;
+import com.armongate.mobilepasssdk.model.response.ResponseAccessPointListGeoLocation;
+import com.armongate.mobilepasssdk.model.response.ResponseAccessPointListQRCode;
+import com.armongate.mobilepasssdk.model.response.ResponseAccessPointListTerminal;
 
 public class QRCodeContent {
-    public String code;
-    public ResponseAccessPointItem accessPoint;
-    public ResponseAccessPointItemQRCodeItem action;
+    public ResponseAccessPointListTerminal[]  terminals;
+    public ResponseAccessPointListQRCode qrCode;
+    public ResponseAccessPointListGeoLocation geoLocation;
 
-    public QRCodeContent(String code, ResponseAccessPointItem accessPoint, ResponseAccessPointItemQRCodeItem action) {
-        this.code           = code;
-        this.accessPoint    = accessPoint;
-        this.action         = action;
-
-        this.accessPoint.qrCodeData = new ResponseAccessPointItemQRCodeItem[0];
+    public QRCodeContent(ResponseAccessPointListQRCode qrCode, ResponseAccessPointListTerminal[] terminals, ResponseAccessPointListGeoLocation geoLocation) {
+        this.terminals      = terminals;
+        this.qrCode         = qrCode;
+        this.geoLocation    = geoLocation;
     }
 }

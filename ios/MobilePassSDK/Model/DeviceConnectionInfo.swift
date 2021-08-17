@@ -10,11 +10,9 @@ import Foundation
 struct DeviceConnectionInfo {
     var deviceId:   String;
     var publicKey:  String;
-    var hardwareId: String;
     
-    init(deviceId: String, publicKey: String, hardwareId: String) {
+    init(deviceId: String, publicKey: String) {
         self.deviceId   = deviceId
         self.publicKey  = publicKey
-        self.hardwareId = hardwareId
     }
 }

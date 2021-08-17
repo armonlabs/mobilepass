@@ -28,6 +28,7 @@ class ConfigurationManager: NSObject {
     private var mCurrentQRCodes:    Dictionary<String, QRCodeContent> = [:]
     private var mTempQRCodes:       Dictionary<String, QRCodeContent> = [:]
     private var mPagination:        RequestPagination? = nil
+    private var mListSyncDate:      Int64? = nil
     private var mReceivedItemCount: Int = 0
     private var mUserKeyDetails:    [StorageDataUserDetails] = []
     
@@ -104,7 +105,9 @@ class ConfigurationManager: NSObject {
     // MARK: Private Methods
     
     private func getStoredQRCodes() -> Void {
-        let storageQRCodes: String? = try? StorageManager.shared.getValue(key: StorageKeys.QRCODES, secure: false)
+        _ = try? StorageManager.shared.deleteValue(key: StorageKeys.QRCODES, secure: false)
+        
+        let storageQRCodes: String? = try? StorageManager.shared.getValue(key: StorageKeys.LIST_QRCODES, secure: false)
         mCurrentQRCodes = (storageQRCodes != nil && storageQRCodes!.count > 0 ? try? JSONUtil.shared.decodeJSONData(jsonString: storageQRCodes!) : [:]) ?? [:]
     }
     
@@ -182,7 +185,7 @@ class ConfigurationManager: NSObject {
         }
     }
     
-    private func processAccessPointsResponse(result: Result<ResponseAccessPointList?, RequestError>) {
+    private func processQRCodesResponse(result: Result<ResponseAccessPointList?, RequestError>) {
         if case .success(let receivedData) = result {
             if (receivedData == nil) {
                 LogManager.shared.error(message: "Empty data received for access points list")
@@ -192,11 +195,9 @@ class ConfigurationManager: NSObject {
             self.mReceivedItemCount += receivedData!.items.count
             
             for item in (receivedData?.items ?? []) {
-                for qrCode in item.qrCodeData {
-                    var content = QRCodeContent(code: qrCode.qrCodeData, accessPoint: item, action: qrCode)
-                    content.accessPoint.qrCodeData = []
-                    
-                    self.mTempQRCodes[qrCode.qrCodeData] = content
+                for qrCode in item.q {
+                    let content = QRCodeContent(terminals: item.t, qrCode: qrCode, geoLocation: item.g)
+                    self.mTempQRCodes[qrCode.q] = content
                 }
             }
             
@@ -219,7 +220,8 @@ class ConfigurationManager: NSObject {
                 
                 do {
                     let valueQRCodesToStore: String? = try? JSONUtil.shared.encodeJSONData(data: self.mCurrentQRCodes)
-                    _ = try StorageManager.shared.setValue(key: StorageKeys.QRCODES, value: valueQRCodesToStore ?? "", secure: false)
+                    _ = try StorageManager.shared.setValue(key: StorageKeys.LIST_QRCODES, value: valueQRCodesToStore ?? "", secure: false)
+                    _ = try StorageManager.shared.setValue(key: StorageKeys.LIST_SYNC_DATE, value: (Int64(Date().timeIntervalSince1970 * 1000)).description, secure: false)
                 } catch {
                     LogManager.shared.error(message: "Store received access list failed!")
                 }
@@ -228,18 +230,25 @@ class ConfigurationManager: NSObject {
             }
         } else {
             LogManager.shared.error(message: "Get access list failed!")
-            
             DelegateManager.shared.qrCodeListChanged(state: self.mCurrentQRCodes.count > 0 ? QRCodeListState.USING_STORED_DATA : QRCodeListState.EMPTY)
         }
     }
     
     private func fetchAccessPoints() -> Void {
-        DataService().getAccessList(request: self.mPagination!, completion: { (result) in
-            self.processAccessPointsResponse(result: result)
+        DataService().getAccessList(pagination: self.mPagination!, syncDate: self.mListSyncDate, completion: { (result) in
+            self.processQRCodesResponse(result: result)
         })
     }
     
     private func getAccessPoints() -> Void {
+        DelegateManager.shared.qrCodeListChanged(state: .SYNCING)
+        
+        let storedSyncDate: String? = try? StorageManager.shared.getValue(key: StorageKeys.LIST_SYNC_DATE, secure: false)
+        
+        if (storedSyncDate != nil) {
+            self.mListSyncDate = Int64(storedSyncDate!)
+        }
+        
         self.mPagination = RequestPagination(take: 100, skip: 0)
         
         self.mTempQRCodes = [:]

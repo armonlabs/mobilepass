@@ -26,7 +26,8 @@ import com.armongate.mobilepasssdk.model.DeviceCapability;
 import com.armongate.mobilepasssdk.model.DeviceConnectionStatus;
 import com.armongate.mobilepasssdk.model.WaitingStatusUpdate;
 import com.armongate.mobilepasssdk.model.request.RequestAccess;
-import com.armongate.mobilepasssdk.model.response.ResponseAccessPointItemDeviceInfo;
+import com.armongate.mobilepasssdk.model.response.ResponseAccessPointListQRCode;
+import com.armongate.mobilepasssdk.model.response.ResponseAccessPointListTerminal;
 import com.armongate.mobilepasssdk.service.AccessPointService;
 import com.armongate.mobilepasssdk.service.BaseService;
 import com.google.gson.Gson;
@@ -37,13 +38,10 @@ import java.util.List;
 
 public class StatusFragment extends Fragment implements BluetoothManagerDelegate {
     private String  mActionType;
-    private String  mAccessPointId;
-    private int     mDeviceNumber;
-    private int     mRelayNumber;
-    private int     mDirection;
     private String  mNextAction;
     private View    mCurrentView;
-    private List<ResponseAccessPointItemDeviceInfo> mDevices;
+    private ResponseAccessPointListQRCode mQRCode;
+    private List<ResponseAccessPointListTerminal> mDevices;
 
     private Handler mTimerHandler;
 
@@ -59,14 +57,14 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
         Gson gson = new Gson();
 
         String devicesJson = getArguments() != null ? getArguments().getString("devices") : "";
-        Type typeDeviceList = new TypeToken<List<ResponseAccessPointItemDeviceInfo>>(){}.getType();
+        Type typeDeviceList = new TypeToken<List<ResponseAccessPointListTerminal>>(){}.getType();
+
+        String qrCodesJson = getArguments() != null ? getArguments().getString("qrCode") : "";
+        Type typeQRCodeList = new TypeToken<ResponseAccessPointListTerminal>(){}.getType();
 
         mDevices            = gson.fromJson(devicesJson, typeDeviceList);
+        mQRCode             = gson.fromJson(qrCodesJson, typeQRCodeList);
         mActionType         = getArguments() != null ? getArguments().getString("type") : "";
-        mAccessPointId      = getArguments() != null ? getArguments().getString("accessPointId") : "";
-        mDeviceNumber       = getArguments() != null ? getArguments().getInt("deviceNumber") : 0;
-        mRelayNumber        = getArguments() != null ? getArguments().getInt("relayNumber") : 0;
-        mDirection          = getArguments() != null ? getArguments().getInt("direction") : 0;
         mNextAction         = getArguments() != null ? getArguments().getString("nextAction") : "";
 
         // Inflate the layout for this fragment
@@ -117,10 +115,11 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
         DelegateManager.getInstance().flowConnectionStateChanged(true);
         BluetoothManager.getInstance().stopScan(true);
 
+        // TODO Check qr code data null state
+
         RequestAccess request = new RequestAccess();
-        request.accessPointId = mAccessPointId;
+        request.qrCodeId = mQRCode.i;
         request.clubMemberId = ConfigurationManager.getInstance().getMemberId();
-        request.direction = mDirection;
 
         this.startConnectionTimer();
 
@@ -176,7 +175,7 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
 
             updateStatus( R.string.text_status_message_scanning, "", R.drawable.waiting);
 
-            BLEScanConfiguration config = new BLEScanConfiguration(mDevices, ConfigurationManager.getInstance().getMemberId(), mDeviceNumber, mDirection, mRelayNumber);
+            BLEScanConfiguration config = new BLEScanConfiguration(mDevices, ConfigurationManager.getInstance().getMemberId(), mQRCode.h, mQRCode.d, mQRCode.r);
 
             BluetoothManager.getInstance().startScan(config);
             startConnectionTimer();

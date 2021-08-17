@@ -13,13 +13,10 @@ public enum ActionState {
 }
 
 public struct ActionConfig: Codable {
-    var currentAction:      String
-    var devices:            [ResponseAccessPointItemDeviceInfo]
-    var accessPointId:      String?
-    var direction:          Direction?
-    var deviceNumber:       Int?
-    var relayNumber:        Int?
-    var nextAction:         String?
+    var currentAction:  String
+    var devices:        [ResponseAccessPointListTerminal]
+    var qrCode:         ResponseAccessPointListQRCode? // TODO Must be checked before use
+    var nextAction:     String?
 }
 
 class CurrentStatusModel: ObservableObject {
@@ -96,10 +93,10 @@ struct StatusView: View {
             return
         }
         
-        if (currentConfig?.accessPointId != nil && currentConfig?.direction != nil) {
+        if (currentConfig?.qrCode?.d != nil) {
             DelegateManager.shared.flowConnectionStateChanged(isActive: true)
            
-            AccessPointService().remoteOpen(request: RequestAccess(accessPointId: currentConfig!.accessPointId!, clubMemberId: ConfigurationManager.shared.getMemberId(), direction: currentConfig!.direction!), completion: { (result) in
+            AccessPointService().remoteOpen(request: RequestAccess(qrCodeId: currentConfig!.qrCode!.i, clubMemberId: ConfigurationManager.shared.getMemberId()), completion: { (result) in
                 if case .success(_) = result {
                     self.viewModel.update(message: "text_status_message_succeed", icon: "success")
                     DelegateManager.shared.onCompleted(succeed: true)
@@ -125,6 +122,8 @@ struct StatusView: View {
                     DelegateManager.shared.flowConnectionStateChanged(isActive: false)
                 }
             })
+        } else {
+            // TODO Handle here
         }
     }
     
@@ -145,9 +144,9 @@ struct StatusView: View {
             if (currentConfig != nil) {
                 let config: BLEScanConfiguration = BLEScanConfiguration(devices: currentConfig!.devices,
                                                                         userId: ConfigurationManager.shared.getMemberId(),
-                                                                        direction: currentConfig!.direction!.rawValue,
-                                                                        deviceNumber: currentConfig!.deviceNumber!,
-                                                                        relayNumber: currentConfig!.relayNumber!)
+                                                                        direction: currentConfig!.qrCode!.d.rawValue,
+                                                                        hardwareId: currentConfig!.qrCode!.h, // TODO Check null possibility
+                                                                        relayNumber: currentConfig!.qrCode!.r)
                 
                 BluetoothManager.shared.startScan(configuration: config)
             }
