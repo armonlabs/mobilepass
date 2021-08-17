@@ -68,6 +68,10 @@ class BaseService: NSObject {
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         request.addValue("application/json", forHTTPHeaderField: "Accept")
         request.setValue("\(ConfigurationManager.shared.getToken())", forHTTPHeaderField: "Authorization")
+        request.setValue("Mon, 26 Jul 1997 05:00:00 GMT", forHTTPHeaderField: "If-Modified-Since")
+        request.setValue("no-cache", forHTTPHeaderField: "Cache-Control")
+        request.setValue("1.2.0", forHTTPHeaderField: "MobilePass-Version")
+        request.setValue("\(ConfigurationManager.shared.getMemberId())", forHTTPHeaderField: "MobilePass-Version")
         
         return request
     }
