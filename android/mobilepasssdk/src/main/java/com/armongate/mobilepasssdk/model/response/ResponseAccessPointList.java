@@ -1,6 +1,8 @@
 package com.armongate.mobilepasssdk.model.response;
 
 public class ResponseAccessPointList {
-    public ResponsePagination               pagination;
-    public ResponseAccessPointListItem[]    items;
+    /** Pagination */
+    public ResponsePagination               p;
+    /** Items */
+    public ResponseAccessPointListItem[]    i;
 }

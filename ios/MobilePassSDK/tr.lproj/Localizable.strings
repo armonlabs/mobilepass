@@ -29,3 +29,4 @@
 "text_qrcode_list_state_empty" = "Karekod tanımlaması bulunmamaktadır";
 "text_qrcode_list_state_synced_data" = "Karekod tanımlaması güncel";
 "text_qrcode_list_state_stored_data" = "Karekod tanımlaması güncellenemedi";
+"text_qrcode_list_tap_to_refresh" = "Listeyi yenilemek için dokunun";

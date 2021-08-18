@@ -8,6 +8,7 @@
 import Foundation
 
 struct QRCodeContent: Codable {
+    var accessPointId:  String
     var terminals:      [ResponseAccessPointListTerminal]
     var qrCode:         ResponseAccessPointListQRCode
     var geoLocation:    ResponseAccessPointListGeoLocation?

@@ -8,13 +8,15 @@
 import Foundation
 
 struct RequestPagination: Codable {
-    var take: Int?;
-    var skip: Int?;
+    /** Take */
+    var t: Int?;
+    /** Skip */
+    var s: Int?;
     
     var dictionary: [String: Any] {
         return [
-            "take": take ?? 100,
-            "skip": skip ?? 0
+            "t": t ?? 100,
+            "s": s ?? 0
         ]
     }
 }

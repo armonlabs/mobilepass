@@ -51,6 +51,10 @@ class DelegateManager: NSObject {
         qrCodeListStateDelegate = delegate
     }
     
+    func isQRCodeListRefreshable() -> Bool {
+        return qrCodeListState != QRCodeListState.INITIALIZING && qrCodeListState != QRCodeListState.SYNCING
+    }
+    
     func onCompleted(succeed: Bool) {
         isPassFlowCompleted = true
         DispatchQueue.main.async {

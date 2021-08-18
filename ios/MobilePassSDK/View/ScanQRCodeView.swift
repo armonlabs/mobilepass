@@ -137,18 +137,29 @@ struct ScanQRCodeView: View, QRCodeListStateDelegate {
                                        positionX: maskPositionX,
                                        positionY: maskPositionY,
                                        label: side == .top ? "text_qrcode_message" : (side == .bottom ? stateModel.message : ""),
-                                       labelSize: side == .bottom ? 12 : nil))
+                                       labelSize: side == .bottom ? 12 : nil,
+                                       info: side == .bottom && DelegateManager.shared.isQRCodeListRefreshable() ? "text_qrcode_list_tap_to_refresh" : nil,
+                                       infoSize: side == .bottom ? 11 : nil,
+                                       onTap: side == .bottom && DelegateManager.shared.isQRCodeListRefreshable() ? {
+                                        ConfigurationManager.shared.refreshList()
+                                       } : nil))
     }
     
-    private func renderMask(width: CGFloat, height: CGFloat, positionX: CGFloat, positionY: CGFloat, label: String, labelSize: CGFloat?) -> some View {
+    private func renderMask(width: CGFloat, height: CGFloat, positionX: CGFloat, positionY: CGFloat, label: String, labelSize: CGFloat?, info: String?, infoSize: CGFloat?, onTap: (() -> Void)?) -> some View {
         return VStack {
             if label.count > 0 {
-                Text(label.localized(locale.identifier)).padding(.horizontal, 16).foregroundColor(.white).font(labelSize != nil ? .system(size: labelSize!) : .headline).multilineTextAlignment(.center)
+                Text(label.localized(locale.identifier)).padding(.horizontal, 16).foregroundColor(.white).font(labelSize != nil ? .system(size: labelSize!).bold() : .headline).multilineTextAlignment(.center)
+                
+                if (info != nil) {
+                    Text(info!.localized(locale.identifier)).padding(.horizontal, 16).padding(.top, 2).foregroundColor(.white).font(infoSize != nil ? .system(size: infoSize!) : .headline).multilineTextAlignment(.center)
+                }
             }
         }
         .frame(minWidth: 0, idealWidth: width, maxWidth: width, minHeight: 0, idealHeight: height, maxHeight: height, alignment: .center)
         .background((stateModel.invalid ? Color.red : Color.black).opacity(0.6))
-        .position(x: positionX, y: positionY)
+        .position(x: positionX, y: positionY).onTapGesture {
+            onTap?()
+        }
     }
     
     

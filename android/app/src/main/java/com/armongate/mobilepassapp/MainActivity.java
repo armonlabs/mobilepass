@@ -39,8 +39,8 @@ public class MainActivity extends AppCompatActivity implements MobilePassDelegat
             Toast.makeText(this, "Üye numaranızı giriniz", Toast.LENGTH_SHORT).show();
         } else {
             Configuration config = new Configuration();
-            config.memberId = txtMemberId.getText().toString();
-            config.serverUrl = "https://qr.marsathletic.com";
+            config.memberId = "00988791"; // txtMemberId.getText().toString();
+            config.serverUrl = "https://10.10.10.118:3443"; // "https://qr.marsathletic.com";
             config.language = "tr";
             config.waitBLEEnabled = true;
 

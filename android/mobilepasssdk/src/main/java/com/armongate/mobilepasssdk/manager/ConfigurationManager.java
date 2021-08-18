@@ -7,6 +7,7 @@ import com.armongate.mobilepasssdk.constant.StorageKeys;
 import com.armongate.mobilepasssdk.model.Configuration;
 import com.armongate.mobilepasssdk.model.CryptoKeyPair;
 import com.armongate.mobilepasssdk.model.QRCodeContent;
+import com.armongate.mobilepasssdk.model.QRCodeMatch;
 import com.armongate.mobilepasssdk.model.StorageDataUserDetails;
 import com.armongate.mobilepasssdk.model.request.RequestPagination;
 import com.armongate.mobilepasssdk.model.request.RequestSetUserData;
@@ -20,23 +21,29 @@ import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ConfigurationManager {
 
     private static ConfigurationManager instance = null;
-    private static Context mCurrentContext;
-    private static Configuration mCurrentConfig;
-    private static CryptoKeyPair mCurrentKeyPair;
-    private static List<StorageDataUserDetails> mUserKeyDetails = new ArrayList<>();
-    private static HashMap<String, QRCodeContent> mCurrentQRCodes = new HashMap<>();
-    private static HashMap<String, QRCodeContent> mTempQRCodes = new HashMap<>();
+
+    private static Context          mCurrentContext;
+    private static Configuration    mCurrentConfig;
+    private static CryptoKeyPair    mCurrentKeyPair;
+
+    private static List<StorageDataUserDetails>                 mUserKeyDetails = new ArrayList<>();
+    private static HashMap<String, QRCodeMatch>                 mQRCodes = new HashMap<>();
+    private static HashMap<String, ResponseAccessPointListItem> mAccessPoints = new HashMap<>();
+    private static List<ResponseAccessPointListItem>            mTempList = new ArrayList<>();
 
     private int mReceivedItemCount = 0;
     private RequestPagination mPagination = null;
     private Long mListSyncDate = null;
+    private boolean mListClearFlag = false;
 
     private ConfigurationManager() { }
 
@@ -68,7 +75,17 @@ public class ConfigurationManager {
     }
 
     public QRCodeContent getQRCodeContent(String qrCodeData) {
-        return mCurrentQRCodes.get(qrCodeData);
+        QRCodeMatch match = mQRCodes.get(qrCodeData);
+
+        if (match != null) {
+            ResponseAccessPointListItem details = mAccessPoints.get(match.accessPointId);
+
+            if (details != null) {
+                return new QRCodeContent(details.i, match.qrCode, details.t, details.g);
+            }
+        }
+
+        return null;
     }
 
     public String getMemberId() {
@@ -117,18 +134,32 @@ public class ConfigurationManager {
         return mCurrentConfig != null && mCurrentConfig.waitBLEEnabled != null ? mCurrentConfig.waitBLEEnabled : false;
     }
 
+    public void refreshList() {
+        if (DelegateManager.getInstance().isQRCodeListRefreshable()) {
+            this.getAccessPoints(true);
+        }
+    }
+
     private void getStoredQRCodes() {
         StorageManager.getInstance().deleteValue(mCurrentContext, StorageKeys.QRCODES);
 
-        String storageQRCodes = StorageManager.getInstance().getValue(mCurrentContext, StorageKeys.LIST_QRCODES);
+        String storageQRCodes       = StorageManager.getInstance().getValue(mCurrentContext, StorageKeys.LIST_QRCODES);
+        String storageAccessPoints  = StorageManager.getInstance().getValue(mCurrentContext, StorageKeys.LIST_ACCESSPOINTS);
 
         Gson gson = new Gson();
 
-        Type typeQRCodes = new TypeToken<HashMap<String, QRCodeContent>>(){}.getType();
-        mCurrentQRCodes = gson.fromJson(storageQRCodes, typeQRCodes);
+        Type typeQRCodes        = new TypeToken<HashMap<String, QRCodeMatch>>(){}.getType();
+        Type typeAccessPoints   = new TypeToken<HashMap<String, ResponseAccessPointListItem>>(){}.getType();
 
-        if (mCurrentQRCodes == null) {
-            mCurrentQRCodes = new HashMap<>();
+        mQRCodes        = gson.fromJson(storageQRCodes, typeQRCodes);
+        mAccessPoints   = gson.fromJson(storageAccessPoints, typeAccessPoints);
+
+        if (mQRCodes == null) {
+            mQRCodes = new HashMap<>();
+        }
+
+        if (mAccessPoints == null) {
+            mAccessPoints = new HashMap<>();
         }
     }
 
@@ -198,47 +229,75 @@ public class ConfigurationManager {
                     public void onCompleted(Object response) {
                         StorageManager.getInstance().setValue(mCurrentContext, StorageKeys.MEMBERID, getMemberId());
                         LogManager.getInstance().info("Member id is stored successfully");
-                        getAccessPoints();
+                        getAccessPoints(false);
                     }
 
                     @Override
                     public void onError(int statusCode, String message) {
                         LogManager.getInstance().error("Send user info failed with status code " + statusCode);
-                        getAccessPoints();
+                        getAccessPoints(false);
                     }
                 });
             } else {
                 LogManager.getInstance().info("User info is already sent to server");
-                getAccessPoints();
+                getAccessPoints(false);
             }
         }
     }
 
     private void processQRCodesResponse(ResponseAccessPointList response) {
-        mReceivedItemCount += response.items.length;
+        mReceivedItemCount += response.i.length;
 
-        for (ResponseAccessPointListItem item: response.items) {
-            for (ResponseAccessPointListQRCode qrCode : item.q) {
-                QRCodeContent content = new QRCodeContent(qrCode, item.t, item.g);
-                mTempQRCodes.put(qrCode.q, content);
+        for (ResponseAccessPointListItem item: response.i) {
+            mTempList.add(item);
 
-                // Open to show received access point definitions
-                // LogManager.getInstance().debug(new Gson().toJson(content));
-            }
+            // Open to show received access point definitions
+            LogManager.getInstance().debug(new Gson().toJson(item));
         }
 
-        if (response.pagination.total > mReceivedItemCount) {
-            mPagination.skip = mReceivedItemCount;
+        if (response.p.c > mReceivedItemCount) {
+            mPagination.s = mReceivedItemCount;
             fetchAccessPoints();
         } else {
-            mCurrentQRCodes = new HashMap<>();
-            mCurrentQRCodes.putAll(mTempQRCodes);
+            if (mListClearFlag) {
+                mQRCodes = new HashMap<>();
+                mAccessPoints = new HashMap<>();
+            }
 
-            String valueQRCodesToStore = new Gson().toJson(mCurrentQRCodes);
+            for (ResponseAccessPointListItem item :
+                    mTempList) {
+                ResponseAccessPointListItem storedAccessPoint = mAccessPoints.get(item.i);
+
+                List<String> storedQRCodeData = storedAccessPoint != null ? new ArrayList<>(Arrays.asList(storedAccessPoint.d)) : new ArrayList<String>();
+                List<String> newQrCodeData = new ArrayList<>();
+
+                for (ResponseAccessPointListQRCode qrCode :
+                        item.q) {
+                    storedQRCodeData.remove(qrCode.q);
+                    newQrCodeData.add(qrCode.q);
+
+                    mQRCodes.put(qrCode.q, new QRCodeMatch(item.i, qrCode));
+                }
+
+                for (String qrCodeData :
+                            storedQRCodeData) {
+                    mQRCodes.remove(qrCodeData);
+                }
+
+                item.q = new ResponseAccessPointListQRCode[0];
+                item.d = newQrCodeData.toArray(new String[0]);
+
+                mAccessPoints.put(item.i, item);
+            }
+
+            String valueQRCodesToStore      = new Gson().toJson(mQRCodes);
+            String valueAccessPointsToStore = new Gson().toJson(mAccessPoints);
+
             StorageManager.getInstance().setValue(mCurrentContext, StorageKeys.LIST_QRCODES, valueQRCodesToStore);
+            StorageManager.getInstance().setValue(mCurrentContext, StorageKeys.LIST_ACCESSPOINTS, valueAccessPointsToStore);
             StorageManager.getInstance().setValue(mCurrentContext, StorageKeys.LIST_SYNC_DATE, new Date().getTime() + "");
 
-            DelegateManager.getInstance().onQRCodeListStateChanged(mCurrentQRCodes.size() > 0 ? QRCodeListState.USING_SYNCED_DATA : QRCodeListState.EMPTY);
+            DelegateManager.getInstance().onQRCodeListStateChanged(mQRCodes.size() > 0 ? QRCodeListState.USING_SYNCED_DATA : QRCodeListState.EMPTY);
         }
     }
 
@@ -251,27 +310,42 @@ public class ConfigurationManager {
 
             @Override
             public void onError(int statusCode, String message) {
-                LogManager.getInstance().error("Get access list failed with status code " + statusCode);
-                DelegateManager.getInstance().onQRCodeListStateChanged(mCurrentQRCodes.size() > 0 ? QRCodeListState.USING_STORED_DATA : QRCodeListState.EMPTY);
+                if (statusCode == 409) {
+                    LogManager.getInstance().error("Sync error received, get list again");
+                    getAccessPoints(true);
+                } else {
+                    LogManager.getInstance().error("Get access list failed with status code " + statusCode);
+                    DelegateManager.getInstance().onQRCodeListStateChanged(mQRCodes.size() > 0 ? QRCodeListState.USING_STORED_DATA : QRCodeListState.EMPTY);
+                }
             }
         });
     }
 
-    private void getAccessPoints() {
+    private void getAccessPoints(boolean clear) {
         DelegateManager.getInstance().onQRCodeListStateChanged(QRCodeListState.SYNCING);
 
-        String storedSyncDate = StorageManager.getInstance().getValue(mCurrentContext, StorageKeys.LIST_SYNC_DATE);
+        mListClearFlag = clear;
 
-        if (storedSyncDate != null && !storedSyncDate.isEmpty()) {
-            mListSyncDate = Long.getLong(storedSyncDate);
+        if (clear) {
+            mListSyncDate = null;
+        } else {
+            String storedSyncDate = StorageManager.getInstance().getValue(mCurrentContext, StorageKeys.LIST_SYNC_DATE);
+
+            if (storedSyncDate != null && !storedSyncDate.isEmpty()) {
+                try {
+                    mListSyncDate = Long.parseLong(storedSyncDate);
+                } catch (Exception ex) {
+                    LogManager.getInstance().error("Invalid stored sync date: " + storedSyncDate);
+                }
+            }
         }
 
         mPagination = new RequestPagination();
-        mPagination.take = 100;
-        mPagination.skip = 0;
+        mPagination.t = 100;
+        mPagination.s = 0;
 
         mReceivedItemCount = 0;
-        mTempQRCodes = new HashMap<>();
+        mTempList = new ArrayList<>();
 
         this.fetchAccessPoints();
     }

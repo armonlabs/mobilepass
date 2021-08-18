@@ -39,6 +39,10 @@ public class DelegateManager {
         return mQRCodeListState;
     }
 
+    public boolean isQRCodeListRefreshable() {
+        return mQRCodeListState != QRCodeListState.INITIALIZING && mQRCodeListState != QRCodeListState.SYNCING;
+    }
+
     public void setCurrentPassFlowDelegate(PassFlowDelegate listener) {
         mCurrentPassFlowDelegate = listener;
     }

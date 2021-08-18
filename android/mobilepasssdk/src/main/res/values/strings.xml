@@ -24,4 +24,5 @@
     <string name="text_qrcode_list_state_empty">There is no QR code definition</string>
     <string name="text_qrcode_list_state_synced_data">QR code list is up to date</string>
     <string name="text_qrcode_list_state_stored_data">Failed to update QR code list</string>
+    <string name="text_qrcode_list_tap_to_refresh">Tap to refresh list</string>
 </resources>

@@ -8,6 +8,8 @@
 import Foundation
 
 struct ResponseAccessPointListItem: Codable {
+    /** Id */
+    var i: String
     /** Name */
     var n: String
     /** QR Codes */
@@ -16,4 +18,6 @@ struct ResponseAccessPointListItem: Codable {
     var t: [ResponseAccessPointListTerminal]
     /** GeoLocation */
     var g: ResponseAccessPointListGeoLocation?
+    
+    var d: [String]?
 }

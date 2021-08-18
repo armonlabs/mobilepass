@@ -8,7 +8,10 @@
 import Foundation
 
 struct ResponsePagination: Codable {
-    var take:   Int;
-    var skip:   Int;
-    var total:  Int;
+    /** Take */
+    var t: Int;
+    /** Skip */
+    var s: Int;
+    /** Total */
+    var c: Int;
 }

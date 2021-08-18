@@ -24,4 +24,5 @@
 	<string name="text_qrcode_list_state_empty">Karekod tanımlaması bulunmamaktadır</string>
 	<string name="text_qrcode_list_state_synced_data">Karekod tanımlaması güncel</string>
 	<string name="text_qrcode_list_state_stored_data">Karekod tanımlaması güncellenemedi</string>
+	<string name="text_qrcode_list_tap_to_refresh">Listeyi yenilemek için dokunun</string>
 </resources>

@@ -25,10 +25,12 @@ class ConfigurationManager: NSObject {
     
     private var mCurrentConfig:     Configuration?
     private var mCurrentKeyPair:    CryptoKeyPair?
-    private var mCurrentQRCodes:    Dictionary<String, QRCodeContent> = [:]
-    private var mTempQRCodes:       Dictionary<String, QRCodeContent> = [:]
+    private var mQRCodes:           Dictionary<String, QRCodeMatch> = [:]
+    private var mAccessPoints:      Dictionary<String, ResponseAccessPointListItem> = [:]
+    private var mTempList:          [ResponseAccessPointListItem] = []
     private var mPagination:        RequestPagination? = nil
     private var mListSyncDate:      Int64? = nil
+    private var mListClearFlag:     Bool = false
     private var mReceivedItemCount: Int = 0
     private var mUserKeyDetails:    [StorageDataUserDetails] = []
     
@@ -53,7 +55,17 @@ class ConfigurationManager: NSObject {
     }
     
     public func getQRCodeContent(qrCodeData: String) -> QRCodeContent? {
-        return mCurrentQRCodes.index(forKey: qrCodeData) != nil ? mCurrentQRCodes[qrCodeData]! : nil
+        let match = mQRCodes.index(forKey: qrCodeData) != nil ? mQRCodes[qrCodeData]! : nil
+        
+        if (match != nil) {
+            let details = mAccessPoints.index(forKey: match!.accessPointId) != nil ? mAccessPoints[match!.accessPointId] : nil
+            
+            if (details != nil) {
+                return QRCodeContent(accessPointId: match!.accessPointId, terminals: details!.t, qrCode: match!.qrCode, geoLocation: details!.g)
+            }
+        }
+        
+        return nil
     }
     
     public func getMemberId() -> String {
@@ -102,13 +114,22 @@ class ConfigurationManager: NSObject {
         return mCurrentConfig?.waitBLEEnabled ?? false
     }
     
+    public func refreshList() -> Void {
+        if (DelegateManager.shared.isQRCodeListRefreshable()) {
+            getAccessPoints(clear: true)
+        }
+    }
+ 
     // MARK: Private Methods
     
     private func getStoredQRCodes() -> Void {
         _ = try? StorageManager.shared.deleteValue(key: StorageKeys.QRCODES, secure: false)
         
-        let storageQRCodes: String? = try? StorageManager.shared.getValue(key: StorageKeys.LIST_QRCODES, secure: false)
-        mCurrentQRCodes = (storageQRCodes != nil && storageQRCodes!.count > 0 ? try? JSONUtil.shared.decodeJSONData(jsonString: storageQRCodes!) : [:]) ?? [:]
+        let storageQRCodes:         String? = try? StorageManager.shared.getValue(key: StorageKeys.LIST_QRCODES, secure: false)
+        let storageAccessPoints:    String? = try? StorageManager.shared.getValue(key: StorageKeys.LIST_ACCESSPOINTS, secure: false)
+        
+        mQRCodes        = (storageQRCodes != nil && storageQRCodes!.count > 0 ? try? JSONUtil.shared.decodeJSONData(jsonString: storageQRCodes!) : [:]) ?? [:]
+        mAccessPoints   = (storageAccessPoints != nil && storageAccessPoints!.count > 0 ? try? JSONUtil.shared.decodeJSONData(jsonString: storageAccessPoints!) : [:]) ?? [:]
     }
     
     private func validateConfig() throws -> Void {
@@ -173,15 +194,15 @@ class ConfigurationManager: NSObject {
                     } catch {
                         LogManager.shared.error(message: "Error occurred while storing member id")
                     }
-                    self.getAccessPoints()
+                    self.getAccessPoints(clear: false)
                 } else {
                     LogManager.shared.error(message: "Send user info to server failed!")
-                    self.getAccessPoints()
+                    self.getAccessPoints(clear: false)
                 }
             })
         } else {
             LogManager.shared.info(message: "User info is already sent to server")
-            self.getAccessPoints()
+            self.getAccessPoints(clear: false)
         }
     }
     
@@ -192,45 +213,74 @@ class ConfigurationManager: NSObject {
                 return
             }
             
-            self.mReceivedItemCount += receivedData!.items.count
+            self.mReceivedItemCount += receivedData!.i.count
             
-            for item in (receivedData?.items ?? []) {
-                for qrCode in item.q {
-                    let content = QRCodeContent(terminals: item.t, qrCode: qrCode, geoLocation: item.g)
-                    self.mTempQRCodes[qrCode.q] = content
-                }
+            for item in (receivedData?.i ?? []) {
+                self.mTempList.append(item)
+                
+                // Open to show qr codes list
+                do {
+                    LogManager.shared.debug(message: "\(try JSONUtil.shared.encodeJSONData(data: item))")
+                } catch { }
             }
             
-            /* Open to show qr codes list
-            for qrCode in self.mTempQRCodes {
-                LogManager.shared.debug(message: "\(qrCode.key) > Type: \(qrCode.value.action.config.trigger.type) | Direction: \(qrCode.value.action.config.direction) | Validate Location: \(String(describing: qrCode.value.action.config.trigger.validateGeoLocation))")
-            }
-            */
             
             
-            if (receivedData!.pagination.total > self.mReceivedItemCount) {
-                self.mPagination?.skip = self.mReceivedItemCount
+            if (receivedData!.p.c > self.mReceivedItemCount) {
+                self.mPagination?.s = self.mReceivedItemCount
                 self.fetchAccessPoints()
             } else {
-                self.mCurrentQRCodes = [:]
+                if (mListClearFlag) {
+                    self.mQRCodes       = [:]
+                    self.mAccessPoints  = [:]
+                }
                 
-                for qrCode in self.mTempQRCodes {
-                    self.mCurrentQRCodes[qrCode.key] = qrCode.value
+                for var item in self.mTempList {
+                    let storedAccessPoint = mAccessPoints.index(forKey: item.i) != nil ? mAccessPoints[item.i] : nil
+                    
+                    var storedQRCodeData = storedAccessPoint != nil ? storedAccessPoint!.d ?? [] : []
+                    var newQRCodeData: [String] = []
+                    
+                    for qrCode in item.q {
+                        if let index = storedQRCodeData.firstIndex(of: qrCode.q) {
+                            storedQRCodeData.remove(at: index)
+                        }
+                        
+                        newQRCodeData.append(qrCode.q)
+                        self.mQRCodes[qrCode.q] = QRCodeMatch(accessPointId: item.i, qrCode: qrCode)
+                    }
+                    
+                    for qrCodeData in storedQRCodeData {
+                        mQRCodes[qrCodeData] = nil
+                    }
+                    
+                    item.q = []
+                    item.d = newQRCodeData
+                    
+                    self.mAccessPoints[item.i] = item
                 }
                 
                 do {
-                    let valueQRCodesToStore: String? = try? JSONUtil.shared.encodeJSONData(data: self.mCurrentQRCodes)
+                    let valueQRCodesToStore:        String? = try? JSONUtil.shared.encodeJSONData(data: self.mQRCodes)
+                    let valueAccessPointsToStore:   String? = try? JSONUtil.shared.encodeJSONData(data: self.mAccessPoints)
+                    
                     _ = try StorageManager.shared.setValue(key: StorageKeys.LIST_QRCODES, value: valueQRCodesToStore ?? "", secure: false)
+                    _ = try StorageManager.shared.setValue(key: StorageKeys.LIST_ACCESSPOINTS, value: valueAccessPointsToStore ?? "", secure: false)
                     _ = try StorageManager.shared.setValue(key: StorageKeys.LIST_SYNC_DATE, value: (Int64(Date().timeIntervalSince1970 * 1000)).description, secure: false)
                 } catch {
                     LogManager.shared.error(message: "Store received access list failed!")
                 }
                 
-                DelegateManager.shared.qrCodeListChanged(state: self.mCurrentQRCodes.count > 0 ? QRCodeListState.USING_SYNCED_DATA : QRCodeListState.EMPTY)
+                DelegateManager.shared.qrCodeListChanged(state: self.mQRCodes.count > 0 ? QRCodeListState.USING_SYNCED_DATA : QRCodeListState.EMPTY)
             }
-        } else {
-            LogManager.shared.error(message: "Get access list failed!")
-            DelegateManager.shared.qrCodeListChanged(state: self.mCurrentQRCodes.count > 0 ? QRCodeListState.USING_STORED_DATA : QRCodeListState.EMPTY)
+        } else if case .failure(let error) = result {
+            if (error.code == 409) {
+                LogManager.shared.error(message: "Sync error received, get list again");
+                getAccessPoints(clear: true)
+            } else {
+                LogManager.shared.error(message: "Get access list failed!")
+                DelegateManager.shared.qrCodeListChanged(state: self.mQRCodes.count > 0 ? QRCodeListState.USING_STORED_DATA : QRCodeListState.EMPTY)
+            }
         }
     }
     
@@ -240,18 +290,26 @@ class ConfigurationManager: NSObject {
         })
     }
     
-    private func getAccessPoints() -> Void {
+    private var time: Int64 = 0
+    
+    private func getAccessPoints(clear: Bool) -> Void {
         DelegateManager.shared.qrCodeListChanged(state: .SYNCING)
         
-        let storedSyncDate: String? = try? StorageManager.shared.getValue(key: StorageKeys.LIST_SYNC_DATE, secure: false)
+        mListClearFlag = clear
         
-        if (storedSyncDate != nil) {
-            self.mListSyncDate = Int64(storedSyncDate!)
+        if (clear) {
+            mListSyncDate = nil
+        } else {
+            let storedSyncDate: String? = try? StorageManager.shared.getValue(key: StorageKeys.LIST_SYNC_DATE, secure: false)
+            
+            if (storedSyncDate != nil) {
+                self.mListSyncDate = Int64(storedSyncDate!)
+            }
         }
         
-        self.mPagination = RequestPagination(take: 100, skip: 0)
+        self.mPagination = RequestPagination(t: 100, s: 0)
         
-        self.mTempQRCodes = [:]
+        self.mTempList = []
         self.mReceivedItemCount = 0
         
         self.fetchAccessPoints()

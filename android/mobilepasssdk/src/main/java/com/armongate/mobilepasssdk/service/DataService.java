@@ -11,10 +11,10 @@ public class DataService {
     }
 
     public void getAccessList(RequestPagination pagination, Long syncDate, final BaseService.ServiceResultListener<ResponseAccessPointList> listener) {
-        String url = "api/v1/listAccessPointsRequest?take=" + pagination.take + "&skip=" + pagination.skip;
+        String url = "api/v2/listAccessPointsRequest?t=" + pagination.t + "&s=" + pagination.s;
 
         if (syncDate != null) {
-            url = url + "&syncDate=" + syncDate.toString();
+            url = url + "&d=" + syncDate.toString();
         }
 
         BaseService.getInstance().requestGet(url, ResponseAccessPointList.class, listener);

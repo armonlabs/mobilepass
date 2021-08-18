@@ -96,7 +96,7 @@ struct StatusView: View {
         if (currentConfig?.qrCode?.d != nil) {
             DelegateManager.shared.flowConnectionStateChanged(isActive: true)
            
-            AccessPointService().remoteOpen(request: RequestAccess(qrCodeId: currentConfig!.qrCode!.i, clubMemberId: ConfigurationManager.shared.getMemberId()), completion: { (result) in
+            AccessPointService().remoteOpen(request: RequestAccess(q: currentConfig!.qrCode!.i, c: ConfigurationManager.shared.getMemberId()), completion: { (result) in
                 if case .success(_) = result {
                     self.viewModel.update(message: "text_status_message_succeed", icon: "success")
                     DelegateManager.shared.onCompleted(succeed: true)

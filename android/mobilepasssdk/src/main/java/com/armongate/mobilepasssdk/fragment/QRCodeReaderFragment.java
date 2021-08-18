@@ -60,7 +60,20 @@ public class QRCodeReaderFragment extends Fragment implements SurfaceHolder.Call
         TextView txtListStateMessage = mCurrentView.findViewById(R.id.armon_mp_txtListStateInfo);
         txtListStateMessage.setText(getQRCodeListStateMessage(DelegateManager.getInstance().getQRCodeListState()));
 
+        TextView txtListRefreshMessage = mCurrentView.findViewById(R.id.armon_mp_txtListRefreshInfo);
+        txtListRefreshMessage.setVisibility(DelegateManager.getInstance().isQRCodeListRefreshable() ? View.VISIBLE : View.GONE);
+
         setupControls((SurfaceView)mCurrentView.findViewById(R.id.armon_mp_qrSurfaceView));
+
+        View viewBottomMask = mCurrentView.findViewById(R.id.armon_mp_qrMaskBottom);
+        viewBottomMask.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (DelegateManager.getInstance().isQRCodeListRefreshable()) {
+                    ConfigurationManager.getInstance().refreshList();
+                }
+            }
+        });
 
         DelegateManager.getInstance().setCurrentQRCodeListStateDelegate(this);
 
@@ -160,7 +173,10 @@ public class QRCodeReaderFragment extends Fragment implements SurfaceHolder.Call
     public void onStateChanged(int state) {
         if (mCurrentView != null) {
             TextView txtListStateMessage = mCurrentView.findViewById(R.id.armon_mp_txtListStateInfo);
+            TextView txtListRefreshMessage = mCurrentView.findViewById(R.id.armon_mp_txtListRefreshInfo);
+
             txtListStateMessage.setText(getQRCodeListStateMessage(DelegateManager.getInstance().getQRCodeListState()));
+            txtListRefreshMessage.setVisibility(DelegateManager.getInstance().isQRCodeListRefreshable() ? View.VISIBLE : View.GONE);
         }
     }
 

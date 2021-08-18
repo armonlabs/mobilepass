@@ -8,13 +8,13 @@
 import Foundation
 
 struct RequestAccess: Codable {
-    var qrCodeId:       String;
-    var clubMemberId:   String;
+    var q: String;
+    var c: String;
     
     var dictionary: [String: Any] {
         return [
-            "qrCodeId": qrCodeId,
-            "clubMemberId": clubMemberId
+            "q": q,
+            "c": c
         ]
     }
 }

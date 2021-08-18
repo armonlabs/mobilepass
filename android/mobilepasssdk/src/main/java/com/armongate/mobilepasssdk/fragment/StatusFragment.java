@@ -60,7 +60,7 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
         Type typeDeviceList = new TypeToken<List<ResponseAccessPointListTerminal>>(){}.getType();
 
         String qrCodesJson = getArguments() != null ? getArguments().getString("qrCode") : "";
-        Type typeQRCodeList = new TypeToken<ResponseAccessPointListTerminal>(){}.getType();
+        Type typeQRCodeList = new TypeToken<ResponseAccessPointListQRCode>(){}.getType();
 
         mDevices            = gson.fromJson(devicesJson, typeDeviceList);
         mQRCode             = gson.fromJson(qrCodesJson, typeQRCodeList);
@@ -118,8 +118,8 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
         // TODO Check qr code data null state
 
         RequestAccess request = new RequestAccess();
-        request.qrCodeId = mQRCode.i;
-        request.clubMemberId = ConfigurationManager.getInstance().getMemberId();
+        request.q = mQRCode.i;
+        request.c = ConfigurationManager.getInstance().getMemberId();
 
         this.startConnectionTimer();
 
@@ -240,6 +240,7 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
             if (mNextAction.equals(PassFlowActivity.ACTION_LOCATION)) {
                 DelegateManager.getInstance().flowNextActionRequired();
             } else if (mNextAction.equals(PassFlowActivity.ACTION_REMOTEACCESS)) {
+                mActionType = PassFlowActivity.ACTION_REMOTEACCESS;
                 updateStatus(R.string.text_status_message_waiting,"", R.drawable.waiting);
                 runRemoteAccess();
             }

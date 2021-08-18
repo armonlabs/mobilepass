@@ -19,6 +19,7 @@
 		DE27229D25D86E8900E1F8F7 /* QRCodeReaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE27229C25D86E8800E1F8F7 /* QRCodeReaderView.swift */; };
 		DE2722A025D871EC00E1F8F7 /* ScanQRCodeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE27229F25D871EC00E1F8F7 /* ScanQRCodeView.swift */; };
 		DE2B22EA25D3C9A0003F0451 /* StatusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE2B22E925D3C9A0003F0451 /* StatusView.swift */; };
+		DE30AAF026CCF42700F015C5 /* QRCodeMatch.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE30AAEF26CCF42700F015C5 /* QRCodeMatch.swift */; };
 		DE30E52725DD15CD004CAED2 /* Configuration.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE30E52625DD15CD004CAED2 /* Configuration.swift */; };
 		DE30E52B25DD182F004CAED2 /* ConfigurationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE30E52A25DD182F004CAED2 /* ConfigurationManager.swift */; };
 		DE30E53325DD38FD004CAED2 /* RequestPagination.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE30E53225DD38FD004CAED2 /* RequestPagination.swift */; };
@@ -87,6 +88,7 @@
 		DE27229C25D86E8800E1F8F7 /* QRCodeReaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRCodeReaderView.swift; sourceTree = "<group>"; };
 		DE27229F25D871EC00E1F8F7 /* ScanQRCodeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanQRCodeView.swift; sourceTree = "<group>"; };
 		DE2B22E925D3C9A0003F0451 /* StatusView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusView.swift; sourceTree = "<group>"; };
+		DE30AAEF26CCF42700F015C5 /* QRCodeMatch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRCodeMatch.swift; sourceTree = "<group>"; };
 		DE30E52625DD15CD004CAED2 /* Configuration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Configuration.swift; sourceTree = "<group>"; };
 		DE30E52A25DD182F004CAED2 /* ConfigurationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigurationManager.swift; sourceTree = "<group>"; };
 		DE30E53225DD38FD004CAED2 /* RequestPagination.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestPagination.swift; sourceTree = "<group>"; };
@@ -230,6 +232,7 @@
 				DEB3116525EC2F9A00DD91AF /* DeviceConnectionStatus.swift */,
 				DEB3116825EC2FB600DD91AF /* DeviceInRange.swift */,
 				DEB3116B25EC2FD900DD91AF /* DeviceCapability.swift */,
+				DE30AAEF26CCF42700F015C5 /* QRCodeMatch.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -496,6 +499,7 @@
 				DE19DF2D25DA3EB700AB250C /* DelegateManager.swift in Sources */,
 				DEF0BF9D25D28FB100397D18 /* BLEDataContent.swift in Sources */,
 				DE30E53E25DD39F6004CAED2 /* Direction.swift in Sources */,
+				DE30AAF026CCF42700F015C5 /* QRCodeMatch.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
