@@ -40,6 +40,14 @@ class LogManager: NSObject {
         log(level: .Debug, message: message, code: nil)
     }
     
+    func getVersion() -> String {
+        if let version = Bundle(for: PassFlowController.self).infoDictionary?["CFBundleShortVersionString"] as? String {
+            return version
+        }
+        
+        return ""
+    }
+    
     // MARK: Private Functions
     
     private func log(level: LogLevel, message: String, code: Int?) -> Void {

@@ -38,7 +38,7 @@ public class MobilePass {
         // Clear listener instance to prevent exception when convert configuration to json
         config.listener = null;
 
-        LogManager.getInstance().info("SDK Version: 1.2.0");
+        LogManager.getInstance().info("SDK Version: " + BuildConfig.VERSION_NAME);
         LogManager.getInstance().info("Configuration: " + config.getLog());
 
         BaseService.getInstance().setContext(context);

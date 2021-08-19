@@ -23,7 +23,7 @@ public class MobilePass {
                 DelegateManager.shared.setMainDelegate(delegate: delegate)
             }
             
-            LogManager.shared.info(message: "SDK Version: 1.2.0")
+            LogManager.shared.info(message: "SDK Version: \(LogManager.shared.getVersion())")
             LogManager.shared.info(message: "Configuration: \(config.getLog())")
             
             try ConfigurationManager.shared.setConfig(data: config)
