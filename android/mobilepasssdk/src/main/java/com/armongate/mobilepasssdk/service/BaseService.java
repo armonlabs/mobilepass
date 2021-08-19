@@ -180,7 +180,7 @@ public class BaseService {
     }
 
     private <T> void addToRequestQueue(Request<T> req) {
-        req.setRetryPolicy(new DefaultRetryPolicy(5000, 1, 0));
+        req.setRetryPolicy(new DefaultRetryPolicy(15000, 1, 0));
         getRequestQueue().add(req);
     }
 
