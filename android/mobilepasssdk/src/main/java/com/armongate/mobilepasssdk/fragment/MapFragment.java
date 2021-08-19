@@ -29,6 +29,11 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+
+import java.util.concurrent.Executor;
 
 public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnMyLocationButtonClickListener, GoogleMap.OnMyLocationClickListener {
 
@@ -90,12 +95,22 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
 
     @SuppressLint("MissingPermission")
     private void initLocationTracking() {
-        LocationRequest locationRequest = new LocationRequest();
-        locationRequest.setInterval(10000);
-        locationRequest.setFastestInterval(3000);
-        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        fusedLocationClient.getLastLocation().addOnCompleteListener(new OnCompleteListener<Location>() {
+            @Override
+            public void onComplete(@NonNull Task<Location> task) {
+                if (task.isSuccessful()) {
+                    // Task completed successfully
+                    processLocation(task.getResult());
+                }
 
-        fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.myLooper());
+                LocationRequest locationRequest = new LocationRequest();
+                locationRequest.setInterval(10000);
+                locationRequest.setFastestInterval(3000);
+                locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
+                fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.myLooper());
+            }
+        });
     }
 
     @Override
@@ -103,6 +118,30 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         super.onDestroy();
         if (locationCallback != null) {
             fusedLocationClient.removeLocationUpdates(locationCallback);
+        }
+    }
+
+    private void processLocation(Location location) {
+        if (location != null) {
+            LogManager.getInstance().debug("Location changed; Latitude: " + location.getLatitude() + ", Longitude: " + location.getLongitude());
+
+            if (location.isFromMockProvider() && !ConfigurationManager.getInstance().allowMockLocation()) {
+                LogManager.getInstance().debug("Mock location detected!");
+                DelegateManager.getInstance().onMockLocationDetected();
+            } else {
+                Location dest = new Location(LocationManager.GPS_PROVIDER);
+                dest.setLatitude(mPointLatitude);
+                dest.setLongitude(mPointLongitude);
+
+                float distance = location.distanceTo(dest);
+
+                if (distance < mPointRadius) {
+                    DelegateManager.getInstance().flowLocationValidated();
+                } else {
+                    LogManager.getInstance().debug("Distance to point: " + distance);
+                    moveCamera(location);
+                }
+            }
         }
     }
 
@@ -114,27 +153,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
             super.onLocationResult(locationResult);
 
             Location lastLocation = locationResult.getLastLocation();
-            if (lastLocation != null) {
-                LogManager.getInstance().debug("Location changed; Latitude: " + lastLocation.getLatitude() + ", Longitude: " + lastLocation.getLongitude());
-
-                if (lastLocation.isFromMockProvider() && !ConfigurationManager.getInstance().allowMockLocation()) {
-                    LogManager.getInstance().debug("Mock location detected!");
-                    DelegateManager.getInstance().onMockLocationDetected();
-                } else {
-                    Location dest = new Location(LocationManager.GPS_PROVIDER);
-                    dest.setLatitude(mPointLatitude);
-                    dest.setLongitude(mPointLongitude);
-
-                    float distance = lastLocation.distanceTo(dest);
-
-                    if (distance < mPointRadius) {
-                        DelegateManager.getInstance().flowLocationValidated();
-                    } else {
-                        LogManager.getInstance().debug("Distance to point: " + distance);
-                        moveCamera(lastLocation);
-                    }
-                }
-            }
+            processLocation(lastLocation);
         }
     };
 }
