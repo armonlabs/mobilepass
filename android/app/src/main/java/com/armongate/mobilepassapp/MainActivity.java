@@ -14,6 +14,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.armongate.mobilepasssdk.MobilePass;
+import com.armongate.mobilepasssdk.constant.LogLevel;
 import com.armongate.mobilepasssdk.delegate.MobilePassDelegate;
 import com.armongate.mobilepasssdk.model.Configuration;
 import com.armongate.mobilepasssdk.model.LogItem;
@@ -40,13 +41,13 @@ public class MainActivity extends AppCompatActivity implements MobilePassDelegat
             Toast.makeText(this, "Üye numaranızı giriniz", Toast.LENGTH_SHORT).show();
         } else {
             Configuration config = new Configuration();
-            config.memberId = "00988791"; // txtMemberId.getText().toString();
+            config.memberId = txtMemberId.getText().toString(); // "00988791";
             config.serverUrl = "https://10.10.10.118:3443"; // "https://qr.marsathletic.com";
             config.language = "tr";
             config.waitBLEEnabled = true;
             config.connectionTimeout = 10;
             config.listener = this;
-            // config.logLevel = 1;
+            config.logLevel = LogLevel.INFO;
 
             passer = new MobilePass(this, config);
             // passer.setDelegate(this);
