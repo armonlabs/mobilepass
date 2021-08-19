@@ -18,7 +18,14 @@ public class MobilePass {
      */
     public init(config: Configuration) {
         do {
+            if (config.delegate != nil) {
+                self.delegate = config.delegate
+                DelegateManager.shared.setMainDelegate(delegate: delegate)
+            }
+            
             LogManager.shared.info(message: "SDK Version: 1.2.0")
+            LogManager.shared.info(message: "Configuration: \(config.getLog())")
+            
             try ConfigurationManager.shared.setConfig(data: config)
         } catch {
             LogManager.shared.error(message: "Set configuration with given parameters failed!")

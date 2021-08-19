@@ -149,7 +149,7 @@ public class BluetoothManager {
             LogManager.getInstance().info("Bluetooth scanner is initialized");
         }
 
-        LogManager.getInstance().warn("Flush pending scan results for Bluetooth scanner");
+        LogManager.getInstance().warn("Flush pending scan results for Bluetooth scanner", null);
         currentBluetoothScanner.flushPendingScanResults(mPeripheralScanCallback);
 
         // Ready for new scanning
@@ -163,7 +163,7 @@ public class BluetoothManager {
 
         // Check active scanning status
         if (isScanningActive) {
-            LogManager.getInstance().warn("Bluetooth scanner is already scanning, new starter is ignored!");
+            LogManager.getInstance().warn("Bluetooth scanner is already scanning, new starter is ignored!", null);
             return;
         }
 
@@ -177,7 +177,7 @@ public class BluetoothManager {
         LogManager.getInstance().info("Bluetooth scanner is stopping...");
 
         if(currentBluetoothAdapter == null || currentBluetoothScanner == null) {
-            LogManager.getInstance().warn("Stop Bluetooth scanner request is ignored, scanner is not initialized yet");
+            LogManager.getInstance().warn("Stop Bluetooth scanner request is ignored, scanner is not initialized yet", null);
             return;
         }
 
@@ -187,7 +187,7 @@ public class BluetoothManager {
             currentBluetoothScanner.stopScan(mPeripheralScanCallback);
             currentBluetoothScanner.flushPendingScanResults(mPeripheralScanCallback);
         } catch (Exception ex) {
-            LogManager.getInstance().error("Stop scan failed, error: " + ex.getLocalizedMessage());
+            LogManager.getInstance().error("Stop scan failed, error: " + ex.getLocalizedMessage(), null);
         }
 
         LogManager.getInstance().info("Bluetooth scanner is not active now");
@@ -199,7 +199,7 @@ public class BluetoothManager {
 
     public void connectToDevice(String deviceIdentifier) {
         if (!currentDevicesInRange.containsKey(deviceIdentifier)) {
-            LogManager.getInstance().warn("Selected device not found in list to connect, device identifier: " + deviceIdentifier);
+            LogManager.getInstance().warn("Selected device not found in list to connect, device identifier: " + deviceIdentifier, null);
             onConnectionStateChanged(deviceIdentifier, DeviceConnectionStatus.ConnectionState.NOT_FOUND);
             return;
         }
@@ -222,7 +222,7 @@ public class BluetoothManager {
             BluetoothGatt connection = deviceInRange.device.connectGatt(activeContext, false, mBluetoothGattCallback);
             currentConnectedDevices.put(deviceIdentifier, new DeviceConnection(deviceInRange.device, deviceInRange.serviceUUID, connection));
         } else {
-            LogManager.getInstance().warn("Connection cancelled due to empty device instance that received from range list");
+            LogManager.getInstance().warn("Connection cancelled due to empty device instance that received from range list", null);
         }
     }
 
@@ -242,7 +242,7 @@ public class BluetoothManager {
 
             this.registerReceiver();
         } else {
-            LogManager.getInstance().error("Bluetooth adapter can not be accessed!");
+            LogManager.getInstance().error("Bluetooth adapter can not be accessed!", null);
         }
     }
 
@@ -348,7 +348,7 @@ public class BluetoothManager {
                 LogManager.getInstance().info("Connection state changed for " + identifier + " > " + connectionState.toString());
                 delegate.onConnectionStateChanged(new DeviceConnectionStatus(identifier, connectionState, failReason));
             } else {
-                LogManager.getInstance().warn("Connection state changed event could not be sent, identifier is empty!");
+                LogManager.getInstance().warn("Connection state changed event could not be sent, identifier is empty!", null);
             }
         }
 
@@ -376,7 +376,7 @@ public class BluetoothManager {
                     currentDevicesInRange.remove(identifier);
                 }
             } else {
-                LogManager.getInstance().warn("Identifier is empty, so related operations cannot be done for disconnect!");
+                LogManager.getInstance().warn("Identifier is empty, so related operations cannot be done for disconnect!", null);
             }
 
             onDisconnectedCompleted();
@@ -398,7 +398,7 @@ public class BluetoothManager {
             if ((forCharacteristic.getProperties() & BluetoothGattCharacteristic.PROPERTY_NOTIFY) != 0) {
                 descriptor.setValue(enable ? BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE : BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE);
             } else {
-                LogManager.getInstance().warn("Characteristic does not have NOTIFY property!");
+                LogManager.getInstance().warn("Characteristic does not have NOTIFY property!", null);
             }
 
             LogManager.getInstance().info("Adding write descriptor request for " + forCharacteristic.getUuid().toString());
@@ -473,7 +473,7 @@ public class BluetoothManager {
     }
 
     private void onWriteForDescriptorFailed(String logMessage, BluetoothGatt connection) {
-        LogManager.getInstance().error(logMessage);
+        LogManager.getInstance().error(logMessage, null);
 
         if (connection!= null && connection.getDevice() != null) {
             onConnectionStateChanged(connection.getDevice().getAddress(), DeviceConnectionStatus.ConnectionState.FAILED);
@@ -527,7 +527,7 @@ public class BluetoothManager {
                     changeSubscription(start, identifier, characteristic);
                 }
             } else {
-                LogManager.getInstance().warn("Device identifier could not be found in connected devices list");
+                LogManager.getInstance().warn("Device identifier could not be found in connected devices list", null);
                 onConnectionStateChanged(identifier, DeviceConnectionStatus.ConnectionState.FAILED);
             }
         }
@@ -553,7 +553,7 @@ public class BluetoothManager {
     private ScanCallback mPeripheralScanCallback = new ScanCallback() {
         @Override
         public void onScanFailed(int errorCode) {
-            LogManager.getInstance().warn("Scan failed! Error Code: " + errorCode);
+            LogManager.getInstance().warn("Scan failed! Error Code: " + errorCode, null);
             super.onScanFailed(errorCode);
         }
 
@@ -708,7 +708,7 @@ public class BluetoothManager {
                 gatt.discoverServices();
             }
             else {
-                LogManager.getInstance().error("Change MTU size failed!");
+                LogManager.getInstance().error("Change MTU size failed!", null);
                 onConnectionStateChanged(gatt.getDevice().getAddress(), DeviceConnectionStatus.ConnectionState.FAILED);
             }
         }
@@ -747,11 +747,11 @@ public class BluetoothManager {
                                 changeCommunicationState(gatt.getDevice().getAddress(), true, 0);
                             }
                         } else {
-                            LogManager.getInstance().warn("Device cannot be found in connected devices list, stop process!");
+                            LogManager.getInstance().warn("Device cannot be found in connected devices list, stop process!", null);
                             onConnectionStateChanged(gatt.getDevice().getAddress(), DeviceConnectionStatus.ConnectionState.FAILED);
                         }
                     } else {
-                        LogManager.getInstance().warn("Device cannot be found in connected devices list, stop process!");
+                        LogManager.getInstance().warn("Device cannot be found in connected devices list, stop process!", null);
                         onConnectionStateChanged(gatt.getDevice().getAddress(), DeviceConnectionStatus.ConnectionState.FAILED);
                     }
                 }
@@ -765,7 +765,7 @@ public class BluetoothManager {
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 LogManager.getInstance().info("Write to device for characteristic completed successfully!");
             } else {
-                LogManager.getInstance().error("Write to device for characteristic failed!");
+                LogManager.getInstance().error("Write to device for characteristic failed!", null);
             }
 
             onWriteCompleted();
@@ -777,7 +777,7 @@ public class BluetoothManager {
 
             byte[] dataValue = descriptor.getValue();
             if(dataValue == null) {
-                LogManager.getInstance().warn("Descriptor value is empty on this go-round");
+                LogManager.getInstance().warn("Descriptor value is empty on this go-round", null);
                 onWriteCompleted();
                 return;
             }
@@ -794,7 +794,7 @@ public class BluetoothManager {
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 LogManager.getInstance().info("Write to device for descriptor completed successfully!");
             } else {
-                LogManager.getInstance().error("Write to device for descriptor failed!");
+                LogManager.getInstance().error("Write to device for descriptor failed!", null);
             }
 
             onWriteCompleted();
@@ -808,7 +808,7 @@ public class BluetoothManager {
                 byte[] receivedData = characteristic.getValue();
 
                 if (receivedData == null || receivedData.length == 0) {
-                    LogManager.getInstance().warn("Value that received from characteristic is empty, disconnect now");
+                    LogManager.getInstance().warn("Value that received from characteristic is empty, disconnect now", null);
                     onConnectionStateChanged(gatt.getDevice().getAddress(), DeviceConnectionStatus.ConnectionState.FAILED);
                     return;
                 } else {
@@ -817,7 +817,7 @@ public class BluetoothManager {
                 }
 
                 if (!currentConnectedDevices.containsKey(gatt.getDevice().getAddress())) {
-                    LogManager.getInstance().warn("Value received but peripheral is not in connected devices' list, ignore data!");
+                    LogManager.getInstance().warn("Value received but peripheral is not in connected devices' list, ignore data!", null);
                     return;
                 }
 
@@ -843,26 +843,26 @@ public class BluetoothManager {
 
                                 writeToDevice(resultData, characteristic, connectedDevice.connection);
                             } else {
-                                LogManager.getInstance().error("Generate challenge response failed because of empty stored device definition");
+                                LogManager.getInstance().error("Generate challenge response failed because of empty stored device definition", null);
                                 onConnectionStateChanged(gatt.getDevice().getAddress(), DeviceConnectionStatus.ConnectionState.FAILED);
                             }
                         } catch (Exception ex) {
-                            LogManager.getInstance().error("Generate challenge response failed with error: " + ex.getLocalizedMessage());
+                            LogManager.getInstance().error("Generate challenge response failed with error: " + ex.getLocalizedMessage(), null);
                             onConnectionStateChanged(gatt.getDevice().getAddress(), DeviceConnectionStatus.ConnectionState.FAILED);
                         }
                     } else if (result.type == DataTypes.TYPE.AuthChallengeResult) {
                         processChallengeResult(gatt.getDevice().getAddress(), result);
                     } else {
-                        LogManager.getInstance().warn("Unknown data type received from device, disconnect now!");
+                        LogManager.getInstance().warn("Unknown data type received from device, disconnect now!", null);
                         onConnectionStateChanged(gatt.getDevice().getAddress(), DeviceConnectionStatus.ConnectionState.FAILED);
                     }
 
                 } else {
-                    LogManager.getInstance().warn("Unknown data received from device, disconnect now!");
+                    LogManager.getInstance().warn("Unknown data received from device, disconnect now!", null);
                     onConnectionStateChanged(gatt.getDevice().getAddress(), DeviceConnectionStatus.ConnectionState.FAILED);
                 }
             } catch (Exception ex) {
-                LogManager.getInstance().error("Handle data that received from device failed! " + ex.getLocalizedMessage());
+                LogManager.getInstance().error("Handle data that received from device failed! " + ex.getLocalizedMessage(), null);
                 onConnectionStateChanged(gatt.getDevice().getAddress(), DeviceConnectionStatus.ConnectionState.FAILED);
             }
         }

@@ -15,7 +15,6 @@ class CryptoManager: NSObject {
     static let shared = CryptoManager()
     private override init() {
         super.init()
-        LogManager.shared.info(message: "Setting up Crypto Manager instance")
     }
     
     // MARK: Constants

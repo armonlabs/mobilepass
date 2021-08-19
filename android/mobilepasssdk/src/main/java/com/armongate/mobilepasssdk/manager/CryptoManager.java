@@ -45,7 +45,7 @@ public class CryptoManager {
         try {
             P256_HEAD = createHeadForNamedCurve("NIST P-256", 256);
         } catch (Exception ex) {
-            LogManager.getInstance().error("Creating P256_HEAD failed: " + ex.getLocalizedMessage());
+            LogManager.getInstance().error("Creating P256_HEAD failed: " + ex.getLocalizedMessage(), null);
         }
     }
 
@@ -113,7 +113,7 @@ public class CryptoManager {
 
             return generateSharedSecret(factoryPrivateKey, factoryPublicKey);
         } catch (Exception ex) {
-            LogManager.getInstance().error("Generate secret key failed with error: " + ex.getLocalizedMessage());
+            LogManager.getInstance().error("Generate secret key failed with error: " + ex.getLocalizedMessage(), null);
             return null;
         }
     }
@@ -165,7 +165,7 @@ public class CryptoManager {
 
             return new CryptoKeyPair(publicKeyBase64, privateKeyBase64);
         } catch (Exception ex) {
-            LogManager.getInstance().error("Generate key pair failed with error: " + ex.getLocalizedMessage());
+            LogManager.getInstance().error("Generate key pair failed with error: " + ex.getLocalizedMessage(), null);
             return null;
         }
     }
@@ -189,7 +189,7 @@ public class CryptoManager {
 
             return getEncryptedBytes(data, ivAndKey);
         } catch (Exception ex) {
-            LogManager.getInstance().error("Encryption of data with IV failed with error: " + ex.getLocalizedMessage());
+            LogManager.getInstance().error("Encryption of data with IV failed with error: " + ex.getLocalizedMessage(), null);
             return new byte[0];
         }
     }

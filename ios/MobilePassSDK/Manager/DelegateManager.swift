@@ -42,13 +42,17 @@ class DelegateManager: NSObject {
     }
 
     
-    func setMainDelegate(delegate: MobilePassDelegate?, viewController: UIViewController) {
+    func setMainDelegate(delegate: MobilePassDelegate?, viewController: UIViewController? = nil) {
         mobilePassDelegate = delegate
         mobilePassController = viewController
     }
     
     func setQRCodeStateDelegate(delegate: QRCodeListStateDelegate?) {
         qrCodeListStateDelegate = delegate
+    }
+    
+    func onLogItemCreated(log: LogItem) {
+        mobilePassDelegate?.onLogReceived(log: log)
     }
     
     func isQRCodeListRefreshable() -> Bool {

@@ -2,6 +2,8 @@ package com.armongate.mobilepasssdk.manager;
 
 import android.content.Context;
 
+import com.armongate.mobilepasssdk.constant.ConfigurationDefaults;
+import com.armongate.mobilepasssdk.constant.LogLevel;
 import com.armongate.mobilepasssdk.constant.QRCodeListState;
 import com.armongate.mobilepasssdk.constant.StorageKeys;
 import com.armongate.mobilepasssdk.model.Configuration;
@@ -54,7 +56,6 @@ public class ConfigurationManager {
 
         return instance;
     }
-
 
     public void setConfig(Context context, Configuration data) {
         mCurrentContext = context;
@@ -115,15 +116,15 @@ public class ConfigurationManager {
     }
 
     public String getLanguage() {
-        return mCurrentConfig != null && mCurrentConfig.language != null ? mCurrentConfig.language : "en";
+        return mCurrentConfig != null && mCurrentConfig.language != null ? mCurrentConfig.language : ConfigurationDefaults.Language;
     }
 
     public boolean allowMockLocation() {
-        return mCurrentConfig != null && mCurrentConfig.allowMockLocation != null ? mCurrentConfig.allowMockLocation : false;
+        return mCurrentConfig != null && mCurrentConfig.allowMockLocation != null ? mCurrentConfig.allowMockLocation : ConfigurationDefaults.AllowMockLocation;
     }
 
     public Integer getBLEConnectionTimeout() {
-        return mCurrentConfig != null && mCurrentConfig.connectionTimeout != null ? mCurrentConfig.connectionTimeout : 5;
+        return mCurrentConfig != null && mCurrentConfig.connectionTimeout != null ? mCurrentConfig.connectionTimeout : ConfigurationDefaults.BLEConnectionTimeout;
     }
 
     public Integer autoCloseTimeout() {
@@ -131,7 +132,15 @@ public class ConfigurationManager {
     }
 
     public Boolean waitForBLEEnabled() {
-        return mCurrentConfig != null && mCurrentConfig.waitBLEEnabled != null ? mCurrentConfig.waitBLEEnabled : false;
+        return mCurrentConfig != null && mCurrentConfig.waitBLEEnabled != null ? mCurrentConfig.waitBLEEnabled : ConfigurationDefaults.WaitBleEnabled;
+    }
+
+    public int getLogLevel() {
+        return mCurrentConfig != null && mCurrentConfig.logLevel != null ? mCurrentConfig.logLevel : LogLevel.INFO;
+    }
+
+    public String getConfigurationLog() {
+        return mCurrentConfig != null ? mCurrentConfig.getLog() : "";
     }
 
     public void refreshList() {
@@ -234,7 +243,7 @@ public class ConfigurationManager {
 
                     @Override
                     public void onError(int statusCode, String message) {
-                        LogManager.getInstance().error("Send user info failed with status code " + statusCode);
+                        LogManager.getInstance().error("Send user info failed with status code " + statusCode, null);
                         getAccessPoints(false);
                     }
                 });
@@ -311,10 +320,10 @@ public class ConfigurationManager {
             @Override
             public void onError(int statusCode, String message) {
                 if (statusCode == 409) {
-                    LogManager.getInstance().error("Sync error received, get list again");
+                    LogManager.getInstance().error("Sync error received, get list again", null);
                     getAccessPoints(true);
                 } else {
-                    LogManager.getInstance().error("Get access list failed with status code " + statusCode);
+                    LogManager.getInstance().error("Get access list failed with status code " + statusCode, null);
                     DelegateManager.getInstance().onQRCodeListStateChanged(mQRCodes.size() > 0 ? QRCodeListState.USING_STORED_DATA : QRCodeListState.EMPTY);
                 }
             }
@@ -335,7 +344,7 @@ public class ConfigurationManager {
                 try {
                     mListSyncDate = Long.parseLong(storedSyncDate);
                 } catch (Exception ex) {
-                    LogManager.getInstance().error("Invalid stored sync date: " + storedSyncDate);
+                    LogManager.getInstance().error("Invalid stored sync date: " + storedSyncDate, null);
                 }
             }
         }

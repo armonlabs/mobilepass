@@ -7,13 +7,6 @@
 
 import Foundation
 
-enum LogType: Int, Codable {
-    case Info   = 1
-    case Warn   = 2
-    case Error  = 3
-    case Debug  = 4
-}
-
 class LogManager: NSObject {
     
     // MARK: Singleton
@@ -21,7 +14,6 @@ class LogManager: NSObject {
     static let shared = LogManager()
     private override init() {
         super.init()
-        self.info(message: "Setting up Log Manager instance")
     }
     
     
@@ -33,27 +25,27 @@ class LogManager: NSObject {
     // MARK: Public Functions
     
     func info(message: String) -> Void {
-        log(type: .Info, message: message)
+        log(level: .Info, message: message, code: nil)
     }
     
-    func warn(message: String) -> Void {
-        log(type: .Warn, message: message)
+    func warn(message: String, code: Int? = nil) -> Void {
+        log(level: .Warn, message: message, code: code)
     }
     
-    func error(message: String) -> Void {
-        log(type: .Error, message: message)
+    func error(message: String, code: Int? = nil) -> Void {
+        log(level: .Error, message: message, code: code)
     }
     
     func debug(message: String) -> Void {
-        log(type: .Debug, message: message)
+        log(level: .Debug, message: message, code: nil)
     }
     
     // MARK: Private Functions
     
-    private func log(type: LogType, message: String) -> Void {
+    private func log(level: LogLevel, message: String, code: Int?) -> Void {
         var prefix = ""
         
-        switch type {
+        switch level {
         case .Info:
             prefix = "INFO"
             break
@@ -68,6 +60,10 @@ class LogManager: NSObject {
             break
         }
         
-        print(LOG_TAG + " - " + prefix + " | " + message)
+        print("\(LOG_TAG) [\(Date().getFormattedDate(format: "HH:mm:ss:SSS"))] - \(prefix) | \(message)")
+        
+        if (level.rawValue >= ConfigurationManager.shared.getLogLevel()) {
+            DelegateManager.shared.onLogItemCreated(log: LogItem(level: level.rawValue, code: code, message: message))
+        }
     }
 }

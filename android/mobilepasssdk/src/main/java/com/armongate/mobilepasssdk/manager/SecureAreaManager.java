@@ -171,7 +171,7 @@ public class SecureAreaManager {
             if (successfullyWroteKey) {
                 LogManager.getInstance().info("Saved keys successfully");
             } else {
-                LogManager.getInstance().error("Saved keys unsuccessfully");
+                LogManager.getInstance().error("Saved keys unsuccessfully", null);
                 throw new IOException("Could not save keys");
             }
         }

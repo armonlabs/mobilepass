@@ -163,7 +163,7 @@ public class QRCodeReaderFragment extends Fragment implements SurfaceHolder.Call
                     }
                 } else {
                     setInvalid();
-                    LogManager.getInstance().warn("Unknown QR code format! > " + code.displayValue);
+                    LogManager.getInstance().warn("Unknown QR code format! > " + code.displayValue, null);
                 }
             }
         }

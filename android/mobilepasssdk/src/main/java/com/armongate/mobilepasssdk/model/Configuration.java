@@ -2,6 +2,9 @@ package com.armongate.mobilepasssdk.model;
 
 import androidx.annotation.Nullable;
 
+import com.armongate.mobilepasssdk.constant.ConfigurationDefaults;
+import com.armongate.mobilepasssdk.delegate.MobilePassDelegate;
+
 public class Configuration {
 
     /**
@@ -61,4 +64,24 @@ public class Configuration {
      */
     public @Nullable Boolean waitBLEEnabled;
 
+    /**
+     * Minimum level to be informed about logs
+     *
+     * @default LogLevel.INFO (2)
+     */
+    public @Nullable Integer logLevel;
+
+    /**
+     * Optional listener instance for MobilePass SDK callbacks
+     */
+    public @Nullable MobilePassDelegate listener;
+
+
+    public String getLog() {
+        return "MemberId: " + (this.memberId != null ? this.memberId : "Empty")
+                + " | WaitBLEEnabled: " + (this.waitBLEEnabled != null ? this.waitBLEEnabled : ConfigurationDefaults.WaitBleEnabled)
+                + " | BLEConnectionTimeout: " + (this.connectionTimeout != null ? this.connectionTimeout : ConfigurationDefaults.BLEConnectionTimeout)
+                + " | AutoCloseTimeout: " + (this.autoCloseTimeout != null ? this.autoCloseTimeout : "null")
+                + " | AllowMockLocation: " + (this.allowMockLocation != null ? this.allowMockLocation : ConfigurationDefaults.AllowMockLocation);
+    }
 }

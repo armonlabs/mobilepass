@@ -18,7 +18,6 @@ class ConfigurationManager: NSObject {
     static let shared = ConfigurationManager()
     private override init() {
         super.init()
-        LogManager.shared.info(message: "Setting up Configuration Manager instance")
     }
     
     // MARK: Private Fields
@@ -95,15 +94,15 @@ class ConfigurationManager: NSObject {
     }
     
     public func getLanguage() -> String {
-        return mCurrentConfig?.language ?? "en"
+        return mCurrentConfig?.language ?? ConfigurationDefaults.Language
     }
     
     public func isMockLocationAllowed() -> Bool {
-        return mCurrentConfig?.allowMockLocation ?? false
+        return mCurrentConfig?.allowMockLocation ?? ConfigurationDefaults.AllowMockLocation
     }
     
     public func bleConnectionTimeout() -> Int {
-        return mCurrentConfig?.connectionTimeout ?? 5
+        return mCurrentConfig?.connectionTimeout ?? ConfigurationDefaults.BLEConnectionTimeout
     }
     
     public func autoCloseTimeout() -> Int? {
@@ -111,7 +110,15 @@ class ConfigurationManager: NSObject {
     }
     
     public func waitForBLEEnabled() -> Bool {
-        return mCurrentConfig?.waitBLEEnabled ?? false
+        return mCurrentConfig?.waitBLEEnabled ?? ConfigurationDefaults.WaitBleEnabled
+    }
+    
+    public func getLogLevel() -> Int {
+        return mCurrentConfig?.logLevel ?? LogLevel.Info.rawValue
+    }
+    
+    public func getConfigurationLog() -> String {
+        return mCurrentConfig?.getLog() ?? ""
     }
     
     public func refreshList() -> Void {

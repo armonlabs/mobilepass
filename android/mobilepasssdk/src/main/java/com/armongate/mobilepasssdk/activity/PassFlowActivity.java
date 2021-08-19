@@ -219,7 +219,7 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
                         }
                         break;
                     default:
-                        LogManager.getInstance().warn("Unknown QR code trigger type! > " + activeQRCodeContent.qrCode.t);
+                        LogManager.getInstance().warn("Unknown QR code trigger type! > " + activeQRCodeContent.qrCode.t, null);
                 }
 
                 boolean needLocationPermission = actionCurrent.equals(ACTION_BLUETOOTH) || actionCurrent.equals(ACTION_LOCATION) || actionList.contains(ACTION_BLUETOOTH) || actionList.contains(ACTION_LOCATION);
@@ -234,7 +234,7 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
                     }
                 }
         } else {
-            LogManager.getInstance().warn("QR code definition cannot be found > " + code);
+            LogManager.getInstance().warn("QR code definition cannot be found > " + code, null);
         }
 
     }

@@ -29,7 +29,7 @@ public class DataParserUtil {
 
     public BLEDataContent parse(byte[] data) {
         if (data.length < 3) {
-            LogManager.getInstance().warn("Data received from device has invalid length!");
+            LogManager.getInstance().warn("Data received from device has invalid length!", null);
             return null;
         }
 
@@ -40,7 +40,7 @@ public class DataParserUtil {
                 return parseForProtocolV2(Arrays.copyOfRange(data, 1, data.length));
             default:
                 // TODO Add message to unknown protocol
-                LogManager.getInstance().warn("Unknown data protocol received!");
+                LogManager.getInstance().warn("Unknown data protocol received!", null);
                 return null;
         }
     }
@@ -48,7 +48,7 @@ public class DataParserUtil {
     // Private Functions
 
     private BLEDataContent parseForProtocolV1(byte[] data) {
-        LogManager.getInstance().error("Protocol V1 is ignored to process response!");
+        LogManager.getInstance().error("Protocol V1 is ignored to process response!", null);
         return null;
     }
 

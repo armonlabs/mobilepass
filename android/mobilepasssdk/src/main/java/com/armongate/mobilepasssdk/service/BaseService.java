@@ -134,7 +134,7 @@ public class BaseService {
 
                                 message = responseMsg.message;
                             } catch (Exception ex) {
-                                LogManager.getInstance().error(ex.getMessage());
+                                LogManager.getInstance().error(ex.getMessage(), null);
                             }
                         }
 
@@ -159,6 +159,7 @@ public class BaseService {
                 params.put("Cache-Control", "no-cache");
                 params.put("mobilepass-version", "1.2.0");
                 params.put("mobilepass-memberid", ConfigurationManager.getInstance().getMemberId());
+                params.put("mobilepass-config", ConfigurationManager.getInstance().getConfigurationLog());
 
                 return params;
             }

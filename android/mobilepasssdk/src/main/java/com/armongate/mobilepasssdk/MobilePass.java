@@ -31,8 +31,15 @@ public class MobilePass {
     public MobilePass(Context context, Configuration config) {
         mActiveContext = context;
 
+        if (config.listener != null) {
+            DelegateManager.getInstance().setCurrentMobilePassDelegate(config.listener);
+        }
+
+        // Clear listener instance to prevent exception when convert configuration to json
+        config.listener = null;
+
         LogManager.getInstance().info("SDK Version: 1.2.0");
-        LogManager.getInstance().info("Configuration: " + new Gson().toJson(config));
+        LogManager.getInstance().info("Configuration: " + config.getLog());
 
         BaseService.getInstance().setContext(context);
         BluetoothManager.getInstance().setContext(context);
@@ -60,18 +67,6 @@ public class MobilePass {
      * Starts qr code reading session and related flow
      */
     public void triggerQRCodeRead() {
-        /** Configuration */
-
-        LogManager.getInstance().debug("--------- Configuration --------- ");
-        LogManager.getInstance().debug("Wait BLE Enabled        : " + ConfigurationManager.getInstance().waitForBLEEnabled());
-        LogManager.getInstance().debug("AutoClose Timeout       : " + ConfigurationManager.getInstance().autoCloseTimeout());
-        LogManager.getInstance().debug("BLE Connection Timeout  : " + ConfigurationManager.getInstance().getBLEConnectionTimeout());
-        LogManager.getInstance().debug("Allow Mock Location     : " + ConfigurationManager.getInstance().allowMockLocation());
-        LogManager.getInstance().debug("Language                : " + ConfigurationManager.getInstance().getLanguage());
-        LogManager.getInstance().debug("--------------------------------- ");
-
-        /** Configuration */
-
         DelegateManager.getInstance().clearFlowFlags();
         BluetoothManager.getInstance().setReady();
 

@@ -74,6 +74,8 @@ class BaseService: NSObject {
         request.setValue("no-cache", forHTTPHeaderField: "Cache-Control")
         request.setValue("1.2.0", forHTTPHeaderField: "mobilepass-version")
         request.setValue("\(ConfigurationManager.shared.getMemberId())", forHTTPHeaderField: "mobilepass-memberid")
+        request.setValue("\(ConfigurationManager.shared.getConfigurationLog())", forHTTPHeaderField: "mobilepass-config")
+        
         
         return request
     }

@@ -52,7 +52,11 @@
 		DEB3116625EC2F9A00DD91AF /* DeviceConnectionStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEB3116525EC2F9A00DD91AF /* DeviceConnectionStatus.swift */; };
 		DEB3116925EC2FB600DD91AF /* DeviceInRange.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEB3116825EC2FB600DD91AF /* DeviceInRange.swift */; };
 		DEB3116C25EC2FD900DD91AF /* DeviceCapability.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEB3116B25EC2FD900DD91AF /* DeviceCapability.swift */; };
+		DECEC29126CE50A700280603 /* ConfigurationDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = DECEC29026CE50A700280603 /* ConfigurationDefaults.swift */; };
 		DEEF5AC9263172B5006004DD /* DeviceConnectionInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEF5AC8263172B5006004DD /* DeviceConnectionInfo.swift */; };
+		DEEFD88126CDACDA00E2E4F9 /* LogLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEFD88026CDACDA00E2E4F9 /* LogLevel.swift */; };
+		DEEFD88326CDAD1E00E2E4F9 /* LogItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEFD88226CDAD1E00E2E4F9 /* LogItem.swift */; };
+		DEEFD88526CDAEBF00E2E4F9 /* Date+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEFD88426CDAEBF00E2E4F9 /* Date+Extensions.swift */; };
 		DEF0BF8425D2868500397D18 /* Data+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEF0BF8325D2868500397D18 /* Data+Extensions.swift */; };
 		DEF0BF8725D286A600397D18 /* String+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEF0BF8625D286A600397D18 /* String+Extensions.swift */; };
 		DEF0BF9025D28C7E00397D18 /* PacketHeaders.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEF0BF8F25D28C7E00397D18 /* PacketHeaders.swift */; };
@@ -122,7 +126,11 @@
 		DEB3116525EC2F9A00DD91AF /* DeviceConnectionStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceConnectionStatus.swift; sourceTree = "<group>"; };
 		DEB3116825EC2FB600DD91AF /* DeviceInRange.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceInRange.swift; sourceTree = "<group>"; };
 		DEB3116B25EC2FD900DD91AF /* DeviceCapability.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceCapability.swift; sourceTree = "<group>"; };
+		DECEC29026CE50A700280603 /* ConfigurationDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigurationDefaults.swift; sourceTree = "<group>"; };
 		DEEF5AC8263172B5006004DD /* DeviceConnectionInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceConnectionInfo.swift; sourceTree = "<group>"; };
+		DEEFD88026CDACDA00E2E4F9 /* LogLevel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogLevel.swift; sourceTree = "<group>"; };
+		DEEFD88226CDAD1E00E2E4F9 /* LogItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogItem.swift; sourceTree = "<group>"; };
+		DEEFD88426CDAEBF00E2E4F9 /* Date+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Date+Extensions.swift"; sourceTree = "<group>"; };
 		DEF0BF8325D2868500397D18 /* Data+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+Extensions.swift"; sourceTree = "<group>"; };
 		DEF0BF8625D286A600397D18 /* String+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Extensions.swift"; sourceTree = "<group>"; };
 		DEF0BF8F25D28C7E00397D18 /* PacketHeaders.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PacketHeaders.swift; sourceTree = "<group>"; };
@@ -233,6 +241,7 @@
 				DEB3116825EC2FB600DD91AF /* DeviceInRange.swift */,
 				DEB3116B25EC2FD900DD91AF /* DeviceCapability.swift */,
 				DE30AAEF26CCF42700F015C5 /* QRCodeMatch.swift */,
+				DEEFD88226CDAD1E00E2E4F9 /* LogItem.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -298,6 +307,7 @@
 				DE46BB7E25E2A8F6006A727A /* CancelReason.swift */,
 				DE46BB8125E2A971006A727A /* QRCodeListState.swift */,
 				DE90899E26B2BA5B00C33845 /* NeedPermissionType.swift */,
+				DEEFD88026CDACDA00E2E4F9 /* LogLevel.swift */,
 			);
 			path = Enum;
 			sourceTree = "<group>";
@@ -310,6 +320,7 @@
 				DEFAD85125E8E8E500E63283 /* Int+Extensions.swift */,
 				DEF0BF9925D28D8F00397D18 /* DataParserUtil.swift */,
 				DEF0BFA825D2A0C100397D18 /* JSONUtil.swift */,
+				DEEFD88426CDAEBF00E2E4F9 /* Date+Extensions.swift */,
 			);
 			path = Util;
 			sourceTree = "<group>";
@@ -331,6 +342,7 @@
 				DEF0BF9325D28CA100397D18 /* StorageKeys.swift */,
 				DEF0BF9625D28D3000397D18 /* DataTypes.swift */,
 				DEF0BFA225D292C100397D18 /* UUIDs.swift */,
+				DECEC29026CE50A700280603 /* ConfigurationDefaults.swift */,
 			);
 			path = Constant;
 			sourceTree = "<group>";
@@ -446,9 +458,12 @@
 				DE45B1AB26C985A500FB8712 /* QRCodeListStateDelegate.swift in Sources */,
 				DEB3116C25EC2FD900DD91AF /* DeviceCapability.swift in Sources */,
 				DEF0BFA925D2A0C100397D18 /* JSONUtil.swift in Sources */,
+				DECEC29126CE50A700280603 /* ConfigurationDefaults.swift in Sources */,
 				DE46BB8225E2A971006A727A /* QRCodeListState.swift in Sources */,
 				DE9089A126B301F200C33845 /* ResponseMessage.swift in Sources */,
+				DEEFD88526CDAEBF00E2E4F9 /* Date+Extensions.swift in Sources */,
 				DEB3116225EC2F6D00DD91AF /* DeviceConnection.swift in Sources */,
+				DEEFD88326CDAD1E00E2E4F9 /* LogItem.swift in Sources */,
 				DE30E55F25DD43A4004CAED2 /* DataService.swift in Sources */,
 				DE90899D26B1FB4500C33845 /* PermissionView.swift in Sources */,
 				DE14A09E25D11DCB00F8B8B3 /* CryptoManager.swift in Sources */,
@@ -468,6 +483,7 @@
 				DE45B1A126C97E0400FB8712 /* ResponseAccessPointList.swift in Sources */,
 				DE14A0A325D11F7400F8B8B3 /* CryptoKeyPair.swift in Sources */,
 				DEB3115F25EC2F0500DD91AF /* BLEScanConfiguration.swift in Sources */,
+				DEEFD88126CDACDA00E2E4F9 /* LogLevel.swift in Sources */,
 				DEF0BF8725D286A600397D18 /* String+Extensions.swift in Sources */,
 				DE30E52725DD15CD004CAED2 /* Configuration.swift in Sources */,
 				DE30E53725DD393D004CAED2 /* RequestSetUserData.swift in Sources */,

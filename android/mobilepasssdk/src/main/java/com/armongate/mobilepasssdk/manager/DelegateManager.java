@@ -9,6 +9,7 @@ import com.armongate.mobilepasssdk.constant.QRCodeListState;
 import com.armongate.mobilepasssdk.delegate.MobilePassDelegate;
 import com.armongate.mobilepasssdk.delegate.PassFlowDelegate;
 import com.armongate.mobilepasssdk.delegate.QRCodeListStateDelegate;
+import com.armongate.mobilepasssdk.model.LogItem;
 
 public class DelegateManager {
 
@@ -111,13 +112,19 @@ public class DelegateManager {
     }
 
     public void onErrorOccurred(Exception ex) {
-        LogManager.getInstance().error("Exception on pass flow; " + ex.getLocalizedMessage());
+        LogManager.getInstance().error("Exception on pass flow; " + ex.getLocalizedMessage(), null);
         endFlow(true, CancelReason.ERROR);
     }
 
     public void onNeedPermission(int type) {
         if (mCurrentMobilePassDelegate != null) {
             mCurrentMobilePassDelegate.onNeedPermission(type);
+        }
+    }
+
+    public void onLogItemCreated(LogItem log) {
+        if (mCurrentMobilePassDelegate != null) {
+            mCurrentMobilePassDelegate.onLogReceived(log);
         }
     }
 

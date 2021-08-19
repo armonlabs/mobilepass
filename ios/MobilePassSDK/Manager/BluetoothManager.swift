@@ -15,8 +15,6 @@ class BluetoothManager: NSObject {
     static let shared = BluetoothManager()
     private override init() {
         super.init()
-        
-        LogManager.shared.info(message: "Setting up Bluetooth Manager instance")
     }
     
     // MARK: Fields

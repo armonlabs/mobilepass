@@ -45,7 +45,7 @@ public class StorageManager {
             try {
                 storeValue = secureStoreInstance.encryptData(storeValue);
             } catch (Exception ex) {
-                LogManager.getInstance().error("Add item to secure storage failed with error: " + ex.getLocalizedMessage());
+                LogManager.getInstance().error("Add item to secure storage failed with error: " + ex.getLocalizedMessage(), null);
                 return false;
             }
         }
@@ -65,7 +65,7 @@ public class StorageManager {
             try {
                 storedValue = secureStoreInstance.decryptData(storedValue);
             } catch (Exception ex) {
-                LogManager.getInstance().error("Get item from secure storage failed with error: " + ex.getLocalizedMessage());
+                LogManager.getInstance().error("Get item from secure storage failed with error: " + ex.getLocalizedMessage(), null);
                 return "";
             }
         }

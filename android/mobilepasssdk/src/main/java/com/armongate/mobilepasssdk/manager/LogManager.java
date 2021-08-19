@@ -2,6 +2,9 @@ package com.armongate.mobilepasssdk.manager;
 
 import android.util.Log;
 
+import com.armongate.mobilepasssdk.constant.LogLevel;
+import com.armongate.mobilepasssdk.model.LogItem;
+
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -10,13 +13,6 @@ import java.util.Date;
 import java.util.List;
 
 public class LogManager {
-
-    public enum LogType {
-        INFO,
-        WARN,
-        ERROR,
-        DEBUG
-    }
 
     private final List<String> logItems = new ArrayList<>();
 
@@ -40,19 +36,19 @@ public class LogManager {
     // Public Functions
 
     public void info(String message) {
-        log(LogType.INFO, message);
+        log(LogLevel.INFO, message, null);
     }
 
-    public void warn(String message) {
-        log(LogType.WARN, message);
+    public void warn(String message, Integer code) {
+        log(LogLevel.WARN, message, code);
     }
 
-    public void error(String message) {
-        log(LogType.ERROR, message);
+    public void error(String message, Integer code) {
+        log(LogLevel.ERROR, message, code);
     }
 
     public void debug(String message) {
-        log(LogType.DEBUG, message);
+        log(LogLevel.DEBUG, message, null);
     }
 
     public List<String> getLogs() {
@@ -61,35 +57,34 @@ public class LogManager {
 
     // Private Functions
 
-    private void log(LogType type, String message) {
+    private void log(int type, String message, Integer code) {
         String prefix = "";
 
         switch (type) {
-            case INFO:
+            case LogLevel.INFO:
                 prefix = "INFO";
-                Log.i(LOG_TAG, prefix + " | " + message);
                 break;
-            case WARN:
+            case LogLevel.WARN:
                 prefix = "WARN";
-                Log.w(LOG_TAG, prefix + " | " + message);
                 break;
-            case ERROR:
+            case LogLevel.ERROR:
                 prefix = "ERROR";
-                Log.e(LOG_TAG, prefix + " | " + message);
                 break;
-            case DEBUG:
+            case LogLevel.DEBUG:
                 prefix = "DEBUG";
-                Log.d(LOG_TAG, prefix + " | " + message);
                 break;
         }
 
+        Log.i(LOG_TAG, prefix + " | " + message);
         logItems.add(now() + " | " + message);
+
+        if (type >= ConfigurationManager.getInstance().getLogLevel()) {
+            DelegateManager.getInstance().onLogItemCreated(new LogItem(type, code, message));
+        }
     }
 
     private String now() {
-        String pattern = "HH:mm:ss:SSS";
-
-        DateFormat df = new SimpleDateFormat(pattern);
+        DateFormat df = new SimpleDateFormat("HH:mm:ss:SSS");
         Date today = Calendar.getInstance().getTime();
 
         return df.format(today);
