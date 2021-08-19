@@ -115,11 +115,8 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
         DelegateManager.getInstance().flowConnectionStateChanged(true);
         BluetoothManager.getInstance().stopScan(true);
 
-        // TODO Check qr code data null state
-
         RequestAccess request = new RequestAccess();
         request.q = mQRCode.i;
-        request.c = ConfigurationManager.getInstance().getMemberId();
 
         this.startConnectionTimer();
 

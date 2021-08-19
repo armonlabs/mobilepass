@@ -9,12 +9,10 @@ import Foundation
 
 struct RequestAccess: Codable {
     var q: String;
-    var c: String;
     
     var dictionary: [String: Any] {
         return [
-            "q": q,
-            "c": c
+            "q": q
         ]
     }
 }
