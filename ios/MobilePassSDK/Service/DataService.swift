@@ -9,7 +9,7 @@ import Foundation
 
 class DataService {
     func sendUserInfo(request: RequestSetUserData, completion: @escaping (Result<ResponseDefault?, RequestError>) -> Void) {
-        BaseService.shared.requestPost(url: "api/v2/setpublickey", data: request.dictionary, completion: completion)
+        BaseService.shared.requestPost(url: "api/v1/setpublickey", data: request.dictionary, completion: completion)
     }
     
     func getAccessList(pagination: RequestPagination, syncDate: Int64?, completion: @escaping (Result<ResponseAccessPointList?, RequestError>) -> Void) {
