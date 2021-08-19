@@ -114,7 +114,7 @@ class ConfigurationManager: NSObject {
     }
     
     public func getLogLevel() -> Int {
-        return mCurrentConfig?.logLevel ?? LogLevel.Info.rawValue
+        return mCurrentConfig?.logLevel?.rawValue ?? LogLevel.Info.rawValue
     }
     
     public func getConfigurationLog() -> String {

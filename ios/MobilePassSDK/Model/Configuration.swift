@@ -42,12 +42,12 @@ public class Configuration {
     var waitBLEEnabled: Bool?
     
     /** Minimum level to be informed about logs, default LogLevel.INFO (2) */
-    var logLevel: Int?
+    var logLevel: LogLevel?
     
     /** Optional listener instance for MobilePass SDK callbacks */
     var delegate: MobilePassDelegate?
     
-    public init(memberId: String, serverUrl: String, token: String?, language: String?, qrCodeMessage: String?, allowMockLocation: Bool?, connectionTimeout: Int?, autoCloseTimeout: Int?, waitBLEEnabled: Bool?, logLevel: Int? = nil, delegate: MobilePassDelegate? = nil) {
+    public init(memberId: String, serverUrl: String, token: String?, language: String?, qrCodeMessage: String?, allowMockLocation: Bool?, connectionTimeout: Int?, autoCloseTimeout: Int?, waitBLEEnabled: Bool?, logLevel: LogLevel? = nil, delegate: MobilePassDelegate? = nil) {
         self.memberId           = memberId
         self.serverUrl          = serverUrl
         self.qrCodeMessage      = qrCodeMessage
