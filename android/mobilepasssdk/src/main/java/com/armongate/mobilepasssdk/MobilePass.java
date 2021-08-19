@@ -38,12 +38,14 @@ public class MobilePass {
         // Clear listener instance to prevent exception when convert configuration to json
         config.listener = null;
 
+        ConfigurationManager.getInstance().setConfig(context, config);
+
         LogManager.getInstance().info("SDK Version: " + BuildConfig.VERSION_NAME);
         LogManager.getInstance().info("Configuration: " + config.getLog());
 
         BaseService.getInstance().setContext(context);
+        ConfigurationManager.getInstance().setReady();
         BluetoothManager.getInstance().setContext(context);
-        ConfigurationManager.getInstance().setConfig(context, config);
     }
 
     /**

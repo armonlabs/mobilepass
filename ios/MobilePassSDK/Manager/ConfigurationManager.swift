@@ -35,9 +35,11 @@ class ConfigurationManager: NSObject {
     
     // MARK: Public Methods
     
-    public func setConfig(data: Configuration) throws -> Void {
+    public func setConfig(data: Configuration) -> Void {
         mCurrentConfig = data
-        
+    }
+    
+    public func setReady() throws -> Void {
         getStoredQRCodes()
         
         try validateConfig()

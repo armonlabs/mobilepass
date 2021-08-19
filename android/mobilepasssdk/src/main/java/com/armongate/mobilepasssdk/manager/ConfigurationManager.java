@@ -60,7 +60,9 @@ public class ConfigurationManager {
     public void setConfig(Context context, Configuration data) {
         mCurrentContext = context;
         mCurrentConfig = data;
+    }
 
+    public void setReady() {
         getStoredQRCodes();
         validateConfig();
         sendUserData();
