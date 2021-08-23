@@ -14,9 +14,6 @@ import com.armongate.mobilepasssdk.manager.DelegateManager;
 import com.armongate.mobilepasssdk.manager.LogManager;
 import com.armongate.mobilepasssdk.model.Configuration;
 import com.armongate.mobilepasssdk.service.BaseService;
-import com.google.gson.Gson;
-
-import java.util.List;
 
 public class MobilePass {
 
@@ -73,10 +70,6 @@ public class MobilePass {
         BluetoothManager.getInstance().setReady();
 
         showActivity();
-    }
-
-    public List<String> getLogs() {
-        return LogManager.getInstance().getLogs();
     }
 
     private void showActivity() {

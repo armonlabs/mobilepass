@@ -1,16 +1,18 @@
 package com.armongate.mobilepasssdk.model.response;
 
+import androidx.annotation.Nullable;
+
 public class ResponseAccessPointListItem {
     /** Id */
-    public String i;
+    public @Nullable String i;
     /** Name */
-    public String n;
+    public @Nullable String n;
     /** QR Codes */
-    public ResponseAccessPointListQRCode[]    q;
+    public @Nullable ResponseAccessPointListQRCode[]    q;
     /** Terminals */
-    public ResponseAccessPointListTerminal[]  t;
+    public @Nullable ResponseAccessPointListTerminal[]  t;
     /** GeoLocation */
-    public ResponseAccessPointListGeoLocation g;
+    public @Nullable ResponseAccessPointListGeoLocation g;
 
     /** QR Code Ids | Only for mapping on storage */
     public String[] d;

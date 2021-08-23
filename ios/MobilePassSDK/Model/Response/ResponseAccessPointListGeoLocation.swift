@@ -9,9 +9,9 @@ import Foundation
 
 struct ResponseAccessPointListGeoLocation: Codable {
     /** Latitude */
-    var la: Double
+    var la: Double?
     /** Longitude */
-    var lo: Double
+    var lo: Double?
     /** Radius */
-    var r:  Int
+    var r:  Int?
 }

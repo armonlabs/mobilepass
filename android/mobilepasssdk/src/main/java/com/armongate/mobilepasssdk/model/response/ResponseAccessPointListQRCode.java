@@ -1,18 +1,20 @@
 package com.armongate.mobilepasssdk.model.response;
 
+import androidx.annotation.Nullable;
+
 public class ResponseAccessPointListQRCode {
     /** Id */
-    public String   i;
+    public @Nullable String   i;
     /** Data */
-    public String   q;
+    public @Nullable String   q;
     /** Direction */
-    public int      d;
+    public @Nullable Integer  d;
     /** Relay Number */
-    public int      r;
+    public @Nullable Integer  r;
     /** Trigger Type */
-    public int      t;
+    public @Nullable Integer  t;
     /** Validate Geo Location */
-    public Boolean  v;
+    public @Nullable Boolean  v;
     /** HardwareId */
-    public String   h;
+    public @Nullable String   h;
 }

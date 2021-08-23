@@ -2,9 +2,7 @@ package com.armongate.mobilepasssdk.manager;
 
 import android.os.Handler;
 
-import com.armongate.mobilepasssdk.activity.PassFlowActivity;
 import com.armongate.mobilepasssdk.constant.CancelReason;
-import com.armongate.mobilepasssdk.constant.NeedPermissionType;
 import com.armongate.mobilepasssdk.constant.QRCodeListState;
 import com.armongate.mobilepasssdk.delegate.MobilePassDelegate;
 import com.armongate.mobilepasssdk.delegate.PassFlowDelegate;
@@ -114,12 +112,6 @@ public class DelegateManager {
     public void onErrorOccurred(Exception ex) {
         LogManager.getInstance().error("Exception on pass flow; " + ex.getLocalizedMessage(), null);
         endFlow(true, CancelReason.ERROR);
-    }
-
-    public void onNeedPermission(int type) {
-        if (mCurrentMobilePassDelegate != null) {
-            mCurrentMobilePassDelegate.onNeedPermission(type);
-        }
     }
 
     public void onLogItemCreated(LogItem log) {

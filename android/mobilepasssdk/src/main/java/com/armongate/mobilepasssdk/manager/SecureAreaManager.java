@@ -132,7 +132,6 @@ public class SecureAreaManager {
     private void removeSavedSharedPreferences() {
         SharedPreferences pref = mContext.getSharedPreferences(SHARED_PREFERENCE_NAME, Context.MODE_PRIVATE);
         boolean clearedPreferencesSuccessfully = pref.edit().clear().commit();
-        LogManager.getInstance().info(String.format("Cleared secret key shared preferences `%s`", clearedPreferencesSuccessfully));
     }
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
@@ -168,10 +167,7 @@ public class SecureAreaManager {
             SharedPreferences.Editor edit = pref.edit();
             edit.putString(ENCRYPTED_KEY_NAME, encryptedKeyBase64encoded);
             boolean successfullyWroteKey = edit.commit();
-            if (successfullyWroteKey) {
-                LogManager.getInstance().info("Saved keys successfully");
-            } else {
-                LogManager.getInstance().error("Saved keys unsuccessfully", null);
+            if (!successfullyWroteKey) {
                 throw new IOException("Could not save keys");
             }
         }

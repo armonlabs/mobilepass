@@ -1,0 +1,47 @@
+package com.armongate.mobilepasssdk.constant;
+
+public class LogCodes {
+    public static final int CONFIGURATION_VALIDATION                    = 1101;
+    public static final int CONFIGURATION_SERVER_SYNC_INFO              = 1201;
+    public static final int CONFIGURATION_SERVER_SYNC_LIST              = 1202;
+    public static final int CONFIGURATION_KEYPAIR                       = 1301;
+    public static final int CONFIGURATION_STORAGE                       = 1401;
+    public static final int BLUETOOTH_SCANNING_FLOW                     = 2101;
+    public static final int BLUETOOTH_ADAPTER_ERROR                     = 2201;
+    public static final int BLUETOOTH_SCANNER_FAILED                    = 2202;
+    public static final int BLUETOOTH_CONNECTION_FLOW                   = 2301;
+    public static final int BLUETOOTH_CONNECTION_NOT_FOUND              = 2302;
+    public static final int BLUETOOTH_CONNECTION_FAILED                 = 2303;
+    public static final int BLUETOOTH_CONNECTION_DUPLICATE              = 2304;
+    public static final int BLUETOOTH_COMMUNICATION_FLOW                = 2401;
+    public static final int NEED_PERMISSION_DEFAULT                     = 3100;
+    public static final int NEED_PERMISSION_CAMERA                      = 3101;
+    public static final int NEED_PERMISSION_LOCATION                    = 3102;
+    public static final int NEED_PERMISSION_BLUETOOTH                   = 3103;
+    public static final int NEED_ENABLE_BLE                             = 3104;
+    public static final int NEED_ENABLE_LOCATION_SERVICES               = 3105;
+    public static final int PASSFLOW_EMPTY_ACTION_LIST                  = 4101;
+    public static final int PASSFLOW_EMPTY_QRCODE_CONTENT               = 4102;
+    public static final int PASSFLOW_MAP_ERROR                          = 4103;
+    public static final int PASSFLOW_QRCODE_VALIDATION_ID               = 4201;
+    public static final int PASSFLOW_QRCODE_VALIDATION_DATA             = 4202;
+    public static final int PASSFLOW_QRCODE_VALIDATION_ACCESSPOINT_ID   = 4203;
+    public static final int PASSFLOW_QRCODE_VALIDATION_LOCATION         = 4204;
+    public static final int PASSFLOW_QRCODE_VALIDATION_TERMINAL         = 4205;
+    public static final int PASSFLOW_QRCODE_VALIDATION_CONFIG           = 4206;
+    public static final int PASSFLOW_QRCODE_VALIDATION_TRIGGERTYPE      = 4207;
+    public static final int PASSFLOW_QRCODE_VALIDATION_DOOR_DETAILS     = 4208;
+    public static final int PASSFLOW_PROCESS_QRCODE_TRIGGERTYPE         = 4301;
+    public static final int PASSFLOW_PROCESS_QRCODE_EMPTY_ACTION        = 4302;
+    public static final int PASSFLOW_QRCODE_READER_INVALID_FORMAT       = 4401;
+    public static final int PASSFLOW_QRCODE_READER_INVALID_CONTENT      = 4402;
+    public static final int PASSFLOW_QRCODE_READER_NO_MATCHING          = 4403;
+    public static final int PASSFLOW_ACTION_EMPTY_CONFIG                = 4501;
+    public static final int PASSFLOW_ACTION_INVALID_TYPE                = 4502;
+    public static final int PASSFLOW_ACTION_EMPTY_QRCODE_CONTENT        = 4503;
+    public static final int PASSFLOW_ACTION_EMPTY_QRCODE_ID             = 4504;
+    public static final int PASSFLOW_ACTION_EMPTY_DIRECTION             = 4505;
+    public static final int PASSFLOW_ACTION_EMPTY_HARDWAREID            = 4506;
+    public static final int PASSFLOW_ACTION_EMPTY_RELAYNUMBER           = 4507;
+    public static final int PASSFLOW_ACTION_INVALID_NEXT_ACTION         = 4508;
+}

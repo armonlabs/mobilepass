@@ -53,6 +53,7 @@
 		DEB3116925EC2FB600DD91AF /* DeviceInRange.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEB3116825EC2FB600DD91AF /* DeviceInRange.swift */; };
 		DEB3116C25EC2FD900DD91AF /* DeviceCapability.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEB3116B25EC2FD900DD91AF /* DeviceCapability.swift */; };
 		DECEC29126CE50A700280603 /* ConfigurationDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = DECEC29026CE50A700280603 /* ConfigurationDefaults.swift */; };
+		DECEC29326CFF35E00280603 /* LogCodes.swift in Sources */ = {isa = PBXBuildFile; fileRef = DECEC29226CFF35E00280603 /* LogCodes.swift */; };
 		DEEF5AC9263172B5006004DD /* DeviceConnectionInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEF5AC8263172B5006004DD /* DeviceConnectionInfo.swift */; };
 		DEEFD88126CDACDA00E2E4F9 /* LogLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEFD88026CDACDA00E2E4F9 /* LogLevel.swift */; };
 		DEEFD88326CDAD1E00E2E4F9 /* LogItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEFD88226CDAD1E00E2E4F9 /* LogItem.swift */; };
@@ -127,6 +128,7 @@
 		DEB3116825EC2FB600DD91AF /* DeviceInRange.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceInRange.swift; sourceTree = "<group>"; };
 		DEB3116B25EC2FD900DD91AF /* DeviceCapability.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceCapability.swift; sourceTree = "<group>"; };
 		DECEC29026CE50A700280603 /* ConfigurationDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigurationDefaults.swift; sourceTree = "<group>"; };
+		DECEC29226CFF35E00280603 /* LogCodes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogCodes.swift; sourceTree = "<group>"; };
 		DEEF5AC8263172B5006004DD /* DeviceConnectionInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceConnectionInfo.swift; sourceTree = "<group>"; };
 		DEEFD88026CDACDA00E2E4F9 /* LogLevel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogLevel.swift; sourceTree = "<group>"; };
 		DEEFD88226CDAD1E00E2E4F9 /* LogItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogItem.swift; sourceTree = "<group>"; };
@@ -308,6 +310,7 @@
 				DE46BB8125E2A971006A727A /* QRCodeListState.swift */,
 				DE90899E26B2BA5B00C33845 /* NeedPermissionType.swift */,
 				DEEFD88026CDACDA00E2E4F9 /* LogLevel.swift */,
+				DECEC29226CFF35E00280603 /* LogCodes.swift */,
 			);
 			path = Enum;
 			sourceTree = "<group>";
@@ -468,6 +471,7 @@
 				DE90899D26B1FB4500C33845 /* PermissionView.swift in Sources */,
 				DE14A09E25D11DCB00F8B8B3 /* CryptoManager.swift in Sources */,
 				DE45B1A726C97E5800FB8712 /* ResponseAccessPointListTerminal.swift in Sources */,
+				DECEC29326CFF35E00280603 /* LogCodes.swift in Sources */,
 				DE2722A025D871EC00E1F8F7 /* ScanQRCodeView.swift in Sources */,
 				DE45B1A326C97E1900FB8712 /* ResponseAccessPointListItem.swift in Sources */,
 				DEF0BFA325D292C100397D18 /* UUIDs.swift in Sources */,

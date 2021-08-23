@@ -1,10 +1,12 @@
 package com.armongate.mobilepasssdk.model.response;
 
+import androidx.annotation.Nullable;
+
 public class ResponseAccessPointListGeoLocation {
     /** Latitude */
-    public Double   la;
+    public @Nullable Double  la;
     /** Longitude */
-    public Double   lo;
+    public @Nullable Double  lo;
     /** Radius */
-    public int      r;
+    public @Nullable Integer r;
 }

@@ -25,7 +25,9 @@ public struct BLEScanConfiguration {
         self.deviceList = [:]
         
         for device in devices {
-            self.deviceList[device.i.lowercased()] = DeviceConnectionInfo(deviceId: device.i, publicKey: device.p)
+            if (device.i != nil && device.p != nil && !device.i!.isEmpty && !device.p!.isEmpty) {
+                self.deviceList[device.i!.lowercased()] = DeviceConnectionInfo(deviceId: device.i!, publicKey: device.p!)
+            }
         }
     }
 }

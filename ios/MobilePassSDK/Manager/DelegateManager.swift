@@ -91,7 +91,27 @@ class DelegateManager: NSObject {
     }
 
     func needPermission(type: NeedPermissionType, showMessage: Bool) {
-        self.mobilePassDelegate?.onNeedPermission(type: type.rawValue)
+        var code: LogCodes? = nil
+        
+        switch type {
+        case .NEED_PERMISSION_BLUETOOTH:
+            code = LogCodes.NEED_PERMISSION_BLUETOOTH
+            break
+        case .NEED_PERMISSION_CAMERA:
+            code = LogCodes.NEED_PERMISSION_CAMERA
+            break
+        case .NEED_PERMISSION_LOCATION:
+            code = LogCodes.NEED_PERMISSION_LOCATION
+            break
+        case .NEED_ENABLE_BLE:
+            code = LogCodes.NEED_ENABLE_BLE
+            break
+        case .NEED_ENABLE_LOCATION_SERVICES:
+            code = LogCodes.NEED_ENABLE_LOCATION_SERVICES
+            break
+        }
+        
+        LogManager.shared.warn(message: "Need permission to continue passing flow, permission type: \(type.rawValue)", code: code)
         
         if (showMessage) {
             passFlowDelegate?.onNeedPermissionMessage(type: type.rawValue)

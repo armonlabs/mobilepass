@@ -14,6 +14,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.armongate.mobilepasssdk.R;
+import com.armongate.mobilepasssdk.constant.LogCodes;
 import com.armongate.mobilepasssdk.manager.ConfigurationManager;
 import com.armongate.mobilepasssdk.manager.DelegateManager;
 import com.armongate.mobilepasssdk.manager.LogManager;
@@ -30,10 +31,7 @@ import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-
-import java.util.concurrent.Executor;
 
 public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnMyLocationButtonClickListener, GoogleMap.OnMyLocationClickListener {
 
@@ -41,22 +39,28 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     private FusedLocationProviderClient fusedLocationClient;
     private Double mPointLatitude;
     private Double mPointLongitude;
-    private int mPointRadius;
+    private Integer mPointRadius;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        mPointLatitude = getArguments().getDouble("latitude");
-        mPointLongitude = getArguments().getDouble("longitude");
-        mPointRadius = getArguments().getInt("radius");
+
+        mPointLatitude = getArguments() != null && getArguments().containsKey("latitude") ? getArguments().getDouble("latitude") : null;
+        mPointLongitude = getArguments() != null && getArguments().containsKey("longitude") ? getArguments().getDouble("longitude") : null;
+        mPointRadius = getArguments() != null && getArguments().containsKey("radius") ? getArguments().getInt("radius") : null;
 
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_armon_map, container, false);
 
         SupportMapFragment supportMapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.armon_mp_fragment_google_maps);
 
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(getActivity());
-        supportMapFragment.getMapAsync(this);
+        try {
+            fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
+            assert supportMapFragment != null;
+            supportMapFragment.getMapAsync(this);
+        } catch (Exception ex) {
+            LogManager.getInstance().error("Error occurred while initializing map for location validation, error: " + ex.getLocalizedMessage(), LogCodes.PASSFLOW_MAP_ERROR);
+        }
 
         return view;
     }
@@ -78,9 +82,11 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
 
     @SuppressLint("MissingPermission")
     private void initMap() {
-        LatLng accessPoint = new LatLng(mPointLatitude, mPointLongitude);
-        mMap.addMarker(new MarkerOptions().position(accessPoint));
-        mMap.addCircle(new CircleOptions().center(accessPoint).radius(mPointRadius).fillColor(0x20FF0000).strokeWidth(0));
+        if (mPointLatitude != null && mPointLongitude != null && mPointRadius != null) {
+            LatLng accessPoint = new LatLng(mPointLatitude, mPointLongitude);
+            mMap.addMarker(new MarkerOptions().position(accessPoint));
+            mMap.addCircle(new CircleOptions().center(accessPoint).radius(mPointRadius).fillColor(0x20FF0000).strokeWidth(0));
+        }
 
         mMap.setOnMyLocationButtonClickListener(this);
         mMap.setOnMyLocationClickListener(this);
@@ -116,30 +122,31 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if (locationCallback != null) {
-            fusedLocationClient.removeLocationUpdates(locationCallback);
-        }
+        fusedLocationClient.removeLocationUpdates(locationCallback);
     }
 
     private void processLocation(Location location) {
         if (location != null) {
-            LogManager.getInstance().debug("Location changed; Latitude: " + location.getLatitude() + ", Longitude: " + location.getLongitude());
+            LogManager.getInstance().debug("User location changed; Latitude: " + location.getLatitude() + ", Longitude: " + location.getLongitude());
 
             if (location.isFromMockProvider() && !ConfigurationManager.getInstance().allowMockLocation()) {
-                LogManager.getInstance().debug("Mock location detected!");
+                LogManager.getInstance().info("Mock location detected, so pass flow will be cancelled");
                 DelegateManager.getInstance().onMockLocationDetected();
             } else {
-                Location dest = new Location(LocationManager.GPS_PROVIDER);
-                dest.setLatitude(mPointLatitude);
-                dest.setLongitude(mPointLongitude);
+                if (mPointLatitude != null && mPointLongitude != null && mPointRadius != null) {
+                    Location dest = new Location(LocationManager.GPS_PROVIDER);
+                    dest.setLatitude(mPointLatitude);
+                    dest.setLongitude(mPointLongitude);
 
-                float distance = location.distanceTo(dest);
+                    float distance = location.distanceTo(dest);
 
-                if (distance < mPointRadius) {
-                    DelegateManager.getInstance().flowLocationValidated();
-                } else {
-                    LogManager.getInstance().debug("Distance to point: " + distance);
-                    moveCamera(location);
+                    if (distance < mPointRadius) {
+                        LogManager.getInstance().info("User is in validation area now, distance to center point: " + distance);
+                        DelegateManager.getInstance().flowLocationValidated();
+                    } else {
+                        LogManager.getInstance().debug("User is " + distance + "m away from validation point");
+                        moveCamera(location);
+                    }
                 }
             }
         }

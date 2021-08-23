@@ -7,14 +7,11 @@ import com.armongate.mobilepasssdk.model.LogItem;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
+import java.util.Locale;
 
 public class LogManager {
-
-    private final List<String> logItems = new ArrayList<>();
 
     // Singleton
 
@@ -51,10 +48,6 @@ public class LogManager {
         log(LogLevel.DEBUG, message, null);
     }
 
-    public List<String> getLogs() {
-        return this.logItems;
-    }
-
     // Private Functions
 
     private void log(int type, String message, Integer code) {
@@ -76,7 +69,6 @@ public class LogManager {
         }
 
         Log.i(LOG_TAG, prefix + " | " + message);
-        logItems.add(now() + " | " + message);
 
         if (type >= ConfigurationManager.getInstance().getLogLevel()) {
             DelegateManager.getInstance().onLogItemCreated(new LogItem(type, code, message));
@@ -84,10 +76,8 @@ public class LogManager {
     }
 
     private String now() {
-        DateFormat df = new SimpleDateFormat("HH:mm:ss:SSS");
-        Date today = Calendar.getInstance().getTime();
-
-        return df.format(today);
+        DateFormat formatter = DateFormat.getTimeInstance(SimpleDateFormat.MEDIUM, Locale.UK);
+        return formatter.format(new Date());
     }
 
 }

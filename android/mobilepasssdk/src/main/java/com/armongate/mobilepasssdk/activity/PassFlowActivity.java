@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
 
 import com.armongate.mobilepasssdk.R;
+import com.armongate.mobilepasssdk.constant.LogCodes;
 import com.armongate.mobilepasssdk.constant.NeedPermissionType;
 import com.armongate.mobilepasssdk.constant.QRTriggerType;
 import com.armongate.mobilepasssdk.delegate.PassFlowDelegate;
@@ -149,12 +150,14 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
     }
 
     private void checkNextAction() {
+        LogManager.getInstance().debug("Checking next action now");
         if (this.actionList.size() > 0) {
             actionCurrent = this.actionList.get(0);
             this.actionList.remove(0);
 
             processAction();
         } else {
+            LogManager.getInstance().warn("Checking next action has been cancelled due to empty action list", LogCodes.PASSFLOW_EMPTY_ACTION_LIST);
             finish();
         }
     }
@@ -168,7 +171,7 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
     }
 
     private void showPermissionMessage(int needPermissionType) {
-        DelegateManager.getInstance().onNeedPermission(needPermissionType);
+        LogManager.getInstance().warn("Need permission to continue passing flow, permission type: " + needPermissionType, LogCodes.NEED_PERMISSION_DEFAULT + needPermissionType);
 
         Bundle bundle = new Bundle();
         bundle.putInt("type", needPermissionType);
@@ -179,14 +182,24 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
     private void processQRCodeData(String code) {
         activeQRCodeContent = ConfigurationManager.getInstance().getQRCodeContent(code);
 
-        if (activeQRCodeContent != null) {
+        if (activeQRCodeContent != null && activeQRCodeContent.valid) {
             LogManager.getInstance().info("QR code content for [" + code + "] is processing...");
 
-                boolean needLocation = activeQRCodeContent.qrCode.v != null && activeQRCodeContent.qrCode.v && activeQRCodeContent.geoLocation != null;
-                LogManager.getInstance().info("Need location: " + needLocation);
+            boolean needLocation = activeQRCodeContent.qrCode != null
+                    && activeQRCodeContent.qrCode.v != null
+                    && activeQRCodeContent.qrCode.v
+                    && activeQRCodeContent.geoLocation != null
+                    && activeQRCodeContent.geoLocation.la != null
+                    && activeQRCodeContent.geoLocation.lo != null
+                    && activeQRCodeContent.geoLocation.r != null;
+            LogManager.getInstance().info("QR code need location validation: " + needLocation);
 
-                actionList = new ArrayList<>();
+            actionList      = new ArrayList<>();
+            actionCurrent   = "";
 
+            if (activeQRCodeContent.qrCode == null || activeQRCodeContent.qrCode.t == null) {
+                LogManager.getInstance().warn("Process qr code has been cancelled due to empty trigger type", LogCodes.PASSFLOW_PROCESS_QRCODE_TRIGGERTYPE);
+            } else {
                 switch (activeQRCodeContent.qrCode.t) {
                     case QRTriggerType.Bluetooth:
                         LogManager.getInstance().info("Trigger Type: Bluetooth");
@@ -219,7 +232,7 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
                         }
                         break;
                     default:
-                        LogManager.getInstance().warn("Unknown QR code trigger type! > " + activeQRCodeContent.qrCode.t, null);
+                        LogManager.getInstance().warn("Process qr code has been cancelled due to empty action type", LogCodes.PASSFLOW_PROCESS_QRCODE_EMPTY_ACTION);
                 }
 
                 boolean needLocationPermission = actionCurrent.equals(ACTION_BLUETOOTH) || actionCurrent.equals(ACTION_LOCATION) || actionList.contains(ACTION_BLUETOOTH) || actionList.contains(ACTION_LOCATION);
@@ -233,14 +246,16 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
                         replaceFragment(CheckFragment.class, null);
                     }
                 }
+            }
         } else {
-            LogManager.getInstance().warn("QR code definition cannot be found > " + code, null);
+            LogManager.getInstance().warn("Process QR Code message received with empty or invalid content", LogCodes.PASSFLOW_EMPTY_QRCODE_CONTENT);
         }
 
     }
 
     private void processAction() {
         if (actionCurrent.isEmpty()) {
+            LogManager.getInstance().warn("Process qr code has been cancelled due to empty action type", LogCodes.PASSFLOW_PROCESS_QRCODE_EMPTY_ACTION);
             return;
         }
 
@@ -249,15 +264,26 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
 
         if (actionCurrent.equals(ACTION_LOCATION)) {
             Bundle bundle = new Bundle();
-            bundle.putDouble("latitude", activeQRCodeContent.geoLocation.la);
-            bundle.putDouble("longitude", activeQRCodeContent.geoLocation.lo);
-            bundle.putInt("radius", activeQRCodeContent.geoLocation.r);
+
+            if (activeQRCodeContent != null && activeQRCodeContent.geoLocation != null) {
+                if (activeQRCodeContent.geoLocation.la != null) {
+                    bundle.putDouble("latitude", activeQRCodeContent.geoLocation.la);
+                }
+
+                if (activeQRCodeContent.geoLocation.lo != null) {
+                    bundle.putDouble("longitude", activeQRCodeContent.geoLocation.lo);
+                }
+
+                if (activeQRCodeContent.geoLocation.r != null) {
+                    bundle.putDouble("radius", activeQRCodeContent.geoLocation.r);
+                }
+            }
 
             replaceFragment(MapFragment.class, bundle);
         } else {
             Gson gson = new Gson();
-            String deviceDetails = gson.toJson(activeQRCodeContent.terminals);
-            String qrCodeInfo = gson.toJson(activeQRCodeContent.qrCode);
+            String deviceDetails = activeQRCodeContent != null ? gson.toJson(activeQRCodeContent.terminals) : "";
+            String qrCodeInfo = activeQRCodeContent != null ? gson.toJson(activeQRCodeContent.qrCode) : "";
 
             Bundle bundle = new Bundle();
             bundle.putString("type", actionCurrent);

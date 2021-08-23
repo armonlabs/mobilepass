@@ -1,8 +1,10 @@
 package com.armongate.mobilepasssdk.model.response;
 
+import androidx.annotation.Nullable;
+
 public class ResponseAccessPointListTerminal {
     /** Id */
-    public String   i;
+    public @Nullable String i;
     /** PublicKey */
-    public String   p;
+    public @Nullable String p;
 }

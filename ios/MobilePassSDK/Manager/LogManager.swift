@@ -28,11 +28,11 @@ class LogManager: NSObject {
         log(level: .Info, message: message, code: nil)
     }
     
-    func warn(message: String, code: Int? = nil) -> Void {
+    func warn(message: String, code: LogCodes? = nil) -> Void {
         log(level: .Warn, message: message, code: code)
     }
     
-    func error(message: String, code: Int? = nil) -> Void {
+    func error(message: String, code: LogCodes? = nil) -> Void {
         log(level: .Error, message: message, code: code)
     }
     
@@ -50,7 +50,7 @@ class LogManager: NSObject {
     
     // MARK: Private Functions
     
-    private func log(level: LogLevel, message: String, code: Int?) -> Void {
+    private func log(level: LogLevel, message: String, code: LogCodes?) -> Void {
         var prefix = ""
         
         switch level {
@@ -71,7 +71,7 @@ class LogManager: NSObject {
         print("\(LOG_TAG) [\(Date().getFormattedDate(format: "HH:mm:ss:SSS"))] - \(prefix) | \(message)")
         
         if (level.rawValue >= ConfigurationManager.shared.getLogLevel()) {
-            DelegateManager.shared.onLogItemCreated(log: LogItem(level: level.rawValue, code: code, message: message))
+            DelegateManager.shared.onLogItemCreated(log: LogItem(level: level.rawValue, code: code?.rawValue, message: message))
         }
     }
 }

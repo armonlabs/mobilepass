@@ -9,15 +9,16 @@ import Foundation
 
 struct ResponseAccessPointListItem: Codable {
     /** Id */
-    var i: String
+    var i: String?
     /** Name */
-    var n: String
+    var n: String?
     /** QR Codes */
-    var q: [ResponseAccessPointListQRCode]
+    var q: [ResponseAccessPointListQRCode]?
     /** Terminals */
-    var t: [ResponseAccessPointListTerminal]
+    var t: [ResponseAccessPointListTerminal]?
     /** GeoLocation */
     var g: ResponseAccessPointListGeoLocation?
     
+    /** QR Code Ids | Only for mapping on storage */
     var d: [String]?
 }

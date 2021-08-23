@@ -2,6 +2,7 @@ package com.armongate.mobilepasssdk.manager;
 
 import android.util.Base64;
 
+import com.armongate.mobilepasssdk.constant.LogCodes;
 import com.armongate.mobilepasssdk.model.CryptoKeyPair;
 
 import org.spongycastle.crypto.CipherParameters;
@@ -40,7 +41,7 @@ public class CryptoManager {
 
     private static CryptoManager instance = null;
     private CryptoManager() {
-        this.iv = new SecureRandom().generateSeed(16);
+        byte[] iv = new SecureRandom().generateSeed(16);
 
         try {
             P256_HEAD = createHeadForNamedCurve("NIST P-256", 256);
@@ -59,7 +60,6 @@ public class CryptoManager {
 
     // Private Fields
 
-    private byte[] iv;
     private static byte[] P256_HEAD = new byte[0];
 
     static {
@@ -108,12 +108,12 @@ public class CryptoManager {
 
             KeyFactory factory = KeyFactory.getInstance("ECDSA", "SC");
 
-            PrivateKey factoryPrivateKey   = factory.generatePrivate(new PKCS8EncodedKeySpec(privateKeyBytes));
-            PublicKey factoryPublicKey    = createPublicKeyWithP256Head(publicKey, factory);
+            PrivateKey factoryPrivateKey    = factory.generatePrivate(new PKCS8EncodedKeySpec(privateKeyBytes));
+            PublicKey factoryPublicKey      = createPublicKeyWithP256Head(publicKey, factory);
 
             return generateSharedSecret(factoryPrivateKey, factoryPublicKey);
         } catch (Exception ex) {
-            LogManager.getInstance().error("Generate secret key failed with error: " + ex.getLocalizedMessage(), null);
+            LogManager.getInstance().debug("Generate secret key failed with error: " + ex.getLocalizedMessage());
             return null;
         }
     }
@@ -165,7 +165,7 @@ public class CryptoManager {
 
             return new CryptoKeyPair(publicKeyBase64, privateKeyBase64);
         } catch (Exception ex) {
-            LogManager.getInstance().error("Generate key pair failed with error: " + ex.getLocalizedMessage(), null);
+            LogManager.getInstance().error("Generate key pair failed with error: " + ex.getLocalizedMessage(), LogCodes.CONFIGURATION_KEYPAIR);
             return null;
         }
     }
@@ -189,7 +189,7 @@ public class CryptoManager {
 
             return getEncryptedBytes(data, ivAndKey);
         } catch (Exception ex) {
-            LogManager.getInstance().error("Encryption of data with IV failed with error: " + ex.getLocalizedMessage(), null);
+            LogManager.getInstance().debug("Encryption of data with IV failed with error: " + ex.getLocalizedMessage());
             return new byte[0];
         }
     }

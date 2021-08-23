@@ -9,7 +9,7 @@ import Foundation
 
 struct ResponseAccessPointListTerminal: Codable {
     /** Id */
-    var i: String
+    var i: String?
     /** PublicKey */
-    var p: String
+    var p: String?
 }

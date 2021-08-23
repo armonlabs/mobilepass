@@ -12,6 +12,7 @@
 "text_status_message_unauthorized" = "You are not authorized to pass";
 "text_status_message_scanning" = "Scanning for nearby devices";
 "text_status_message_timeout" = "Request timed out";
+"test_status_message_remoteaccess_timeout" = "Communication with device timed out";
 "text_status_message_connecting" = "Connecting...";
 "text_status_message_waiting" = "Your pass request is being sent...";
 "text_status_message_need_ble_enabled" = "Bluetooth must be enabled to continue.";
@@ -19,6 +20,13 @@
 "text_status_message_need_permission_location" = "You need to grant Location permission to the application";
 "text_status_message_need_permission_bluetooth" = "To pass with Bluetooth, you need to give Bluetooth permission to the application";
 "text_status_message_need_permission_camera" = "In order to scan QR code, you need to give Camera Access permission to the application";
+"text_status_message_error_empty_config" = "An error occurred during pass. Code: 4501";
+"text_status_message_error_invalid_action" = "An error occurred during pass. Code: 4502";
+"text_status_message_error_invalid_qrcode_content" = "An error occurred during pass. Code: 4503";
+"text_status_message_error_invalid_qrcode_id" = "An error occurred during pass. Code: 4504";
+"text_status_message_error_invalid_direction" = "An error occurred during pass. Code: 4505";
+"text_status_message_error_invalid_hardware_id" = "An error occurred during pass. Code: 4506";
+"text_status_message_error_invalid_relay_number" = "An error occurred during pass. Code: 4507";
 "text_location_message" = "You must be in a defined location to continue";
 "text_location_message_reduced" = "You must be in a defined location to continue\n\nEnabling 'Precise Location' in app permissions will speed up your location validation";
 "text_button_close" = "Close";

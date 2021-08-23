@@ -9,9 +9,7 @@ import Foundation
 
 struct ResponseAccessPointList: Codable {
     /** Pagination */
-    var p: ResponsePagination
+    var p: ResponsePagination?
     /** Items */
-    var i: [ResponseAccessPointListItem]
-    /** Deleted Access Point Ids */
-    var d: [String]?
+    var i: [ResponseAccessPointListItem]?
 }

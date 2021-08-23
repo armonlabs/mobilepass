@@ -63,13 +63,13 @@ class CryptoManager: NSObject {
          
                     return CryptoKeyPair(publicKey: publicKeyBase64, privateKey: privateKeyBase64)
                 } else {
-                    LogManager.shared.error(message: "Convert private key to base64 encoded string is failed!")
+                    LogManager.shared.debug(message: "Convert private key to base64 encoded string is failed!")
                 }
             } else {
-                LogManager.shared.error(message: "Convert public key to base64 encoded string is failed!")
+                LogManager.shared.debug(message: "Convert public key to base64 encoded string is failed!")
             }
         } else {
-            LogManager.shared.error(message: "Generate key pair failed!")
+            LogManager.shared.debug(message: "Generate key pair failed!")
         }
         
         return nil;

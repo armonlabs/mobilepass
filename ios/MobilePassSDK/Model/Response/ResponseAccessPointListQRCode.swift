@@ -9,17 +9,17 @@ import Foundation
 
 struct ResponseAccessPointListQRCode: Codable {
     /** Id */
-    var i: String;
+    var i: String?;
     /** Data */
-    var q: String;
+    var q: String?;
     /** Direction */
-    var d: Direction;
+    var d: Direction?;
     /** Relay Number */
-    var r: Int;
+    var r: Int?;
     /** Trigger Type */
-    var t: QRTriggerType;
+    var t: QRTriggerType?;
     /** Validate Geo Location */
     var v: Bool?; // Default True
     /** HardwareId */
-    var h: String;
+    var h: String?;
 }

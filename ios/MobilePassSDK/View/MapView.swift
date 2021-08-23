@@ -81,10 +81,10 @@ struct MapViewContent: UIViewRepresentable {
         mapView.setUserTrackingMode(.follow, animated: true)
         mapView.showsUserLocation = true
         
-        if (checkPoint != nil) {
-            let location = CLLocationCoordinate2D(latitude: checkPoint!.la, longitude: checkPoint!.lo)
+        if (checkPoint != nil && checkPoint!.la != nil && checkPoint!.lo != nil && checkPoint!.r != nil) {
+            let location = CLLocationCoordinate2D(latitude: checkPoint!.la!, longitude: checkPoint!.lo!)
             
-            addRadiusOverlay(forLocation: location, radius: CLLocationDistance(checkPoint!.r))
+            addRadiusOverlay(forLocation: location, radius: CLLocationDistance(checkPoint!.r!))
             
             let annotation = MKPointAnnotation()
             annotation.coordinate = location
@@ -155,42 +155,42 @@ class MapViewCoordinator: NSObject, MKMapViewDelegate, CLLocationManagerDelegate
         
         var isPrecised: Bool = true
         
-        do {
-            if #available(iOS 14.0, *) {
-                switch locationManager.accuracyAuthorization {
-                case .fullAccuracy:
-                    LogManager.shared.debug(message: "Location has full accuracy")
-                    break
-                case .reducedAccuracy:
-                    LogManager.shared.debug(message: "Location has reduced accuracy")
-                    isPrecised = false
-                    break
-                @unknown default:
-                    LogManager.shared.debug(message: "Location has unknown accuracy")
-                }
+        if #available(iOS 14.0, *) {
+            switch locationManager.accuracyAuthorization {
+            case .fullAccuracy:
+                LogManager.shared.debug(message: "Location settings has full accuracy")
+                break
+            case .reducedAccuracy:
+                LogManager.shared.debug(message: "Location settings has reduced accuracy")
+                isPrecised = false
+                break
+            @unknown default:
+                LogManager.shared.debug(message: "Location settings has unknown accuracy")
             }
-        } catch { }
+        }
         
         if (isInitialLocation) {
             isInitialLocation = false
             mapView.zoomToLocation(mapView.userLocation.location)
         }
         
-        if (!isLocationFound && self.parent.checkPoint != nil) {
+        if (!isLocationFound && self.parent.checkPoint != nil && self.parent.checkPoint!.la != nil && self.parent.checkPoint!.lo != nil && self.parent.checkPoint!.r != nil) {
             // TODO: false is added to handle 'precise location' and mock location conflict, check here
             if (userLocation.location?.altitude == 0 && !ConfigurationManager.shared.isMockLocationAllowed() && false) {
+                LogManager.shared.info(message: "Mock location detected, so pass flow will be cancelled")
                 DelegateManager.shared.onMockLocationDetected()
             } else {
-                let pinLoc = CLLocationCoordinate2D(latitude: self.parent.checkPoint!.la, longitude: self.parent.checkPoint!.lo)
+                let pinLoc = CLLocationCoordinate2D(latitude: self.parent.checkPoint!.la!, longitude: self.parent.checkPoint!.lo!)
                 let userLoc = CLLocationCoordinate2D(latitude: userLocation.coordinate.latitude, longitude: userLocation.coordinate.longitude)
                 
                 let distance = MKMapPoint(userLoc).distance(to: MKMapPoint(pinLoc))
                 
-                if (distance < CLLocationDistance(self.parent.checkPoint!.r)) {
+                if (distance < CLLocationDistance(self.parent.checkPoint!.r!)) {
+                    LogManager.shared.info(message: "User is in validation area now, distance to center point: \(distance)m")
                     isLocationFound = true
                     parent.completion(.success(distance))
                 } else {
-                    LogManager.shared.debug(message: "Distance: \(distance)")
+                    LogManager.shared.debug(message: "User is \(distance)m away from validation point")
                     parent.isPrecised(isPrecised)
                 }
             }

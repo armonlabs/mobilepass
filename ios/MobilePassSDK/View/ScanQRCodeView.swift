@@ -9,9 +9,9 @@ import SwiftUI
 import AVFoundation
 
 class CurrentListStateModel: ObservableObject {
-    @Published var state:   Int     = QRCodeListState.INITIALIZING.rawValue
-    @Published var message: String  = "text_qrcode_list_state_initializing"
-    @Published var invalid: Bool    = false
+    @Published var state:           Int     = QRCodeListState.INITIALIZING.rawValue
+    @Published var message:         String  = "text_qrcode_list_state_initializing"
+    @Published var backgroundColor: Color   = Color.black
     
     private var timerInstance: Timer? = nil
     
@@ -24,17 +24,17 @@ class CurrentListStateModel: ObservableObject {
         self.message    = self.getQRCodeListStateLabel(state: state)
     }
     
-    func setInvalid() {
+    func setInvalid(isValidationError: Bool) {
         if (timerInstance != nil) {
             timerInstance!.invalidate()
             timerInstance = nil
         }
         
-        invalid = true
+        backgroundColor = isValidationError ? Color.orange : Color.red
         
         self.timerInstance = Timer.scheduledTimer(withTimeInterval: Double(2), repeats: false, block: {_ in
             DispatchQueue.main.async {
-                self.invalid = false
+                self.backgroundColor = Color.black
             }
         })
     }
@@ -78,8 +78,7 @@ struct ScanQRCodeView: View, QRCodeListStateDelegate {
                     if case let .success(code) = result {
                         DelegateManager.shared.flowQRCodeFound(code: code)
                     } else if case let .failure(reason) = result {
-                        print(">>>> QR Code Failed with Reason: \(reason)")
-                        stateModel.setInvalid()
+                        stateModel.setInvalid(isValidationError: reason == .invalidContent)
                     }
                 }
             )
@@ -156,7 +155,7 @@ struct ScanQRCodeView: View, QRCodeListStateDelegate {
             }
         }
         .frame(minWidth: 0, idealWidth: width, maxWidth: width, minHeight: 0, idealHeight: height, maxHeight: height, alignment: .center)
-        .background((stateModel.invalid ? Color.red : Color.black).opacity(0.6))
+        .background(stateModel.backgroundColor.opacity(0.6))
         .position(x: positionX, y: positionY).onTapGesture {
             onTap?()
         }

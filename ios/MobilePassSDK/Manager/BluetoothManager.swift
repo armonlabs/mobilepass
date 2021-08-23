@@ -34,7 +34,6 @@ class BluetoothManager: NSObject {
     private var currentCentralManager:      CBCentralManager!
     
     private var isConnectionActive:         Bool = false
-    private var isConnectedBefore:          Bool = false
     private var lastConnectionTime:         Dictionary<String, TimeInterval> = [:]
     
     
@@ -66,11 +65,11 @@ class BluetoothManager: NSObject {
         // Prepare service and characteristic UUID lists for new scan
         prepareUUIDLists()
         
-        LogManager.shared.info(message: "Bluetooth scanner is ready")
+        LogManager.shared.info(message: "Bluetooth scanner is ready for scanning")
         
         // Check active scanning status
         if(self.currentCentralManager.isScanning) {
-            LogManager.shared.warn(message: "Bluetooth scanner is already scanning, new starter is ignored!")
+            LogManager.shared.info(message: "Bluetooth scanner is already scanning, new starter is ignored!")
             self.onScanningStarted?()
             return
         }
@@ -97,7 +96,7 @@ class BluetoothManager: NSObject {
         if (authorizationStatus == .allowedAlways) {
             if (self.currentCentralManager.state == .poweredOn) {
                 self.onScanningStarted?()
-                LogManager.shared.info(message: "Scanning peripherals now...")
+                LogManager.shared.info(message: "Scanning nearby BLE devices now")
                 self.currentCentralManager.scanForPeripherals(withServices: filterServiceUUIDs,
                                                               options: [CBCentralManagerScanOptionAllowDuplicatesKey: true])
             } else {
@@ -112,12 +111,12 @@ class BluetoothManager: NSObject {
         LogManager.shared.info(message: "Bluetooth scanner is stopping...")
         
         if(self.currentCentralManager == nil) {
-            LogManager.shared.warn(message: "Stop Bluetooth scanner request is ignored, scanner is not initialized yet")
+            LogManager.shared.info(message: "Bluetooth scanner has not been initialized yet, so stop request has been ignored")
             return
         }
         
         self.currentCentralManager.stopScan()
-        LogManager.shared.info(message: "Bluetooth scanner is not active now")
+        LogManager.shared.info(message: "Bluetooth scanner has been stopped successfully")
         
         if (disconnect) {
             self.disconnect()
@@ -125,21 +124,21 @@ class BluetoothManager: NSObject {
     }
     
     public func connectToDevice(deviceIdentifier: String) {
+        LogManager.shared.debug(message: "Connect to device is requested for identifier: \(deviceIdentifier)");
+        
         if (self.currentDevicesInRange.index(forKey: deviceIdentifier) == nil) {
-            LogManager.shared.warn(message: "Selected device not found in list to connect, device identifier: " + deviceIdentifier)
+            LogManager.shared.warn(message: "Selected device not found in list to connect, device identifier: \(deviceIdentifier)")
             onConnectionStateChanged(identifier: deviceIdentifier, connectionState: .notFound)
             return
         }
         
-        if (isConnectionActive || isConnectedBefore) {
-            LogManager.shared.warn(message: "Another connection is active now, ignore new")
+        if (isConnectionActive) {
+            LogManager.shared.warn(message: "Another Bluetooth connection is active now, so new one has been ignored", code: LogCodes.BLUETOOTH_CONNECTION_DUPLICATE)
             return
         }
         
         isConnectionActive = true
-        isConnectedBefore = true
         
-        LogManager.shared.info(message: "Connect to device requested for identifier: " + deviceIdentifier)
         onConnectionStateChanged(identifier: deviceIdentifier, connectionState: .connecting)
         
         LogManager.shared.info(message: "Connecting to device...")
@@ -170,8 +169,9 @@ class BluetoothManager: NSObject {
         self.currentConnectedDevices.removeAll()
         
         // Clear connection limit flags
-        self.isConnectedBefore = false
         self.isConnectionActive = false
+        
+        LogManager.shared.debug(message: "Related fields are cleared for new scanning session");
     }
     
     private func prepareUUIDLists() {
@@ -183,14 +183,18 @@ class BluetoothManager: NSObject {
         self.filterCharacteristicUUIDs = []
         
         for uuid in self.currentConfiguration!.deviceList.keys {
+            LogManager.shared.debug(message: "Filter services with uuid: \(uuid)")
+            
             self.filterServiceUUIDs.append(CBUUID(string: uuid))
             self.filterCharacteristicUUIDs.append(CBUUID(string: UUIDs.CHARACTERISTIC))
         }
     }
     
     private func disconnect() {
+        LogManager.shared.info(message: "Disconnect from connected devices is requested");
+        
         if(self.currentConnectedDevices.count == 0) {
-            LogManager.shared.info(message: "There is no connected device now, ignore disconnect process!")
+            LogManager.shared.info(message: "There is no connected device now, disconnection flow is not required")
             return
         }
         
@@ -198,32 +202,33 @@ class BluetoothManager: NSObject {
             let connectedDevice = self.currentConnectedDevices[key]!
             
             if (connectedDevice.peripheral.state != .connected) {
-                LogManager.shared.info(message: "Peripheral exists but not connected, ignore disconnect")
+                LogManager.shared.info(message: "Peripheral exists in connected devices list, but not connected now")
                 break
             }
             
-            LogManager.shared.info(message: "Disconnecting from peripheral / " + key)
+            LogManager.shared.info(message: "Disconnecting from peripheral / \(key)")
             self.currentCentralManager.cancelPeripheralConnection(connectedDevice.peripheral)
         }
     }
     
     private func onConnectionStateChanged(identifier: String, connectionState: DeviceConnectionStatus.ConnectionState, failReason: Int? = nil) {
-        LogManager.shared.info(message: "Connection state changed for " + identifier + " > " + self.getDescriptionOfConnectionState(state: connectionState));
+        LogManager.shared.info(message: "Bluetooth connection state changed for \(identifier) > \(self.getDescriptionOfConnectionState(state: connectionState))");
         self.onConnectionStateChanged?(DeviceConnectionStatus(id: identifier, state: connectionState, failReason: failReason))
         
         if (connectionState == .failed) {
+            LogManager.shared.warn(message: "Bluetooth connection to device has failed", code: LogCodes.BLUETOOTH_CONNECTION_FAILED);
             disconnect()
         } else if (connectionState == .disconnected) {
             self.lastConnectionTime[identifier] = Date().timeIntervalSince1970
             self.isConnectionActive = false
             
             if (self.currentConnectedDevices.index(forKey: identifier) != nil) {
-                LogManager.shared.info(message: "Device (" + identifier + ") is removed from connected devices' list");
+                LogManager.shared.info(message: "Device (\(identifier)) is removed from connected devices' list");
                 self.currentConnectedDevices.removeValue(forKey: identifier)
             }
             
             if (self.currentDevicesInRange.index(forKey: identifier) != nil) {
-                LogManager.shared.info(message: "Device (" + identifier + ") is removed from list of devices in range");
+                LogManager.shared.info(message: "Device (\(identifier)) is removed from list of devices in range");
                 self.currentDevicesInRange.removeValue(forKey: identifier)
             }
         }
@@ -293,7 +298,7 @@ extension BluetoothManager: CBCentralManagerDelegate {
         }
         
         let armonDeviceName = advertisementData[CBAdvertisementDataLocalNameKey] as? String ?? "EMPTY"
-        LogManager.shared.debug(message: "Discovered peripheral (" + armonDeviceName + ") at " + RSSI.stringValue)
+        LogManager.shared.debug(message: "Discovered peripheral (\(armonDeviceName)) at \(RSSI.stringValue)")
         
         if (self.currentConfiguration == nil) {
             LogManager.shared.debug(message: "Connection configuration is not defined yet!")
@@ -309,42 +314,42 @@ extension BluetoothManager: CBCentralManagerDelegate {
                             let elapsedTime = Date().timeIntervalSince1970 - lastConnection!
                             
                             if (elapsedTime < 5) {
-                                LogManager.shared.debug(message: "Device is ignored because of reconnection timeout, elapsed time: " + elapsedTime.description)
+                                LogManager.shared.debug(message: "Device is ignored because of reconnection timeout, elapsed time: \(elapsedTime.description)")
                                 return
                             }
                         }
                     }
                     
                     self.currentDevicesInRange[peripheral.identifier.uuidString] = DeviceInRange(serviceUUID: "", bluetoothDevice: peripheral)
-                    LogManager.shared.info(message: "Peripheral is added to device list, current device count: " + self.currentDevicesInRange.count.description)
+                    LogManager.shared.debug(message: "Peripheral is added to device list, current device count: \(self.currentDevicesInRange.count)")
                     
                     connectToDevice(deviceIdentifier: peripheral.identifier.uuidString)
                 }
             } else if (RSSI.intValue != 127) {
                 if (self.currentDevicesInRange.index(forKey: peripheral.identifier.uuidString) != nil) {
                     self.currentDevicesInRange.removeValue(forKey: peripheral.identifier.uuidString)
-                    LogManager.shared.info(message: "Peripheral is removed from device list, current device count: " + self.currentDevicesInRange.count.description)
+                    LogManager.shared.debug(message: "Peripheral is removed from device list, current device count: \(self.currentDevicesInRange.count)")
                 }
             }
         }
     }
     
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
-        LogManager.shared.info(message: "Connected to " + (peripheral.getName()))
+        LogManager.shared.info(message: "Connected to \(peripheral.getName())")
         
         // Set event listener
         peripheral.delegate = self;
         
         // Discover related services
-        LogManager.shared.info(message: "Looking for predefined services of peripheral...")
+        LogManager.shared.debug(message: "Looking for predefined services of peripheral...")
         peripheral.discoverServices(self.filterServiceUUIDs)
     }
     
     func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
         if (error != nil){
-            LogManager.shared.error(message: "Disconnected from " + (peripheral.getName()) + " with error: " + error!.localizedDescription)
+            LogManager.shared.warn(message: "Disconnected from \(peripheral.getName()) with error: \(error!.localizedDescription)", code: LogCodes.BLUETOOTH_CONNECTION_FLOW)
         } else {
-            LogManager.shared.info(message: "Disconnected from " + (peripheral.getName()))
+            LogManager.shared.info(message: "Disconnected from \(peripheral.getName())")
         }
         
         onConnectionStateChanged(identifier: peripheral.identifier.uuidString, connectionState: .disconnected)
@@ -352,9 +357,9 @@ extension BluetoothManager: CBCentralManagerDelegate {
     
     func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
         if (error != nil) {
-            LogManager.shared.error(message: "Failed to connect, error: " + error!.localizedDescription)
+            LogManager.shared.error(message: "Failed to connect, error: \(error!.localizedDescription)", code: LogCodes.BLUETOOTH_CONNECTION_FLOW)
         } else {
-            LogManager.shared.error(message: "Failed to connect")
+            LogManager.shared.error(message: "Failed to connect", code: LogCodes.BLUETOOTH_CONNECTION_FLOW)
         }
         
         onConnectionStateChanged(identifier: peripheral.identifier.uuidString, connectionState: .failed)
@@ -367,22 +372,21 @@ extension BluetoothManager: CBPeripheralDelegate {
     
     func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
         if (error != nil) {
-            LogManager.shared.error(message: "Error on discovering peripheral services: " + error!.localizedDescription)
+            LogManager.shared.error(message: "Error on discovering peripheral services: \(error!.localizedDescription)", code: LogCodes.BLUETOOTH_CONNECTION_FLOW)
             onConnectionStateChanged(identifier: peripheral.identifier.uuidString, connectionState: .failed)
             return
         } else {
-            LogManager.shared.info(message: "Discovering peripheral services completed")
+            LogManager.shared.debug(message: "Discovering peripheral services completed")
         }
         
         if(peripheral.services == nil || peripheral.services!.isEmpty) {
-            LogManager.shared.info(message: "List of peripheral services is empty for " + peripheral.getName())
+            LogManager.shared.error(message: "List of peripheral services is empty for \(peripheral.getName())", code: LogCodes.BLUETOOTH_CONNECTION_FLOW)
             onConnectionStateChanged(identifier: peripheral.identifier.uuidString, connectionState: .failed)
             return;
         }
         
         for service: CBService in peripheral.services! {
-            LogManager.shared.debug(message: "Service found for peripheral (" + peripheral.getName() + "), UUID: " + service.uuid.uuidString)
-            
+            LogManager.shared.debug(message: "Service found for peripheral (\(peripheral.getName())), UUID: \(service.uuid.uuidString)")
             LogManager.shared.debug(message: "Discover characteristics for service")
             peripheral.discoverCharacteristics(self.filterCharacteristicUUIDs, for: service)
         }
@@ -390,15 +394,15 @@ extension BluetoothManager: CBPeripheralDelegate {
     
     func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
         if (error != nil) {
-            LogManager.shared.error(message: "Error on discovering service characteristics: " + error!.localizedDescription)
+            LogManager.shared.error(message: "Error on discovering service characteristics: \(error!.localizedDescription)", code: LogCodes.BLUETOOTH_CONNECTION_FLOW)
             onConnectionStateChanged(identifier: peripheral.identifier.uuidString, connectionState: .failed)
             return
         } else {
-            LogManager.shared.info(message: "Discovering service characteristics completed for service UUID: " + service.uuid.uuidString)
+            LogManager.shared.debug(message: "Discovering service characteristics completed for service UUID: \(service.uuid.uuidString)")
         }
         
         if (service.characteristics == nil || service.characteristics!.isEmpty) {
-            LogManager.shared.info(message: "Characteristics list is empty, service UUID: " + service.uuid.uuidString)
+            LogManager.shared.error(message: "Characteristics list is empty, service UUID: \(service.uuid.uuidString)", code: LogCodes.BLUETOOTH_CONNECTION_FLOW)
             onConnectionStateChanged(identifier: peripheral.identifier.uuidString, connectionState: .failed)
             return
         }
@@ -406,38 +410,39 @@ extension BluetoothManager: CBPeripheralDelegate {
         self.currentConnectedDevices[peripheral.identifier.uuidString] = DeviceConnection(peripheral: peripheral, serviceUUID: service.uuid.uuidString)
         
         for characteristic: CBCharacteristic in service.characteristics! {
-            LogManager.shared.debug(message: "Characteristic found for peripheral (" + peripheral.getName() + "), UUID: " + characteristic.uuid.uuidString)
+            LogManager.shared.debug(message: "Characteristic found for peripheral \(peripheral.getName()), UUID: \(characteristic.uuid.uuidString)")
+            LogManager.shared.debug(message: "Store characteristic with UUID: \(characteristic.uuid.uuidString)")
             
-            LogManager.shared.info(message: "Store characteristic with UUID: " + characteristic.uuid.uuidString)
             self.currentConnectedDevices[peripheral.identifier.uuidString]!.characteristics[characteristic.uuid.uuidString] = characteristic
         }
         
         if (self.currentConfiguration != nil) {
-            LogManager.shared.info(message: "Auto subscribe for modes other than passing with close phone")
+            LogManager.shared.debug(message: "Auto subscribe for modes other than passing with close phone")
             if #available(iOS 10.0, *) {
                 changeCommunicationState(identifier: peripheral.identifier.uuidString, start: true, rssiValue: "0")
             } else {
-                LogManager.shared.warn(message: "iOS version is not valid to change communication state")
+                LogManager.shared.error(message: "iOS version is not valid to change communication state", code: LogCodes.BLUETOOTH_CONNECTION_FLOW)
+                onConnectionStateChanged(identifier: peripheral.identifier.uuidString, connectionState: .failed)
             }
         }
     }
     
     func peripheral(_ peripheral: CBPeripheral, didWriteValueFor characteristic: CBCharacteristic, error: Error?) {
         if (error != nil) {
-            LogManager.shared.error(message: "Sending value to characteristic failed, error: " + error!.localizedDescription)
+            LogManager.shared.error(message: "Sending value to characteristic failed, error: \(error!.localizedDescription)")
             onConnectionStateChanged(identifier: peripheral.identifier.uuidString, connectionState: .failed)
         } else {
-            LogManager.shared.info(message: "Sending value to characteristic completed")
+            LogManager.shared.debug(message: "Sending value to characteristic completed")
         }
     }
     
     func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
         if (error != nil) {
-            LogManager.shared.error(message: "Receiving value from characteristic failed, error: " + error!.localizedDescription)
+            LogManager.shared.error(message: "Receiving value from characteristic failed, error: \(error!.localizedDescription)")
             onConnectionStateChanged(identifier: peripheral.identifier.uuidString, connectionState: .failed)
             return
         } else {
-            LogManager.shared.info(message: "New value received from characteristic")
+            LogManager.shared.debug(message: "New value received from characteristic")
         }
         
         if (characteristic.value == nil || characteristic.value!.isEmpty) {
@@ -454,7 +459,7 @@ extension BluetoothManager: CBPeripheralDelegate {
         
         let receivedData: Data = characteristic.value!
         
-        LogManager.shared.debug(message: "Received Data > " + receivedData.hexEncodedString(options: .upperCase));
+        LogManager.shared.debug(message: "Received Data > \(receivedData.hexEncodedString(options: .upperCase))");
         
         let result: BLEDataContent? = DataParserUtil.shared.parse(data: receivedData)
         
@@ -463,7 +468,7 @@ extension BluetoothManager: CBPeripheralDelegate {
                 if(result!.type == DataTypes.TYPE.AuthChallengeForPublicKey) {
                     
                     let deviceId = result!.data!["deviceId"] as? String ?? ""
-                    LogManager.shared.debug(message: "Auth challenge received, device id: " + deviceId);
+                    LogManager.shared.debug(message: "Auth challenge received, device id: \(deviceId)");
                     
                     do {
                         let connectedDevice = self.currentConnectedDevices[peripheral.identifier.uuidString]!
@@ -486,11 +491,11 @@ extension BluetoothManager: CBPeripheralDelegate {
                 } else if (result!.type == DataTypes.TYPE.AuthChallengeResult) {
                     processChallengeResult(deviceIdentifier: peripheral.identifier.uuidString, result: result!)
                 } else {
-                    LogManager.shared.warn(message: "Unknown data type received from device, disconnect now!")
+                    LogManager.shared.error(message: "Unknown data type received from device, disconnect now!")
                     onConnectionStateChanged(identifier: peripheral.identifier.uuidString, connectionState: .failed)
                 }
             } else {
-                LogManager.shared.warn(message: "Unknown data received from device, disconnect now!")
+                LogManager.shared.error(message: "Unknown data received from device, disconnect now!")
                 onConnectionStateChanged(identifier: peripheral.identifier.uuidString, connectionState: .failed)
             }
         } else {
@@ -501,20 +506,20 @@ extension BluetoothManager: CBPeripheralDelegate {
     
     func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
         if (error != nil) {
-            LogManager.shared.error(message: "Error on changing notification state for characteristic (" + characteristic.uuid.uuidString + ") > " + error!.localizedDescription)
+            LogManager.shared.error(message: "Error on changing notification state for characteristic (\(characteristic.uuid.uuidString)) > \(error!.localizedDescription)")
             onConnectionStateChanged(identifier: peripheral.identifier.uuidString, connectionState: .failed)
             return
         }
         
         if (characteristic.isNotifying) {
-            LogManager.shared.info(message: "Subscribed to characteristic: " + characteristic.uuid.uuidString)
+            LogManager.shared.debug(message: "Subscribed to characteristic: \(characteristic.uuid.uuidString)")
         } else {
-            LogManager.shared.info(message: "Unsubscribed from characteristic: " + characteristic.uuid.uuidString)
+            LogManager.shared.debug(message: "Unsubscribed from characteristic: \(characteristic.uuid.uuidString)")
         }
     }
     
     func peripheral(_ peripheral: CBPeripheral, didModifyServices invalidatedServices: [CBService]) {
-        LogManager.shared.warn(message: "Peripheral services are changed!")
+        LogManager.shared.warn(message: "Peripheral services are changed!", code: LogCodes.BLUETOOTH_CONNECTION_FLOW)
     }
 }
 
@@ -525,12 +530,12 @@ extension BluetoothManager {
             let communicationState: String = start ? "Starting" : "Ending"
             let subscriptionState:  String = start ? "Subscribe" : "Unsubscribe"
             
-            LogManager.shared.info(message: communicationState + " communication with " + identifier + " at RSSI: " + rssiValue)
+            LogManager.shared.debug(message: "\(communicationState) communication with \(identifier) at RSSI: \(rssiValue)")
             
             let connectedDevice = self.currentConnectedDevices[identifier]!
             
             for key in connectedDevice.characteristics.keys {
-                LogManager.shared.info(message: subscriptionState + " for characteristic: " + key)
+                LogManager.shared.debug(message: "\(subscriptionState) for characteristic: \(key)")
                 connectedDevice.peripheral.setNotifyValue(start, for: connectedDevice.characteristics[key]!)
             }
         }
@@ -540,7 +545,6 @@ extension BluetoothManager {
     private func processChallengeResult(deviceIdentifier: String, result: BLEDataContent) {
         if (result.result == DataTypes.RESULT.Succeed) {
             self.onConnectionStateChanged?(DeviceConnectionStatus(id: deviceIdentifier, state: DeviceConnectionStatus.ConnectionState.connected))
-            //delegate?.onConnectionStateChanged(state: DeviceConnectionStatus(id: deviceIdentifier, state: DeviceConnectionStatus.ConnectionState.connected))
             
             LogManager.shared.info(message: "Disconnect from device after successful process of passing!")
             self.disconnect()

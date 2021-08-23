@@ -42,7 +42,7 @@ public class MainActivity extends AppCompatActivity implements MobilePassDelegat
         } else {
             Configuration config = new Configuration();
             config.memberId = txtMemberId.getText().toString(); // "00988791";
-            config.serverUrl = "https://10.10.10.118:3443"; // "https://qr.marsathletic.com";
+            config.serverUrl = "https://qr.marsathletic.com";
             config.language = "tr";
             config.waitBLEEnabled = true;
             config.connectionTimeout = 10;
@@ -82,17 +82,7 @@ public class MainActivity extends AppCompatActivity implements MobilePassDelegat
     }
 
     private String getLogs() {
-        StringBuilder builder = new StringBuilder();
-
-        List<String> logItems = passer.getLogs();
-        Collections.reverse(logItems);
-
-        for (String log :
-                logItems) {
-            builder.append(log + "\n");
-        }
-
-        return builder.toString();
+        return "";
     }
 
     @Override
@@ -106,17 +96,12 @@ public class MainActivity extends AppCompatActivity implements MobilePassDelegat
     }
 
     @Override
-    public void onNeedPermission(int type) {
-        Log.i("MobilePass", "Main - Need Permission, Type: " + type);
-    }
-
-    @Override
     public void onQRCodeListStateChanged(int state) {
         Log.i("MobilePass", "Main - QR Code List Changed, State: " + state);
     }
 
     @Override
     public void onLogReceived(LogItem log) {
-        Log.i("MobilePass", "Log Received >> " + log.level + " | " + log.message);
+        // Log.i("MobilePass", "Log Received >> " + log.level + " | " + log.message);
     }
 }
