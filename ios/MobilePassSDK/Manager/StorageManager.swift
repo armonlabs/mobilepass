@@ -112,7 +112,7 @@ class StorageManager: NSObject {
         if (data != nil) {
             return String(data: data!, encoding: .utf8)!
         } else {
-            LogManager.shared.info(message: "Empty data received from keychain for " + key)
+            LogManager.shared.warn(message: "Empty data received from keychain for " + key, code: LogCodes.CONFIGURATION_STORAGE)
             return ""
         }
     }

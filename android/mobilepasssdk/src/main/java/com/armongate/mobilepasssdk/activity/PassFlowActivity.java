@@ -4,7 +4,6 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Bundle;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -12,7 +11,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
 
 import com.armongate.mobilepasssdk.R;
-import com.armongate.mobilepasssdk.constant.CancelReason;
+import com.armongate.mobilepasssdk.constant.LogCodes;
 import com.armongate.mobilepasssdk.constant.NeedPermissionType;
 import com.armongate.mobilepasssdk.constant.QRTriggerType;
 import com.armongate.mobilepasssdk.delegate.PassFlowDelegate;
@@ -26,10 +25,8 @@ import com.armongate.mobilepasssdk.manager.DelegateManager;
 import com.armongate.mobilepasssdk.manager.LogManager;
 import com.armongate.mobilepasssdk.manager.SettingsManager;
 import com.armongate.mobilepasssdk.model.QRCodeContent;
-import com.armongate.mobilepasssdk.model.response.ResponseAccessPointItemQRCodeItemTrigger;
 import com.google.gson.Gson;
 
-import java.security.Permission;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -37,7 +34,7 @@ import java.util.Locale;
 public class PassFlowActivity extends AppCompatActivity implements PassFlowDelegate {
 
     public PassFlowActivity() {
-        super(R.layout.activity_pass_flow);
+        super(R.layout.activity_armon_pass_flow);
     }
 
     public static final String ACTION_BLUETOOTH    = "bluetooth";
@@ -62,11 +59,20 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
                     .setReorderingAllowed(true)
-                    .add(R.id.fragment, SettingsManager.getInstance().checkCameraPermission(getApplicationContext(), this) ? QRCodeReaderFragment.class : CheckFragment.class, null)
+                    .add(R.id.armon_mp_fragment_container, SettingsManager.getInstance().checkCameraPermission(getApplicationContext(), this) ? QRCodeReaderFragment.class : CheckFragment.class, null)
                     .commit();
         }
 
         setLocale(ConfigurationManager.getInstance().getLanguage());
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+
+        if (!hasFocus && connectionActive) {
+            finish();
+        }
     }
 
     @Override
@@ -104,10 +110,8 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
 
     @Override
     public void onBackPressed() {
-        if (!connectionActive) {
-            super.onBackPressed();
-            DelegateManager.getInstance().onCancelled(false);
-        }
+        super.onBackPressed();
+        DelegateManager.getInstance().onCancelled(false);
     }
 
     @Override
@@ -138,8 +142,6 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
     @Override
     public void onConnectionStateChanged(boolean isActive) {
         connectionActive = isActive;
-
-        // TODO Call this from Status fragment while waiting remote access response and ble connection
     }
 
     @Override
@@ -148,12 +150,14 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
     }
 
     private void checkNextAction() {
+        LogManager.getInstance().debug("Checking next action now");
         if (this.actionList.size() > 0) {
             actionCurrent = this.actionList.get(0);
             this.actionList.remove(0);
 
             processAction();
         } else {
+            LogManager.getInstance().warn("Checking next action has been cancelled due to empty action list", LogCodes.PASSFLOW_EMPTY_ACTION_LIST);
             finish();
         }
     }
@@ -161,13 +165,13 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
     private void replaceFragment(Class<? extends androidx.fragment.app.Fragment> newFragment, @Nullable Bundle args) {
         FragmentManager fragmentManager = getSupportFragmentManager();
         fragmentManager.beginTransaction()
-                .replace(R.id.fragment, newFragment, args)
+                .replace(R.id.armon_mp_fragment_container, newFragment, args)
                 .setReorderingAllowed(true)
                 .commit();
     }
 
     private void showPermissionMessage(int needPermissionType) {
-        DelegateManager.getInstance().onNeedPermission(needPermissionType);
+        LogManager.getInstance().warn("Need permission to continue passing flow, permission type: " + needPermissionType, LogCodes.NEED_PERMISSION_DEFAULT + needPermissionType);
 
         Bundle bundle = new Bundle();
         bundle.putInt("type", needPermissionType);
@@ -178,18 +182,25 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
     private void processQRCodeData(String code) {
         activeQRCodeContent = ConfigurationManager.getInstance().getQRCodeContent(code);
 
-        if (activeQRCodeContent != null) {
+        if (activeQRCodeContent != null && activeQRCodeContent.valid) {
             LogManager.getInstance().info("QR code content for [" + code + "] is processing...");
 
-            ResponseAccessPointItemQRCodeItemTrigger trigger = activeQRCodeContent.action.config != null ? activeQRCodeContent.action.config.trigger : null;
+            boolean needLocation = activeQRCodeContent.qrCode != null
+                    && activeQRCodeContent.qrCode.v != null
+                    && activeQRCodeContent.qrCode.v
+                    && activeQRCodeContent.geoLocation != null
+                    && activeQRCodeContent.geoLocation.la != null
+                    && activeQRCodeContent.geoLocation.lo != null
+                    && activeQRCodeContent.geoLocation.r != null;
+            LogManager.getInstance().info("QR code need location validation: " + needLocation);
 
-            if (trigger != null) {
-                boolean needLocation = trigger.validateGeoLocation != null && trigger.validateGeoLocation && activeQRCodeContent.accessPoint.geoLocation != null;
-                LogManager.getInstance().info("Need location: " + needLocation);
+            actionList      = new ArrayList<>();
+            actionCurrent   = "";
 
-                actionList = new ArrayList<>();
-
-                switch (trigger.type) {
+            if (activeQRCodeContent.qrCode == null || activeQRCodeContent.qrCode.t == null) {
+                LogManager.getInstance().warn("Process qr code has been cancelled due to empty trigger type", LogCodes.PASSFLOW_PROCESS_QRCODE_TRIGGERTYPE);
+            } else {
+                switch (activeQRCodeContent.qrCode.t) {
                     case QRTriggerType.Bluetooth:
                         LogManager.getInstance().info("Trigger Type: Bluetooth");
                         actionCurrent = ACTION_BLUETOOTH;
@@ -213,7 +224,7 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
                             actionList.add(ACTION_REMOTEACCESS);
                         }
 
-                        if (trigger.type == QRTriggerType.RemoteThenBluetooth) {
+                        if (activeQRCodeContent.qrCode.t == QRTriggerType.RemoteThenBluetooth) {
                             LogManager.getInstance().info("Trigger Type: Remote Then Bluetooth");
                             actionList.add(ACTION_BLUETOOTH);
                         } else {
@@ -221,7 +232,7 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
                         }
                         break;
                     default:
-                        LogManager.getInstance().warn("Unknown QR code trigger type! > " + trigger.type);
+                        LogManager.getInstance().warn("Process qr code has been cancelled due to empty action type", LogCodes.PASSFLOW_PROCESS_QRCODE_EMPTY_ACTION);
                 }
 
                 boolean needLocationPermission = actionCurrent.equals(ACTION_BLUETOOTH) || actionCurrent.equals(ACTION_LOCATION) || actionList.contains(ACTION_BLUETOOTH) || actionList.contains(ACTION_LOCATION);
@@ -235,17 +246,16 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
                         replaceFragment(CheckFragment.class, null);
                     }
                 }
-            } else {
-                LogManager.getInstance().warn("Trigger definition is missing in QR code content");
             }
         } else {
-            LogManager.getInstance().warn("QR code definition cannot be found > " + code);
+            LogManager.getInstance().warn("Process QR Code message received with empty or invalid content", LogCodes.PASSFLOW_EMPTY_QRCODE_CONTENT);
         }
 
     }
 
     private void processAction() {
         if (actionCurrent.isEmpty()) {
+            LogManager.getInstance().warn("Process qr code has been cancelled due to empty action type", LogCodes.PASSFLOW_PROCESS_QRCODE_EMPTY_ACTION);
             return;
         }
 
@@ -254,22 +264,31 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
 
         if (actionCurrent.equals(ACTION_LOCATION)) {
             Bundle bundle = new Bundle();
-            bundle.putDouble("latitude", activeQRCodeContent.accessPoint.geoLocation.latitude);
-            bundle.putDouble("longitude", activeQRCodeContent.accessPoint.geoLocation.longitude);
-            bundle.putInt("radius", activeQRCodeContent.accessPoint.geoLocation.radius);
+
+            if (activeQRCodeContent != null && activeQRCodeContent.geoLocation != null) {
+                if (activeQRCodeContent.geoLocation.la != null) {
+                    bundle.putDouble("latitude", activeQRCodeContent.geoLocation.la);
+                }
+
+                if (activeQRCodeContent.geoLocation.lo != null) {
+                    bundle.putDouble("longitude", activeQRCodeContent.geoLocation.lo);
+                }
+
+                if (activeQRCodeContent.geoLocation.r != null) {
+                    bundle.putDouble("radius", activeQRCodeContent.geoLocation.r);
+                }
+            }
 
             replaceFragment(MapFragment.class, bundle);
         } else {
             Gson gson = new Gson();
-            String deviceDetails = gson.toJson(activeQRCodeContent.accessPoint.deviceInfo);
+            String deviceDetails = activeQRCodeContent != null ? gson.toJson(activeQRCodeContent.terminals) : "";
+            String qrCodeInfo = activeQRCodeContent != null ? gson.toJson(activeQRCodeContent.qrCode) : "";
 
             Bundle bundle = new Bundle();
             bundle.putString("type", actionCurrent);
             bundle.putString("devices", deviceDetails);
-            bundle.putString("accessPointId", activeQRCodeContent.accessPoint.id);
-            bundle.putInt("direction", activeQRCodeContent.action.config.direction);
-            bundle.putInt("deviceNumber", activeQRCodeContent.action.config.deviceNumber);
-            bundle.putInt("relayNumber", activeQRCodeContent.action.config.relayNumber);
+            bundle.putString("qrCode", qrCodeInfo);
             bundle.putString("nextAction", actionList.size() > 0 ? actionList.get(0) : "");
 
             replaceFragment(StatusFragment.class, bundle);

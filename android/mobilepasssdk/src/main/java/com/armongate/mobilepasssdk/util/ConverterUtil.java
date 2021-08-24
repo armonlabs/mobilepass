@@ -5,8 +5,6 @@ import java.util.Arrays;
 
 public class ConverterUtil {
 
-    private static String DIGITS = "0123456789ABCDEF";
-
     public static String dataToString(byte[] data) {
         return new String(data);
     }
@@ -15,10 +13,10 @@ public class ConverterUtil {
         long result = 0;
         long factor = 1;
 
-        for (int i=0; i< data.length; i++) {
-            long value = data[i] & 0xffl;
+        for (byte datum : data) {
+            long value = datum & 0xffL;
             result += value * factor;
-            factor *= 256l;
+            factor *= 256L;
         }
 
         return result;
@@ -38,17 +36,17 @@ public class ConverterUtil {
     }
 
     public static String dataToIpAddress(byte[] data) {
-        String result = "";
+        StringBuilder result = new StringBuilder();
 
         for (int i = 0; i < data.length; i++) {
             if (result.length() > 0) {
-                result += ".";
+                result.append(".");
             }
 
-            result += dataToInt(data[i]);
+            result.append(dataToInt(data[i]));
         }
 
-        return result;
+        return result.toString();
     }
 
     public static byte[] ipAddressToData(String ipAddress) {
@@ -103,6 +101,7 @@ public class ConverterUtil {
         for (int i = 0; i != data.length; i++) {
             int v = data[i] & 0xff;
 
+            String DIGITS = "0123456789ABCDEF";
             buffer.append(DIGITS.charAt(v >> 4));
             buffer.append(DIGITS.charAt(v & 0xf));
         }

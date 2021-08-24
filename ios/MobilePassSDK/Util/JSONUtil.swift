@@ -14,7 +14,6 @@ class JSONUtil: NSObject {
     static let shared = JSONUtil()
     private override init() {
         super.init()
-        LogManager.shared.info(message: "Setting up JSON util instance")
     }
         
     // MARK: Public Functions

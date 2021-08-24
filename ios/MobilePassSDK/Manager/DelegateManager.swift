@@ -20,16 +20,20 @@ class DelegateManager: NSObject {
     // MARK: Private Fields
     
     public var isPassFlowCompleted: Bool = false
+    public var isPassConnectionActive: Bool = false
+    public var qrCodeListState: QRCodeListState = .INITIALIZING
     private var isDismissedManual: Bool = false
     private var mobilePassDelegate: MobilePassDelegate?
     private var mobilePassController: UIViewController?
     private var passFlowDelegate: PassFlowDelegate?
+    private var qrCodeListStateDelegate: QRCodeListStateDelegate?
     private var timerAutoClose: Timer? = nil
     
     // MARK: Public Functions
     
     func clearFlags() {
         isPassFlowCompleted = false
+        isPassConnectionActive = false
         isDismissedManual = false
     }
     
@@ -38,9 +42,21 @@ class DelegateManager: NSObject {
     }
 
     
-    func setMainDelegate(delegate: MobilePassDelegate?, viewController: UIViewController) {
+    func setMainDelegate(delegate: MobilePassDelegate?, viewController: UIViewController? = nil) {
         mobilePassDelegate = delegate
         mobilePassController = viewController
+    }
+    
+    func setQRCodeStateDelegate(delegate: QRCodeListStateDelegate?) {
+        qrCodeListStateDelegate = delegate
+    }
+    
+    func onLogItemCreated(log: LogItem) {
+        mobilePassDelegate?.onLogReceived(log: log)
+    }
+    
+    func isQRCodeListRefreshable() -> Bool {
+        return qrCodeListState != QRCodeListState.INITIALIZING && qrCodeListState != QRCodeListState.SYNCING
     }
     
     func onCompleted(succeed: Bool) {
@@ -71,11 +87,31 @@ class DelegateManager: NSObject {
     }
 
     func flowConnectionStateChanged(isActive: Bool) {
-        passFlowDelegate?.onConnectionStateChanged(isActive: isActive)
+        isPassConnectionActive = isActive
     }
 
     func needPermission(type: NeedPermissionType, showMessage: Bool) {
-        self.mobilePassDelegate?.onNeedPermission(type: type.rawValue)
+        var code: LogCodes? = nil
+        
+        switch type {
+        case .NEED_PERMISSION_BLUETOOTH:
+            code = LogCodes.NEED_PERMISSION_BLUETOOTH
+            break
+        case .NEED_PERMISSION_CAMERA:
+            code = LogCodes.NEED_PERMISSION_CAMERA
+            break
+        case .NEED_PERMISSION_LOCATION:
+            code = LogCodes.NEED_PERMISSION_LOCATION
+            break
+        case .NEED_ENABLE_BLE:
+            code = LogCodes.NEED_ENABLE_BLE
+            break
+        case .NEED_ENABLE_LOCATION_SERVICES:
+            code = LogCodes.NEED_ENABLE_LOCATION_SERVICES
+            break
+        }
+        
+        LogManager.shared.warn(message: "Need permission to continue passing flow, permission type: \(type.rawValue)", code: code)
         
         if (showMessage) {
             passFlowDelegate?.onNeedPermissionMessage(type: type.rawValue)
@@ -91,9 +127,13 @@ class DelegateManager: NSObject {
     }
     
     func qrCodeListChanged(state: QRCodeListState) {
+        qrCodeListState = state
+        
         DispatchQueue.main.async {
             self.mobilePassDelegate?.onQRCodeListStateChanged(state: state.rawValue)
         }
+        
+        self.qrCodeListStateDelegate?.onStateChanged(state: state.rawValue)
     }
     
     func onMockLocationDetected() {

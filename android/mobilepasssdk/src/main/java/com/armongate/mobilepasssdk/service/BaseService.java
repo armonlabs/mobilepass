@@ -1,34 +1,27 @@
 package com.armongate.mobilepasssdk.service;
 
 import android.content.Context;
-import android.util.Log;
 
 import androidx.annotation.Nullable;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
-import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
-import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.armongate.mobilepasssdk.BuildConfig;
 import com.armongate.mobilepasssdk.manager.ConfigurationManager;
 import com.armongate.mobilepasssdk.manager.LogManager;
 import com.armongate.mobilepasssdk.model.response.ResponseMessage;
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
 
 import org.json.JSONObject;
 
-import java.io.InputStream;
-import java.lang.reflect.Type;
 import java.security.SecureRandom;
-import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,7 +30,6 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
-import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
@@ -104,7 +96,7 @@ public class BaseService {
         LogManager.getInstance().debug("New request to " + serverUrl);
 
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest
-                (method == METHOD_GET ? Request.Method.GET : Request.Method.POST, serverUrl, data, new Response.Listener<JSONObject>() {
+                (method.equals(METHOD_GET) ? Request.Method.GET : Request.Method.POST, serverUrl, data, new Response.Listener<JSONObject>() {
 
                     @Override
                     public void onResponse(JSONObject response) {
@@ -134,7 +126,7 @@ public class BaseService {
 
                                 message = responseMsg.message;
                             } catch (Exception ex) {
-                                LogManager.getInstance().error(ex.getMessage());
+                                LogManager.getInstance().error(ex.getMessage(), null);
                             }
                         }
 
@@ -157,6 +149,9 @@ public class BaseService {
                 params.put("Authorization", token);
                 params.put("If-Modified-Since", "Mon, 26 Jul 1997 05:00:00 GMT");
                 params.put("Cache-Control", "no-cache");
+                params.put("mobilepass-version", BuildConfig.VERSION_NAME);
+                params.put("mobilepass-memberid", ConfigurationManager.getInstance().getMemberId());
+                params.put("mobilepass-config", ConfigurationManager.getInstance().getConfigurationLog());
 
                 return params;
             }
@@ -176,7 +171,7 @@ public class BaseService {
     }
 
     private <T> void addToRequestQueue(Request<T> req) {
-        req.setRetryPolicy(new DefaultRetryPolicy(5000, 1, 0));
+        req.setRetryPolicy(new DefaultRetryPolicy(15000, 1, 0));
         getRequestQueue().add(req);
     }
 
@@ -186,8 +181,7 @@ public class BaseService {
             TrustManager[] trustAllCerts = new TrustManager[]{
                     new X509TrustManager() {
                         public X509Certificate[] getAcceptedIssuers() {
-                            X509Certificate[] myTrustedAnchors = new X509Certificate[0];
-                            return myTrustedAnchors;
+                            return new X509Certificate[0];
                         }
 
                         @Override

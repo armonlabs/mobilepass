@@ -14,7 +14,6 @@ class DataParserUtil: NSObject {
     static let shared = DataParserUtil()
     private override init() {
         super.init()
-        LogManager.shared.info(message: "Setting up Parser Manager instance")
     }
         
     // MARK: Public Functions

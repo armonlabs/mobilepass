@@ -110,7 +110,7 @@ public class MainActivity extends AppCompatActivity implements MobilePassDelegat
 	...
 
 	// ! Important
-	// Call next line where you initialized manager
+	// Call next line where you initialized manager or give delegate instance in configuration
 	// passManager.setDelegate(this);
 
 
@@ -131,6 +131,11 @@ public class MainActivity extends AppCompatActivity implements MobilePassDelegat
 		// Change on state of definitions triggers this event
 		// See API reference for QRCodeState types
 	}
+
+    @Override
+    public void onLogReceived(LogItem log) {
+      // To follow SDK logs according to given configuration about logging
+    }
 
 	...
 
@@ -241,7 +246,7 @@ struct MobilePassManager : UIViewControllerRepresentable {
 struct MobilePassManager : UIViewControllerRepresentable, MobilePassDelegate {
 
 	// ! Important
-	// Call next line where you initialized manager
+	// Call next line where you initialized manager or give delegate instance in configuration
 	// passManager.delegate = self
 
 	...
@@ -259,6 +264,10 @@ struct MobilePassManager : UIViewControllerRepresentable, MobilePassDelegate {
         // Available QR code definitions will be fetched from server.
 		// Change on state of definitions triggers this event
 		// See API reference for QRCodeState types
+    }
+
+    func onLogReceived(log: LogItem) {
+        // To follow SDK logs according to given configuration about logging
     }
 
 	...
@@ -309,29 +318,44 @@ Triggers QR Code reading and related pass flow.
 
 Library is configurable while initialization. Available props are listed below
 
-| Parameter         | Description                                                                                                                                                       | Type    | Required |
-| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- | -------- |
-| memberId          | Member id that will be used for validation to pass                                                                                                                | String  | Yes      |
-| serverUrl         | URL of server that communicate between SDK, devices and validation server                                                                                         | String  | Yes      |
-| qrCodeMessage     | Information message for QR Code reader that will be shown at top of screen                                                                                        | String  | No       |
-| token             | OAuth token value of current user's session to validate                                                                                                           | String  | No       |
-| language          | Language code to localize texts                                                                                                                                   | String  | No       |
-| allowMockLocation | Allow unreliable locations or not                                                                                                                                 | String  | No       |
-| connectionTimeout | Bluetooth connection timeout in seconds. **Default: 5 seconds**                                                                                                   | Integer | No       |
-| autoCloseTimeout  | Auto close timeout for screen after pass completed, null means stay opened                                                                                        | Integer | No       |
-| waitBLEEnabled    | Flag to decide action for disabled Bluetooth state. "true" means wait user to enable Bluetooth, "false" means continue to next step if exists. **Default: false** | Bool    | No       |
+| Parameter         | Description                                                                                                                                                       | Type                  | Required |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- | -------- |
+| memberId          | Member id that will be used for validation to pass                                                                                                                | String                | Yes      |
+| serverUrl         | URL of server that communicate between SDK, devices and validation server                                                                                         | String                | Yes      |
+| qrCodeMessage     | Information message for QR Code reader that will be shown at top of screen                                                                                        | String                | No       |
+| token             | OAuth token value of current user's session to validate                                                                                                           | String                | No       |
+| language          | Language code to localize texts                                                                                                                                   | String                | No       |
+| allowMockLocation | Allow unreliable locations or not                                                                                                                                 | String                | No       |
+| connectionTimeout | Bluetooth connection timeout in seconds. **Default: 5 seconds**                                                                                                   | Integer               | No       |
+| autoCloseTimeout  | Auto close timeout for screen after pass completed, null means stay opened                                                                                        | Integer               | No       |
+| waitBLEEnabled    | Flag to decide action for disabled Bluetooth state. "true" means wait user to enable Bluetooth, "false" means continue to next step if exists. **Default: false** | Bool                  | No       |
+| logLevel          | Minimum log level to follow. **Default: Info**                                                                                                                    | [LogLevel](#LogLevel) | No       |
+| delegate          | Listener instance to get information about SDK events. Giving this instance in configuration allows to get logs with start of SDK initialization                  | MobilePassDelegate    | No       |
+
+<br />
+
+### `LogItem`
+
+Details of received log item
+
+| Parameter | Description                                   | Type                  | Required |
+| --------- | --------------------------------------------- | --------------------- | -------- |
+| level     | Type of log item                              | [LogLevel](#LogLevel) | Yes      |
+| code      | Code value of log item for warnings and error | [LogCode](#LogCode)   | No       |
+| message   | Information message about log action          | String                | Yes      |
+| time      | Create time of log item                       | Date                  | Yes      |
 
 <br />
 <br />
 
 ### **Events**
 
-| Name                      | Description                                                                    | Type                                      |
-| ------------------------- | ------------------------------------------------------------------------------ | ----------------------------------------- |
-| onPassCompleted           | Passing operation completed                                                    | boolean                                   |
-| onPassCancelled           | Operation has been cancelled with given reason code                            | [CancelReason](#CancelReason)             |
-| onNeedPermission          | User has been informed about permission or disabled state of required function | [NeedPermissionType](#NeedPermissionType) |
-| onQRCodeListStateChanged  | QR code definition list updated                                                | [QRCodeState](QRCodeState)                |
+| Name                      | Description                                         | Type                          |
+| ------------------------- | --------------------------------------------------- | ----------------------------- |
+| onPassCompleted           | Passing operation completed                         | boolean                       |
+| onPassCancelled           | Operation has been cancelled with given reason code | [CancelReason](#CancelReason) |
+| onQRCodeListStateChanged  | QR code definition list updated                     | [QRCodeState](#QRCodeState)   |
+| onLogReceived             | Receive log items                                   | [LogItem](#LogItem)           |
 
 <br />
 <br />
@@ -350,18 +374,6 @@ Library is configurable while initialization. Available props are listed below
 
 <br />
 
-### `NeedPermissionType`
-
-| Name                          | Value |
-| ----------------------------- | ----- |
-| Need Permission for Camera    | 1     |
-| Need Permission for Location  | 2     |
-| Need Permission Bluetooth     | 3     |
-| Need Enable Bluetooth         | 4     |
-| Need Enable Location Services | 5     |
-
-<br />
-
 ### `QRCodeState`
 
 | Name              | Value |
@@ -369,3 +381,65 @@ Library is configurable while initialization. Available props are listed below
 | Empty             | 1     |
 | Using Stored Data | 2     |
 | Using Synced Data | 3     |
+
+<br />
+
+### `LogLevel`
+
+| Name  | Value |
+| ----- | ----- |
+| Debug | 1     |
+| Info  | 2     |
+| Warn  | 3     |
+| Error | 4     |
+
+<br />
+
+### `LogCode`
+
+| Name                                                         | Value |
+| ------------------------------------------------------------ | ----- |
+| Invalid configuration instance to start SDK                  | 1101  |
+| Error on synchronization of member info with server          | 1201  |
+| Error on synchronization of access points list               | 1202  |
+| Error on generating key pair for member                      | 1301  |
+| Storage problem occurred                                     | 1401  |
+| Unexpected interrupt on Bluetooth scanning flow              | 2101  |
+| Error on getting Adapter instance from service [Android]     | 2201  |
+| Failure on starting Bluetooth scanner                        | 2202  |
+| Unexpected interrupt on Bluetooth connection flow            | 2301  |
+| Device not found during Bluetooth connection flow            | 2302  |
+| Failure on Bluetooth connection                              | 2303  |
+| New connection request received while another one is active  | 2304  |
+| Unexpected interrupt on Bluetooth communication flow         | 2401  |
+| Informing about permission requirement of Camera             | 3101  |
+| Informing about permission requirement of Location           | 3102  |
+| Informing about permission requirement of Bluetooth          | 3103  |
+| Informing about need enable Bluetooth                        | 3104  |
+| Informing about need enable Location Services                | 3105  |
+| Pass flow interrupted with empty action list after qr code   | 4101  |
+| Found qr code has empty content definition                   | 4102  |
+| Error on showing map for location validation                 | 4103  |
+| Invalid id on qr code content validation                     | 4201  |
+| Invalid content data on qr code validation                   | 4202  |
+| Invalid access point id on qr code validation                | 4203  |
+| Invalid location data on qr code validation                  | 4204  |
+| Invalid terminal data on qr code validation                  | 4205  |
+| Invalid configuration on qr code validation                  | 4206  |
+| Invalid trigger type on qr code validation                   | 4207  |
+| Invalid door details on qr code validation                   | 4208  |
+| Invalid trigger type found during processing qr code         | 4301  |
+| Empty action data found during processing qr code            | 4302  |
+| QR reader found invalid format                               | 4401  |
+| QR reader found data but it has invalid content              | 4402  |
+| QR reader could not find matching of valid qr code in list   | 4403  |
+| Empty config found during action of qr code                  | 4501  |
+| Invalid type found during action of qr code                  | 4502  |
+| Empty qr code content found during action of qr code         | 4503  |
+| Empty qr code id found during action of qr code              | 4504  |
+| Empty direction value found during action of qr code         | 4505  |
+| Empty hardware id found during action of qr code             | 4506  |
+| Empty relay number value found during action of qr code      | 4507  |
+| Checking next action has been cancelled due to invalid value | 4508  |
+
+<br  />

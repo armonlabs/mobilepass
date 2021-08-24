@@ -46,7 +46,7 @@ class BaseService: NSObject {
         let serverAddress: String? = ConfigurationManager.shared.getServerURL()
         
         if (serverAddress == nil || serverAddress?.count == 0) {
-            LogManager.shared.warn(message: "Server address is empty, request is cancelled")
+            LogManager.shared.info(message: "Server address is empty, request is cancelled")
             completion(.failure(RequestError(message: "", reason: .invalidServer, code: nil)))
             return URL(string: "")!
         }
@@ -65,9 +65,17 @@ class BaseService: NSObject {
             request.httpBody = jsonData
         }
         
+        request.timeoutInterval = Double(10)
+        
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         request.addValue("application/json", forHTTPHeaderField: "Accept")
         request.setValue("\(ConfigurationManager.shared.getToken())", forHTTPHeaderField: "Authorization")
+        request.setValue("Mon, 26 Jul 1997 05:00:00 GMT", forHTTPHeaderField: "If-Modified-Since")
+        request.setValue("no-cache", forHTTPHeaderField: "Cache-Control")
+        request.setValue("\(LogManager.shared.getVersion())", forHTTPHeaderField: "mobilepass-version")
+        request.setValue("\(ConfigurationManager.shared.getMemberId())", forHTTPHeaderField: "mobilepass-memberid")
+        request.setValue("\(ConfigurationManager.shared.getConfigurationLog())", forHTTPHeaderField: "mobilepass-config")
+        
         
         return request
     }
@@ -78,7 +86,7 @@ class BaseService: NSObject {
             let statusCode = response?.statusCode
             
             guard let data = data, error == nil, statusCode != nil else {
-                LogManager.shared.info(message: "Request failed: \(error?.localizedDescription ?? "No data")")
+                LogManager.shared.debug(message: "Request failed: \(error?.localizedDescription ?? "No data")")
                 completion(.failure(RequestError(message: "", reason: .other, code: statusCode ?? 0)))
                 return
             }
@@ -89,8 +97,8 @@ class BaseService: NSObject {
                 let responseMsg: ResponseMessage? = self.getResponse(fromData: data)
                 message = responseMsg != nil ? responseMsg!.message : ""
                 
-                LogManager.shared.info(message: "Request completed with message: \(message)")
-                LogManager.shared.info(message: "Request completed with status code: \(statusCode!)")
+                LogManager.shared.debug(message: "Request completed with message: \(message)")
+                LogManager.shared.debug(message: "Request completed with status code: \(statusCode!)")
                 completion(.failure(RequestError(message: message, reason: .errorCode, code: statusCode!)))
                 return
             }
@@ -100,10 +108,10 @@ class BaseService: NSObject {
             let state: T? = self.getResponse(fromData: data)
             
             if (state == nil) {
-                LogManager.shared.info(message: "Response data is empty")
+                LogManager.shared.debug(message: "Response data is empty")
                 completion(.success(nil))
             } else {
-                LogManager.shared.info(message: "Response data is valid")
+                LogManager.shared.debug(message: "Response data is valid")
                 completion(.success(state!))
             }
         }.resume()
@@ -115,20 +123,20 @@ class BaseService: NSObject {
         do {
             let decoder = JSONDecoder()
             let _ = try decoder.decode(T.self, from: data) // messages
-            LogManager.shared.info(message: "Parse response succeed")
+            LogManager.shared.debug(message: "Parse response succeed")
         } catch DecodingError.dataCorrupted(let context) {
-            LogManager.shared.info(message: "Data corrupted: " + context.debugDescription)
+            LogManager.shared.debug(message: "Data corrupted: " + context.debugDescription)
         } catch DecodingError.keyNotFound(let key, let context) {
-            LogManager.shared.info(message: "Key '\(key)' not found: " + context.debugDescription)
-            LogManager.shared.info(message: "CodingPath: " + context.codingPath.debugDescription)
+            LogManager.shared.debug(message: "Key '\(key)' not found: " + context.debugDescription)
+            LogManager.shared.debug(message: "CodingPath: " + context.codingPath.debugDescription)
         } catch DecodingError.valueNotFound(let value, let context) {
-            LogManager.shared.info(message: "Value '\(value)' not found: " + context.debugDescription)
-            LogManager.shared.info(message: "CodingPath: " + context.codingPath.debugDescription)
+            LogManager.shared.debug(message: "Value '\(value)' not found: " + context.debugDescription)
+            LogManager.shared.debug(message: "CodingPath: " + context.codingPath.debugDescription)
         } catch DecodingError.typeMismatch(let type, let context) {
-            LogManager.shared.info(message: "Type '\(type)' mismatch: " + context.debugDescription)
-            LogManager.shared.info(message: "CodingPath: " + context.codingPath.debugDescription)
+            LogManager.shared.debug(message: "Type '\(type)' mismatch: " + context.debugDescription)
+            LogManager.shared.debug(message: "CodingPath: " + context.codingPath.debugDescription)
         } catch {
-            LogManager.shared.info(message: "Parse response failed: " + error.localizedDescription)
+            LogManager.shared.debug(message: "Parse response failed: " + error.localizedDescription)
         }
         
         if let result = stateData {

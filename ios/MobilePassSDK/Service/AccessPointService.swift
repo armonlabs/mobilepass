@@ -9,6 +9,6 @@ import Foundation
 
 class AccessPointService {
     func remoteOpen(request: RequestAccess, completion: @escaping (Result<ResponseDefault?, RequestError>) -> Void) {
-        BaseService.shared.requestPost(url: "api/v1/access", data: request.dictionary, completion: completion)
+        BaseService.shared.requestPost(url: "api/v2/access", data: request.dictionary, completion: completion)
     }
 }

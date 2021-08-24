@@ -8,6 +8,6 @@
 public protocol MobilePassDelegate {
     func onPassCancelled(reason: Int)
     func onPassCompleted(succeed: Bool)
-    func onNeedPermission(type: Int)
     func onQRCodeListStateChanged(state: Int)
+    func onLogReceived(log: LogItem)
 }

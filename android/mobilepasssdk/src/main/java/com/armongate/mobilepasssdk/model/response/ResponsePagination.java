@@ -1,7 +1,10 @@
 package com.armongate.mobilepasssdk.model.response;
 
 public class ResponsePagination {
-    public int take;
-    public int skip;
-    public int total;
+    /** Take */
+    public int t;
+    /** Skip */
+    public int s;
+    /** Total */
+    public int c;
 }

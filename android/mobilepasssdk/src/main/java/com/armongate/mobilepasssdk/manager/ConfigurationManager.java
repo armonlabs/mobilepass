@@ -1,19 +1,22 @@
 package com.armongate.mobilepasssdk.manager;
 
 import android.content.Context;
-import android.util.Log;
 
+import com.armongate.mobilepasssdk.constant.ConfigurationDefaults;
+import com.armongate.mobilepasssdk.constant.LogCodes;
+import com.armongate.mobilepasssdk.constant.LogLevel;
 import com.armongate.mobilepasssdk.constant.QRCodeListState;
 import com.armongate.mobilepasssdk.constant.StorageKeys;
 import com.armongate.mobilepasssdk.model.Configuration;
 import com.armongate.mobilepasssdk.model.CryptoKeyPair;
 import com.armongate.mobilepasssdk.model.QRCodeContent;
+import com.armongate.mobilepasssdk.model.QRCodeMatch;
 import com.armongate.mobilepasssdk.model.StorageDataUserDetails;
 import com.armongate.mobilepasssdk.model.request.RequestPagination;
 import com.armongate.mobilepasssdk.model.request.RequestSetUserData;
-import com.armongate.mobilepasssdk.model.response.ResponseAccessPointItem;
-import com.armongate.mobilepasssdk.model.response.ResponseAccessPointItemQRCodeItem;
 import com.armongate.mobilepasssdk.model.response.ResponseAccessPointList;
+import com.armongate.mobilepasssdk.model.response.ResponseAccessPointListItem;
+import com.armongate.mobilepasssdk.model.response.ResponseAccessPointListQRCode;
 import com.armongate.mobilepasssdk.service.BaseService;
 import com.armongate.mobilepasssdk.service.DataService;
 import com.google.gson.Gson;
@@ -21,21 +24,28 @@ import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
 public class ConfigurationManager {
 
     private static ConfigurationManager instance = null;
-    private static Context mCurrentContext;
-    private static Configuration mCurrentConfig;
-    private static CryptoKeyPair mCurrentKeyPair;
-    private static List<StorageDataUserDetails> mUserKeyDetails = new ArrayList<>();
-    private static HashMap<String, QRCodeContent> mCurrentQRCodes = new HashMap<>();
-    private static HashMap<String, QRCodeContent> mTempQRCodes = new HashMap<>();
 
-    private int mReceivedItemCount = 0;
-    private RequestPagination mPagination = null;
+    private static Context          mCurrentContext;
+    private static Configuration    mCurrentConfig;
+    private static CryptoKeyPair    mCurrentKeyPair;
+
+    private static List<StorageDataUserDetails>                 mUserKeyDetails = new ArrayList<>();
+    private static HashMap<String, QRCodeMatch>                 mQRCodes = new HashMap<>();
+    private static HashMap<String, ResponseAccessPointListItem> mAccessPoints = new HashMap<>();
+    private static List<ResponseAccessPointListItem>            mTempList = new ArrayList<>();
+
+    private int                 mReceivedItemCount  = 0;
+    private RequestPagination   mPagination         = null;
+    private Long                mListSyncDate       = null;
+    private boolean             mListClearFlag      = false;
 
     private ConfigurationManager() { }
 
@@ -47,11 +57,12 @@ public class ConfigurationManager {
         return instance;
     }
 
-
     public void setConfig(Context context, Configuration data) {
         mCurrentContext = context;
         mCurrentConfig = data;
+    }
 
+    public void setReady() {
         getStoredQRCodes();
         validateConfig();
         sendUserData();
@@ -67,7 +78,17 @@ public class ConfigurationManager {
     }
 
     public QRCodeContent getQRCodeContent(String qrCodeData) {
-        return mCurrentQRCodes.get(qrCodeData);
+        QRCodeMatch match = mQRCodes.get(qrCodeData);
+
+        if (match != null) {
+            ResponseAccessPointListItem details = mAccessPoints.get(match.accessPointId);
+
+            if (details != null) {
+                return new QRCodeContent(details.i, match.qrCode, details.t, details.g);
+            }
+        }
+
+        return null;
     }
 
     public String getMemberId() {
@@ -97,15 +118,15 @@ public class ConfigurationManager {
     }
 
     public String getLanguage() {
-        return mCurrentConfig != null && mCurrentConfig.language != null ? mCurrentConfig.language : "en";
+        return mCurrentConfig != null && mCurrentConfig.language != null ? mCurrentConfig.language : ConfigurationDefaults.Language;
     }
 
     public boolean allowMockLocation() {
-        return mCurrentConfig != null && mCurrentConfig.allowMockLocation != null ? mCurrentConfig.allowMockLocation : false;
+        return mCurrentConfig != null && mCurrentConfig.allowMockLocation != null ? mCurrentConfig.allowMockLocation : ConfigurationDefaults.AllowMockLocation;
     }
 
     public Integer getBLEConnectionTimeout() {
-        return mCurrentConfig != null && mCurrentConfig.connectionTimeout != null ? mCurrentConfig.connectionTimeout : 5;
+        return mCurrentConfig != null && mCurrentConfig.connectionTimeout != null ? mCurrentConfig.connectionTimeout : ConfigurationDefaults.BLEConnectionTimeout;
     }
 
     public Integer autoCloseTimeout() {
@@ -113,33 +134,67 @@ public class ConfigurationManager {
     }
 
     public Boolean waitForBLEEnabled() {
-        return mCurrentConfig != null && mCurrentConfig.waitBLEEnabled != null ? mCurrentConfig.waitBLEEnabled : false;
+        return mCurrentConfig != null && mCurrentConfig.waitBLEEnabled != null ? mCurrentConfig.waitBLEEnabled : ConfigurationDefaults.WaitBleEnabled;
+    }
+
+    public int getLogLevel() {
+        return mCurrentConfig != null && mCurrentConfig.logLevel != null ? mCurrentConfig.logLevel : LogLevel.INFO;
+    }
+
+    public String getConfigurationLog() {
+        return mCurrentConfig != null ? mCurrentConfig.getLog() : "";
+    }
+
+    public void refreshList() {
+        if (DelegateManager.getInstance().isQRCodeListRefreshable()) {
+            LogManager.getInstance().info("QR Code definition list will be retrieved again with user request");
+            this.getAccessPoints(true);
+        }
     }
 
     private void getStoredQRCodes() {
-        String storageQRCodes = StorageManager.getInstance().getValue(mCurrentContext, StorageKeys.QRCODES);
+        StorageManager.getInstance().deleteValue(mCurrentContext, StorageKeys.QRCODES);
+
+        String storageQRCodes       = StorageManager.getInstance().getValue(mCurrentContext, StorageKeys.LIST_QRCODES);
+        String storageAccessPoints  = StorageManager.getInstance().getValue(mCurrentContext, StorageKeys.LIST_ACCESSPOINTS);
 
         Gson gson = new Gson();
 
-        Type typeQRCodes = new TypeToken<HashMap<String, QRCodeContent>>(){}.getType();
-        mCurrentQRCodes = gson.fromJson(storageQRCodes, typeQRCodes);
+        Type typeQRCodes        = new TypeToken<HashMap<String, QRCodeMatch>>(){}.getType();
+        Type typeAccessPoints   = new TypeToken<HashMap<String, ResponseAccessPointListItem>>(){}.getType();
 
-        if (mCurrentQRCodes == null) {
-            mCurrentQRCodes = new HashMap<>();
+        mQRCodes        = gson.fromJson(storageQRCodes, typeQRCodes);
+        mAccessPoints   = gson.fromJson(storageAccessPoints, typeAccessPoints);
+
+        if (mQRCodes == null) {
+            mQRCodes = new HashMap<>();
         }
+
+        if (mAccessPoints == null) {
+            mAccessPoints = new HashMap<>();
+        }
+
+        LogManager.getInstance().info("Stored QR Code list is ready to use, total: " + mQRCodes.size());
+        LogManager.getInstance().info("Stored Access Point list is ready to use, total: " + mAccessPoints.size());
     }
 
     private void validateConfig() {
         if (mCurrentConfig == null) {
-            throw new Error("Configuration is required for MobilePass");
+            String message = "Configuration is required for MobilePass";
+            LogManager.getInstance().error(message, LogCodes.CONFIGURATION_VALIDATION);
+            throw new Error(message);
         }
 
         if (mCurrentConfig.memberId == null || mCurrentConfig.memberId.isEmpty()) {
-            throw new Error("Provide valid Member Id to continue, received data is empty!");
+            String message = "Provide valid Member Id to continue, received data is empty!";
+            LogManager.getInstance().error(message, LogCodes.CONFIGURATION_VALIDATION);
+            throw new Error(message);
         }
 
         if (mCurrentConfig.serverUrl == null || mCurrentConfig.serverUrl.isEmpty()) {
-            throw new Error("Provide valid Server URL to continue, received data is empty!");
+            String message = "Provide valid Server URL to continue, received data is empty!";
+            LogManager.getInstance().error(message, LogCodes.CONFIGURATION_VALIDATION);
+            throw new Error(message);
         }
     }
 
@@ -157,6 +212,7 @@ public class ConfigurationManager {
 
             for (StorageDataUserDetails user : mUserKeyDetails) {
                 if (user.userId.equals(getMemberId())) {
+                    LogManager.getInstance().info("Key pair has already been generated for member id: " + getMemberId());
                     mCurrentKeyPair = new CryptoKeyPair(user.publicKey, user.privateKey);
                     break;
                 }
@@ -165,6 +221,8 @@ public class ConfigurationManager {
 
         if (mCurrentKeyPair == null) {
             mCurrentKeyPair = CryptoManager.getInstance().generateKeyPair();
+            LogManager.getInstance().info("New key pair is generated for member id: " + getMemberId());
+            
             mUserKeyDetails.add(new StorageDataUserDetails(getMemberId(), mCurrentKeyPair.publicKey, mCurrentKeyPair.privateKey));
 
             StorageManager.getInstance().setValue(mCurrentContext, StorageKeys.USER_DETAILS, gson.toJson(mUserKeyDetails), new SecureAreaManager(mCurrentContext));
@@ -194,74 +252,159 @@ public class ConfigurationManager {
                     @Override
                     public void onCompleted(Object response) {
                         StorageManager.getInstance().setValue(mCurrentContext, StorageKeys.MEMBERID, getMemberId());
-                        LogManager.getInstance().info("Member id is stored successfully");
-                        getAccessPoints();
+                        LogManager.getInstance().info("User info has been shared with server successfully and member id is ready now");
+                        getAccessPoints(false);
                     }
 
                     @Override
                     public void onError(int statusCode, String message) {
-                        LogManager.getInstance().error("Send user info failed with status code " + statusCode);
-                        getAccessPoints();
+                        LogManager.getInstance().error("Sending user info to server has failed with status code " + statusCode, LogCodes.CONFIGURATION_SERVER_SYNC_INFO);
+                        getAccessPoints(false);
                     }
                 });
             } else {
-                LogManager.getInstance().info("User info is already sent to server");
-                getAccessPoints();
+                LogManager.getInstance().info("User info has already been sent to server for member id: " + getMemberId());
+                getAccessPoints(false);
             }
         }
     }
 
-    private void processAccessPointsResponse(ResponseAccessPointList response) {
-        mReceivedItemCount += response.items.length;
-
-        for (ResponseAccessPointItem item:
-                response.items) {
-            for (ResponseAccessPointItemQRCodeItem qrCode :
-                    item.qrCodeData) {
-                QRCodeContent content = new QRCodeContent(qrCode.qrCodeData, item, qrCode);
-                mTempQRCodes.put(qrCode.qrCodeData, content);
-
-                // Open to show received access point definitions
-                // LogManager.getInstance().debug(new Gson().toJson(content));
-            }
+    private void processQRCodesResponse(ResponseAccessPointList response) {
+        if (response == null) {
+            LogManager.getInstance().error("Empty data received for access points list", LogCodes.CONFIGURATION_SERVER_SYNC_LIST);
+            return;
         }
 
-        if (response.pagination.total > mReceivedItemCount) {
-            mPagination.skip = mReceivedItemCount;
+        if (response.i == null || response.p == null) {
+            LogManager.getInstance().error("Synchronization list response has invalid fields", LogCodes.CONFIGURATION_SERVER_SYNC_LIST);
+            return;
+        }
+
+        mReceivedItemCount += response.i.length;
+
+        mTempList.addAll(Arrays.asList(response.i));
+        // Open to show received access point definitions with for loop
+        // LogManager.getInstance().debug(new Gson().toJson(item));
+
+        if (response.p.c > mReceivedItemCount) {
+            mPagination.s = mReceivedItemCount;
             fetchAccessPoints();
         } else {
-            mCurrentQRCodes = new HashMap<>();
-            mCurrentQRCodes.putAll(mTempQRCodes);
+            if (mListClearFlag) {
+                mQRCodes = new HashMap<>();
+                mAccessPoints = new HashMap<>();
 
-            String valueQRCodesToStore = new Gson().toJson(mCurrentQRCodes);
-            StorageManager.getInstance().setValue(mCurrentContext, StorageKeys.QRCODES, valueQRCodesToStore);
+                LogManager.getInstance().debug("Stored qr code and access points lists are cleared");
+            }
 
-            DelegateManager.getInstance().onQRCodeListStateChanged(mCurrentQRCodes.size() > 0 ? QRCodeListState.USING_SYNCED_DATA : QRCodeListState.EMPTY);
+            LogManager.getInstance().info("Total " + mTempList.size() + " item(s) received from server for definition list of access points");
+
+            for (ResponseAccessPointListItem item :
+                    mTempList) {
+                if (item.i != null && !item.i.isEmpty()) {
+                    ResponseAccessPointListItem storedAccessPoint = mAccessPoints.get(item.i);
+
+                    List<String> storedQRCodeData = storedAccessPoint != null ? new ArrayList<>(Arrays.asList(storedAccessPoint.d)) : new ArrayList<String>();
+                    List<String> newQrCodeData = new ArrayList<>();
+
+                    if (item.q != null) {
+                        for (ResponseAccessPointListQRCode qrCode :
+                                item.q) {
+                            if (qrCode.q != null && !qrCode.q.isEmpty()) {
+                                storedQRCodeData.remove(qrCode.q);
+                                newQrCodeData.add(qrCode.q);
+
+                                mQRCodes.put(qrCode.q, new QRCodeMatch(item.i, qrCode));
+                            } else {
+                                LogManager.getInstance().warn("QR code data is empty that received in synchronization for access point id " + item.i, LogCodes.CONFIGURATION_SERVER_SYNC_LIST);
+                            }
+                        }
+                    } else {
+                        LogManager.getInstance().warn("QR code list received empty while synchronization for access point id " + item.i, LogCodes.CONFIGURATION_SERVER_SYNC_LIST);
+                    }
+
+                    for (String qrCodeData :
+                            storedQRCodeData) {
+                        LogManager.getInstance().info(qrCodeData + " is removed from definitions");
+                        mQRCodes.remove(qrCodeData);
+                    }
+
+                    item.q = new ResponseAccessPointListQRCode[0];
+                    item.d = newQrCodeData.toArray(new String[0]);
+
+                    mAccessPoints.put(item.i, item);
+                } else {
+                    LogManager.getInstance().warn("Updated or added item received from server but id is empty!", LogCodes.CONFIGURATION_SERVER_SYNC_LIST);
+                }
+            }
+
+            String valueQRCodesToStore      = new Gson().toJson(mQRCodes);
+            String valueAccessPointsToStore = new Gson().toJson(mAccessPoints);
+
+            StorageManager.getInstance().setValue(mCurrentContext, StorageKeys.LIST_QRCODES, valueQRCodesToStore);
+            StorageManager.getInstance().setValue(mCurrentContext, StorageKeys.LIST_ACCESSPOINTS, valueAccessPointsToStore);
+            StorageManager.getInstance().setValue(mCurrentContext, StorageKeys.LIST_SYNC_DATE, new Date().getTime() + "");
+
+            LogManager.getInstance().info("Updated QR Code list is ready to use, total: " + mQRCodes.size());
+            LogManager.getInstance().info("Updated Access Point list is ready to use, total: " + mAccessPoints.size());
+
+            if (mQRCodes.size() > 0) {
+                LogManager.getInstance().info("Up to date qr code list will be used for passing flow");
+            } else {
+                LogManager.getInstance().warn("There is no qr code that retrieved from server to continue passing flow", LogCodes.CONFIGURATION_SERVER_SYNC_LIST);
+            }
+
+            DelegateManager.getInstance().onQRCodeListStateChanged(mQRCodes.size() > 0 ? QRCodeListState.USING_SYNCED_DATA : QRCodeListState.EMPTY);
         }
     }
 
     private void fetchAccessPoints() {
-        new DataService().getAccessList(mPagination, new BaseService.ServiceResultListener<ResponseAccessPointList>() {
+        new DataService().getAccessList(mPagination, mListSyncDate, new BaseService.ServiceResultListener<ResponseAccessPointList>() {
             @Override
             public void onCompleted(ResponseAccessPointList response) {
-               processAccessPointsResponse(response);
+                processQRCodesResponse(response);
             }
 
             @Override
             public void onError(int statusCode, String message) {
-                LogManager.getInstance().error("Get access list failed with status code " + statusCode);
-                DelegateManager.getInstance().onQRCodeListStateChanged(mCurrentQRCodes.size() > 0 ? QRCodeListState.USING_STORED_DATA : QRCodeListState.EMPTY);
+                if (statusCode == 409) {
+                    LogManager.getInstance().warn("Sync error received for qr codes and access points, definition list will be retrieved again", LogCodes.CONFIGURATION_SERVER_SYNC_LIST);
+                    getAccessPoints(true);
+                } else {
+                    LogManager.getInstance().error("Getting definition list of qr codes and access points has failed with status code " + statusCode, LogCodes.CONFIGURATION_SERVER_SYNC_LIST);
+                    LogManager.getInstance().warn(mQRCodes.size() > 0 ? "Stored qr code list will be used for passing flow" : "There is no qr code that stored before to continue passing flow", LogCodes.CONFIGURATION_SERVER_SYNC_LIST);
+                    DelegateManager.getInstance().onQRCodeListStateChanged(mQRCodes.size() > 0 ? QRCodeListState.USING_STORED_DATA : QRCodeListState.EMPTY);
+                }
             }
         });
     }
 
-    private void getAccessPoints() {
+    private void getAccessPoints(boolean clear) {
+        LogManager.getInstance().info("Syncing definition list with server has been started");
+        DelegateManager.getInstance().onQRCodeListStateChanged(QRCodeListState.SYNCING);
+
+        mListClearFlag = clear;
+
+        if (clear) {
+            mListSyncDate = null;
+        } else {
+            String storedSyncDate = StorageManager.getInstance().getValue(mCurrentContext, StorageKeys.LIST_SYNC_DATE);
+
+            if (storedSyncDate != null && !storedSyncDate.isEmpty()) {
+                try {
+                    mListSyncDate = Long.parseLong(storedSyncDate);
+                } catch (Exception ex) {
+                    LogManager.getInstance().debug("Found invalid sync date at storage: " + storedSyncDate);
+                }
+            }
+        }
+
         mPagination = new RequestPagination();
-        mPagination.take = 100;
-        mPagination.skip = 0;
+        mPagination.t = 100;
+        mPagination.s = 0;
 
         mReceivedItemCount = 0;
-        mTempQRCodes = new HashMap<>();
+        mTempList = new ArrayList<>();
 
         this.fetchAccessPoints();
     }

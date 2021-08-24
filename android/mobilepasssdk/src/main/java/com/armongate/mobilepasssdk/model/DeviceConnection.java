@@ -4,8 +4,6 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 
-import com.armongate.mobilepasssdk.model.response.ResponseAccessPointItemDeviceInfo;
-
 import java.util.HashMap;
 import java.util.Map;
 

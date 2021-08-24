@@ -8,7 +8,6 @@ import com.armongate.mobilepasssdk.model.BLEDataParseFormat;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Set;
 
 public class DataParserUtil {
 
@@ -29,7 +28,7 @@ public class DataParserUtil {
 
     public BLEDataContent parse(byte[] data) {
         if (data.length < 3) {
-            LogManager.getInstance().warn("Data received from device has invalid length!");
+            LogManager.getInstance().warn("Data received from device has invalid length!", null);
             return null;
         }
 
@@ -40,7 +39,7 @@ public class DataParserUtil {
                 return parseForProtocolV2(Arrays.copyOfRange(data, 1, data.length));
             default:
                 // TODO Add message to unknown protocol
-                LogManager.getInstance().warn("Unknown data protocol received!");
+                LogManager.getInstance().warn("Unknown data protocol received!", null);
                 return null;
         }
     }
@@ -48,26 +47,25 @@ public class DataParserUtil {
     // Private Functions
 
     private BLEDataContent parseForProtocolV1(byte[] data) {
-        LogManager.getInstance().error("Protocol V1 is ignored to process response!");
+        LogManager.getInstance().error("Protocol V1 is ignored to process response!", null);
         return null;
     }
 
     private BLEDataContent parseForProtocolV2(byte[] data) {
-        switch (data[0]) {
-            case PacketHeaders.PROTOCOLV2.GROUP.AUTH:
-                byte[] typeData = Arrays.copyOfRange(data, 2, data.length);
+        if (data[0] == PacketHeaders.PROTOCOLV2.GROUP.AUTH) {
+            byte[] typeData = Arrays.copyOfRange(data, 2, data.length);
 
-                switch (data[1]) {
-                    case PacketHeaders.PROTOCOLV2.AUTH.PUBLICKEY_CHALLENGE:
-                        return parseAuthChallengeData(typeData);
-                    case PacketHeaders.PROTOCOLV2.AUTH.CHALLENGE_RESULT:
-                        return parseAuthChallengeResult(typeData);
-                    default:
-                        return null;
-                }
-            default:
-                return null;
+            switch (data[1]) {
+                case PacketHeaders.PROTOCOLV2.AUTH.PUBLICKEY_CHALLENGE:
+                    return parseAuthChallengeData(typeData);
+                case PacketHeaders.PROTOCOLV2.AUTH.CHALLENGE_RESULT:
+                    return parseAuthChallengeResult(typeData);
+                default:
+                    return null;
+            }
         }
+
+        return null;
     }
 
     private BLEDataContent parseAuthChallengeData(byte[] data) {
@@ -109,7 +107,7 @@ public class DataParserUtil {
             }
 
             boolean removeLengthField = false;
-            int length = 0;
+            int length;
             if (formatItem.useLeftData != null && formatItem.useLeftData) {
                 length = -1;
             } else if (formatItem.useLengthFromField != null && !formatItem.useLengthFromField.isEmpty()) {

@@ -1,13 +1,15 @@
 //
-//  ResponseAccessPointList.swift
+//  ResponseAccessPointListV2.swift
 //  MobilePassSDK
 //
-//  Created by Erinc Cakir on 18.02.2021.
+//  Created by Erinc Cakir on 15.08.2021.
 //
 
 import Foundation
 
 struct ResponseAccessPointList: Codable {
-    var pagination: ResponsePagination
-    var items:      [ResponseAccessPointItem]
+    /** Pagination */
+    var p: ResponsePagination?
+    /** Items */
+    var i: [ResponseAccessPointListItem]?
 }

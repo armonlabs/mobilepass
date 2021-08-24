@@ -14,8 +14,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.armongate.mobilepasssdk.MobilePass;
+import com.armongate.mobilepasssdk.constant.LogLevel;
 import com.armongate.mobilepasssdk.delegate.MobilePassDelegate;
 import com.armongate.mobilepasssdk.model.Configuration;
+import com.armongate.mobilepasssdk.model.LogItem;
 
 import java.util.Collections;
 import java.util.List;
@@ -28,34 +30,37 @@ public class MainActivity extends AppCompatActivity implements MobilePassDelegat
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        TextView txtLogs = findViewById(R.id.txtLogs);
+        TextView txtLogs = findViewById(R.id.armon_test_txtLogs);
         txtLogs.setMovementMethod(new ScrollingMovementMethod());
     }
 
     public void onButtonStartClicked(View v) {
-        EditText txtMemberId = findViewById(R.id.inputMemberId);
+        EditText txtMemberId = findViewById(R.id.armon_test_inputMemberId);
 
         if (txtMemberId.getText().toString().isEmpty()) {
             Toast.makeText(this, "Üye numaranızı giriniz", Toast.LENGTH_SHORT).show();
         } else {
             Configuration config = new Configuration();
-            config.memberId = txtMemberId.getText().toString();
+            config.memberId = txtMemberId.getText().toString(); // "00988791";
             config.serverUrl = "https://qr.marsathletic.com";
             config.language = "tr";
             config.waitBLEEnabled = true;
+            config.connectionTimeout = 10;
+            config.listener = this;
+            config.logLevel = LogLevel.INFO;
 
             passer = new MobilePass(this, config);
-            passer.setDelegate(this);
+            // passer.setDelegate(this);
 
             passer.triggerQRCodeRead();
         }
     }
 
     public void onButtonGetLogsClicked(View v) {
-        Button btnShare = findViewById(R.id.btnShare);
+        Button btnShare = findViewById(R.id.armon_test_btnShare);
 
         if(passer != null) {
-            TextView txtLogs = findViewById(R.id.txtLogs);
+            TextView txtLogs = findViewById(R.id.armon_test_txtLogs);
 
             String logs = getLogs();
             txtLogs.setText(logs);
@@ -77,17 +82,7 @@ public class MainActivity extends AppCompatActivity implements MobilePassDelegat
     }
 
     private String getLogs() {
-        StringBuilder builder = new StringBuilder();
-
-        List<String> logItems = passer.getLogs();
-        Collections.reverse(logItems);
-
-        for (String log :
-                logItems) {
-            builder.append(log + "\n");
-        }
-
-        return builder.toString();
+        return "";
     }
 
     @Override
@@ -101,12 +96,12 @@ public class MainActivity extends AppCompatActivity implements MobilePassDelegat
     }
 
     @Override
-    public void onNeedPermission(int type) {
-        Log.i("MobilePass", "Main - Need Permission, Type: " + type);
+    public void onQRCodeListStateChanged(int state) {
+        Log.i("MobilePass", "Main - QR Code List Changed, State: " + state);
     }
 
     @Override
-    public void onQRCodeListStateChanged(int state) {
-        Log.i("MobilePass", "Main - QR Code List Changed, State: " + state);
+    public void onLogReceived(LogItem log) {
+        // Log.i("MobilePass", "Log Received >> " + log.level + " | " + log.message);
     }
 }

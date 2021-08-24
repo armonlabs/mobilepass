@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum QRTriggerType: Int, Codable {
+enum QRTriggerType: Int, Codable, CaseIterable {
     case Bluetooth              = 1
     case Remote                 = 2
     case BluetoothThenRemote    = 3

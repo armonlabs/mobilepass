@@ -10,7 +10,7 @@ import AVFoundation
 import SwiftUI
 
 public enum ScanError: Error {
-    case addInputFailed, addOutputFailed
+    case addInputFailed, addOutputFailed, noMatching, invalidFormat, invalidContent
 }
 
 public struct QRCodeReaderView: UIViewControllerRepresentable {
@@ -47,6 +47,7 @@ struct QRCodeReaderView_Previews: PreviewProvider {
 public class QRCodeReaderCoordinator: NSObject, AVCaptureMetadataOutputObjectsDelegate {
     var parent: QRCodeReaderView
     var isFound = false
+    var foundQRCodes: Dictionary<String, TimeInterval> = [:]
     let scanInterval: Double = 2.0
 
     init(parent: QRCodeReaderView) {
@@ -58,7 +59,13 @@ public class QRCodeReaderCoordinator: NSObject, AVCaptureMetadataOutputObjectsDe
             guard let readableObject = metadataObject as? AVMetadataMachineReadableCodeObject else { return }
             guard let stringValue = readableObject.stringValue else { return }
             
+            if (foundQRCodes.index(forKey: stringValue) != nil && foundQRCodes[stringValue] != nil && Date().timeIntervalSince1970 - foundQRCodes[stringValue]! < 2.5) {
+                return
+            }
+            
             guard isFound == false else { return }
+            
+            foundQRCodes[stringValue] = Date().timeIntervalSince1970;
             
             let pattern = "https://(app|sdk).armongate.com/(rq|bd|o|s)/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})(/[0-2]{1})?()?$"
             let regex = try? NSRegularExpression(pattern: pattern, options: .caseInsensitive)
@@ -67,9 +74,9 @@ public class QRCodeReaderCoordinator: NSObject, AVCaptureMetadataOutputObjectsDe
                 // Set found flag
                 isFound = true
                 
-                var prefix: Substring = ""
-                var uuid: Substring = ""
-                var direction: Substring = ""
+                var prefix:     Substring = ""
+                var uuid:       Substring = ""
+                var direction:  Substring = ""
                 
                 if let prefixRange = Range(match.range(at: 2), in: stringValue) {
                     prefix = stringValue[prefixRange]
@@ -85,14 +92,28 @@ public class QRCodeReaderCoordinator: NSObject, AVCaptureMetadataOutputObjectsDe
                 
                 let qrCodeContent: String = "\(prefix)/\(uuid)\(direction)"
 
-                if (ConfigurationManager.shared.getQRCodeContent(qrCodeData: qrCodeContent) == nil) {
+                let activeQRCodeContent = ConfigurationManager.shared.getQRCodeContent(qrCodeData: qrCodeContent)
+                
+                if (activeQRCodeContent == nil) {
+                    LogManager.shared.warn(message: "QR code reader could not find matching content for \(qrCodeContent)", code: LogCodes.PASSFLOW_QRCODE_READER_NO_MATCHING)
+                    
                     isFound = false
+                    parent.completion(.failure(.noMatching))
                 } else {
-                    // Send event for qr code
-                    parent.completion(.success(qrCodeContent))
+                    if (activeQRCodeContent!.valid) {
+                        parent.completion(.success(qrCodeContent))
+                    } else {
+                        LogManager.shared.warn(message: "QR code reader found content for \(qrCodeContent) but it is invalid", code: LogCodes.PASSFLOW_QRCODE_READER_INVALID_CONTENT)
+                        
+                        isFound = false
+                        parent.completion(.failure(.invalidContent))
+                    }
                 }
             } else {
-                LogManager.shared.warn(message: "Unknown QR code format")
+                LogManager.shared.warn(message: "QR code reader found unknown format > \(stringValue)", code: LogCodes.PASSFLOW_QRCODE_READER_INVALID_FORMAT)
+                
+                isFound = false
+                parent.completion(.failure(.invalidFormat))
             }
         }
     }

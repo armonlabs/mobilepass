@@ -6,14 +6,7 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
 
-import com.armongate.mobilepasssdk.constant.StorageKeys;
-import com.armongate.mobilepasssdk.model.StorageDataDevice;
-import com.armongate.mobilepasssdk.model.StorageDataUserDetails;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-
-import java.lang.reflect.Type;
-import java.util.List;
+import com.armongate.mobilepasssdk.constant.LogCodes;
 
 public class StorageManager {
 
@@ -32,7 +25,6 @@ public class StorageManager {
 
     // Constants
 
-    private static final int    MAX_LOG_COUNT           = 250;
     private static final String DEFAULT_STRING_VALUE    = "";
     private static final Object LOCK                    = new Object();
 
@@ -45,7 +37,7 @@ public class StorageManager {
             try {
                 storeValue = secureStoreInstance.encryptData(storeValue);
             } catch (Exception ex) {
-                LogManager.getInstance().error("Add item to secure storage failed with error: " + ex.getLocalizedMessage());
+                LogManager.getInstance().error("Add item to secure storage failed with error: " + ex.getLocalizedMessage(), LogCodes.CONFIGURATION_STORAGE);
                 return false;
             }
         }
@@ -54,8 +46,7 @@ public class StorageManager {
     }
 
     public boolean setValue(Context context, String key, String value) {
-        String storeValue = value;
-        return sharedPreferencesSetValue(context, key, storeValue);
+        return sharedPreferencesSetValue(context, key, value);
     }
 
     public String getValue(Context context, String key, SecureAreaManager secureStoreInstance) {
@@ -65,7 +56,7 @@ public class StorageManager {
             try {
                 storedValue = secureStoreInstance.decryptData(storedValue);
             } catch (Exception ex) {
-                LogManager.getInstance().error("Get item from secure storage failed with error: " + ex.getLocalizedMessage());
+                LogManager.getInstance().error("Get item from secure storage failed with error: " + ex.getLocalizedMessage(), LogCodes.CONFIGURATION_STORAGE);
                 return "";
             }
         }

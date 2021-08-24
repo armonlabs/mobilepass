@@ -16,7 +16,6 @@ class ActiveActionModel: ObservableObject {
     @Published var currentView:         FlowViewType = FlowViewType.qr
     @Published var actionList:          [String] = []
     @Published var actionCurrent:       String = ""
-    @Published var connectionActive:    Bool = false
     @Published var activeQRCodeContent: QRCodeContent? = nil
     @Published var needPermissionType:  Int = NeedPermissionType.NEED_ENABLE_BLE.rawValue
     
@@ -33,10 +32,6 @@ class ActiveActionModel: ObservableObject {
         self.activeQRCodeContent = content
     }
     
-    func changeConnectionState(isActive: Bool) {
-        self.connectionActive = isActive
-    }
-    
     func setNeedPermissionType(type: Int) {
         self.needPermissionType = type
         self.currentView = FlowViewType.permission
@@ -44,8 +39,6 @@ class ActiveActionModel: ObservableObject {
 }
 
 struct PassFlowView: View, PassFlowDelegate {
-    // @State private var currentView = FlowViewType.qr
-    
     @ObservedObject var viewModel: ActiveActionModel = ActiveActionModel()
     
     public static let ACTION_BLUETOOTH      = "bluetooth"
@@ -60,14 +53,11 @@ struct PassFlowView: View, PassFlowDelegate {
                 if viewModel.currentView == FlowViewType.qr {
                     ScanQRCodeView()
                 } else if viewModel.currentView == FlowViewType.map {
-                    MapView(checkPoint: viewModel.activeQRCodeContent?.accessPoint.geoLocation)
+                    MapView(checkPoint: viewModel.activeQRCodeContent?.geoLocation)
                 } else if viewModel.currentView == FlowViewType.action {
                     StatusView(config: ActionConfig(currentAction: viewModel.actionCurrent,
-                                                    devices: viewModel.activeQRCodeContent?.accessPoint.deviceInfo ?? [],
-                                                    accessPointId: viewModel.activeQRCodeContent?.accessPoint.id,
-                                                    direction: viewModel.activeQRCodeContent?.action.config.direction,
-                                                    deviceNumber: viewModel.activeQRCodeContent?.action.config.deviceNumber,
-                                                    relayNumber: viewModel.activeQRCodeContent?.action.config.relayNumber,
+                                                    devices: viewModel.activeQRCodeContent?.terminals ?? [],
+                                                    qrCode: viewModel.activeQRCodeContent?.qrCode,
                                                     nextAction: viewModel.actionList.count > 0 ? viewModel.actionList.first : nil))
                 } else {
                     PermissionView(type: viewModel.needPermissionType)
@@ -79,16 +69,18 @@ struct PassFlowView: View, PassFlowDelegate {
                 HStack {
                     Spacer()
                     Button(action: {
-                        if (!viewModel.connectionActive) {
-                            DelegateManager.shared.onCancelled(dismiss: true)
-                        }
+                        DelegateManager.shared.onCancelled(dismiss: true)
                     }) {
                         Text("text_button_close".localized(ConfigurationManager.shared.getLanguage())).bold()
                     }.padding(.trailing, 10)
                 }
                 .frame(width: UIScreen.main.bounds.width)
             })
-        }.environment(\.locale, Locale(identifier: ConfigurationManager.shared.getLanguage()))
+        }.environment(\.locale, Locale(identifier: ConfigurationManager.shared.getLanguage())).edgesIgnoringSafeArea(.all).onReceive(NotificationCenter.default.publisher(for: UIApplication.willResignActiveNotification)) { _ in
+            if (DelegateManager.shared.isPassConnectionActive) {
+                DelegateManager.shared.onCancelled(dismiss: true)
+            }
+        }
     }
     
     init(key: String) {
@@ -115,11 +107,6 @@ struct PassFlowView: View, PassFlowDelegate {
         viewModel.setNeedPermissionType(type: type)
     }
     
-    func onConnectionStateChanged(isActive: Bool) {
-        viewModel.changeConnectionState(isActive: isActive)
-        // TODO Call that from related points
-    }
-    
     private func checkCameraPermission() -> Void {
         let videoAuthStatus = AVCaptureDevice.authorizationStatus(for: .video)
         switch (videoAuthStatus) {
@@ -134,7 +121,6 @@ struct PassFlowView: View, PassFlowDelegate {
             
         case .notDetermined:
             AVCaptureDevice.requestAccess(for: .video, completionHandler: { (granted) in
-                
                 guard granted else {
                     LogManager.shared.info(message: "Camera Permission Status: Denied, needs to be changed in settings to continue")
                     DelegateManager.shared.needPermission(type: NeedPermissionType.NEED_PERMISSION_CAMERA, showMessage: true)
@@ -151,12 +137,14 @@ struct PassFlowView: View, PassFlowDelegate {
     }
     
     private func checkNextAction() {
+        LogManager.shared.debug(message: "Checking next action now")
         if (viewModel.actionList.count > 0) {
             let nextOne: String = viewModel.actionList.removeFirst()
             
             viewModel.setAction(list: viewModel.actionList, current: nextOne)
             processAction()
         } else {
+            LogManager.shared.warn(message: "Checking next action has been cancelled due to empty action list", code: LogCodes.PASSFLOW_EMPTY_ACTION_LIST)
             DelegateManager.shared.onCancelled(dismiss: true)
         }
     }
@@ -164,48 +152,63 @@ struct PassFlowView: View, PassFlowDelegate {
     private func processQRCodeData(code: String) {
         viewModel.activeQRCodeContent = ConfigurationManager.shared.getQRCodeContent(qrCodeData: code)
         
-        if (viewModel.activeQRCodeContent != nil) {
-            let trigger: ResponseAccessPointItemQRCodeItemTrigger = viewModel.activeQRCodeContent!.action.config.trigger
+        if (viewModel.activeQRCodeContent != nil && viewModel.activeQRCodeContent!.valid) {
+            LogManager.shared.info(message: "QR code content for [\(code)] is processing...");
             
-            let needLocation: Bool = trigger.validateGeoLocation == true && viewModel.activeQRCodeContent!.accessPoint.geoLocation != nil
-            LogManager.shared.debug(message: "Need location: \(needLocation)")
+            let needLocation: Bool = viewModel.activeQRCodeContent!.qrCode?.v == true
+                && viewModel.activeQRCodeContent!.geoLocation != nil
+                && viewModel.activeQRCodeContent!.geoLocation!.la != nil
+                && viewModel.activeQRCodeContent!.geoLocation!.lo != nil
+                && viewModel.activeQRCodeContent!.geoLocation!.r != nil
             
-            var actionList: [String] = []
-            var actionCurrent: String = ""
+            LogManager.shared.debug(message: "QR code need location validation: \(needLocation)")
             
-            switch trigger.type {
-            case QRTriggerType.Bluetooth:
-                LogManager.shared.debug(message: "Trigger Type: Bluetooth");
-                actionCurrent = PassFlowView.ACTION_BLUETOOTH
-                break
-            case QRTriggerType.BluetoothThenRemote:
-                LogManager.shared.debug(message: "Trigger Type: Bluetooth Then Remote");
-                actionCurrent = PassFlowView.ACTION_BLUETOOTH
-                
-                if (needLocation) {
-                    actionList.append(PassFlowView.ACTION_LOCATION)
-                }
-                
-                actionList.append(PassFlowView.ACTION_REMOTEACCESS)
-                break
-            case QRTriggerType.Remote, QRTriggerType.RemoteThenBluetooth:
-                actionCurrent = needLocation ? PassFlowView.ACTION_LOCATION : PassFlowView.ACTION_REMOTEACCESS
-                
-                if (needLocation) {
+            var actionList:     [String]    = []
+            var actionCurrent:  String      = ""
+            
+            if (viewModel.activeQRCodeContent!.qrCode?.t == nil) {
+                LogManager.shared.warn(message: "Process qr code has been cancelled due to empty trigger type", code: LogCodes.PASSFLOW_PROCESS_QRCODE_TRIGGERTYPE)
+            } else {
+                switch viewModel.activeQRCodeContent!.qrCode!.t! {
+                case QRTriggerType.Bluetooth:
+                    LogManager.shared.info(message: "Trigger Type: Bluetooth");
+                    actionCurrent = PassFlowView.ACTION_BLUETOOTH
+                    break
+                case QRTriggerType.BluetoothThenRemote:
+                    LogManager.shared.info(message: "Trigger Type: Bluetooth Then Remote");
+                    actionCurrent = PassFlowView.ACTION_BLUETOOTH
+                    
+                    if (needLocation) {
+                        actionList.append(PassFlowView.ACTION_LOCATION)
+                    }
+                    
                     actionList.append(PassFlowView.ACTION_REMOTEACCESS)
+                    break
+                case QRTriggerType.Remote, QRTriggerType.RemoteThenBluetooth:
+                    actionCurrent = needLocation ? PassFlowView.ACTION_LOCATION : PassFlowView.ACTION_REMOTEACCESS
+                    
+                    if (needLocation) {
+                        actionList.append(PassFlowView.ACTION_REMOTEACCESS)
+                    }
+                    
+                    if (viewModel.activeQRCodeContent!.qrCode?.t == QRTriggerType.RemoteThenBluetooth) {
+                        LogManager.shared.info(message: "Trigger Type: Remote Then Bluetooth");
+                        actionList.append(PassFlowView.ACTION_BLUETOOTH);
+                    } else {
+                        LogManager.shared.info(message: "Trigger Type: Remote");
+                    }
+                    break
                 }
                 
-                if (trigger.type == QRTriggerType.RemoteThenBluetooth) {
-                    LogManager.shared.debug(message: "Trigger Type: Remote Then Bluetooth");
-                    actionList.append(PassFlowView.ACTION_BLUETOOTH);
+                if (actionCurrent.isEmpty) {
+                    LogManager.shared.warn(message: "Process qr code has been cancelled due to empty action type", code: LogCodes.PASSFLOW_PROCESS_QRCODE_EMPTY_ACTION)
                 } else {
-                    LogManager.shared.debug(message: "Trigger Type: Remote");
+                    viewModel.setAction(list: actionList, current: actionCurrent)
+                    processAction()
                 }
-                break
             }
-            
-            viewModel.setAction(list: actionList, current: actionCurrent)
-            processAction()
+        } else {
+            LogManager.shared.warn(message: "Process QR Code message received with empty or invalid content", code: LogCodes.PASSFLOW_EMPTY_QRCODE_CONTENT)
         }
     }
     

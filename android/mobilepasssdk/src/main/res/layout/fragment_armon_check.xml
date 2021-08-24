@@ -9,11 +9,11 @@
 	tools:context=".fragment.CheckFragment">
 
 	<ProgressBar
-		android:id="@+id/progressBar"
+		android:id="@+id/armon_mp_progressBar"
 		style="@style/Widget.AppCompat.ProgressBar"
 		android:layout_width="0dp"
 		android:layout_height="0dp"
-		app:layout_constraintBottom_toTopOf="@id/imgCheckPoweredBy"
+		app:layout_constraintBottom_toTopOf="@id/armon_mp_imgCheckPoweredBy"
 		app:layout_constraintHeight_percent="0.25"
 		app:layout_constraintLeft_toLeftOf="parent"
 		app:layout_constraintRight_toRightOf="parent"
@@ -21,7 +21,7 @@
 		app:layout_constraintWidth_percent="0.25" />
 
 		<ImageView
-			android:id="@+id/imgCheckPoweredBy"
+			android:id="@+id/armon_mp_imgCheckPoweredBy"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:layout_marginBottom="24dp"

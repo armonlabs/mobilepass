@@ -3,7 +3,6 @@ package com.armongate.mobilepasssdk.service;
 import com.armongate.mobilepasssdk.model.request.RequestPagination;
 import com.armongate.mobilepasssdk.model.request.RequestSetUserData;
 import com.armongate.mobilepasssdk.model.response.ResponseAccessPointList;
-import com.google.gson.Gson;
 
 public class DataService {
 
@@ -11,7 +10,13 @@ public class DataService {
         BaseService.getInstance().requestPost("api/v1/setpublickey", request, null, listener);
     }
 
-    public void getAccessList(RequestPagination request, final BaseService.ServiceResultListener<ResponseAccessPointList> listener) {
-        BaseService.getInstance().requestGet("api/v1/listAccessPointsRequest?take=" + request.take + "&skip=" + request.skip, ResponseAccessPointList.class, listener);
+    public void getAccessList(RequestPagination pagination, Long syncDate, final BaseService.ServiceResultListener<ResponseAccessPointList> listener) {
+        String url = "api/v2/listAccessPointsRequest?t=" + pagination.t + "&s=" + pagination.s;
+
+        if (syncDate != null) {
+            url = url + "&d=" + syncDate.toString();
+        }
+
+        BaseService.getInstance().requestGet(url, ResponseAccessPointList.class, listener);
     }
 }
