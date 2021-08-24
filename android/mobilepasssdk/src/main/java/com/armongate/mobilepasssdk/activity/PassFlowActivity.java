@@ -275,7 +275,7 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
                 }
 
                 if (activeQRCodeContent.geoLocation.r != null) {
-                    bundle.putDouble("radius", activeQRCodeContent.geoLocation.r);
+                    bundle.putInt("radius", activeQRCodeContent.geoLocation.r);
                 }
             }
 
