@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+@available(iOS 13.0, *)
 class CurrentPermissionModel: ObservableObject {
     @Published var message:     String  = "text_status_message_need_ble_enabled"
     @Published var showButton:  Bool    = false
@@ -41,6 +42,7 @@ class CurrentPermissionModel: ObservableObject {
     }
 }
 
+@available(iOS 13.0, *)
 struct PermissionView: View {
     @Environment(\.colorScheme) var colorScheme
     @Environment(\.locale) var locale
@@ -70,6 +72,7 @@ struct PermissionView: View {
     }
 }
 
+@available(iOS 13.0, *)
 struct PermissionView_Previews: PreviewProvider {
     static var previews: some View {
         PermissionView(type: NeedPermissionType.NEED_ENABLE_BLE.rawValue).preferredColorScheme(.dark).environment(\.locale, Locale(identifier: "tr"))

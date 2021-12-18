@@ -41,8 +41,10 @@ class LogManager: NSObject {
     }
     
     func getVersion() -> String {
-        if let version = Bundle(for: PassFlowController.self).infoDictionary?["CFBundleShortVersionString"] as? String {
-            return version
+        if #available(iOS 13.0, *) {
+            if let version = Bundle(for: PassFlowController.self).infoDictionary?["CFBundleShortVersionString"] as? String {
+                return version
+            }
         }
         
         return ""

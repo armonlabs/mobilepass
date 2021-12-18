@@ -7,7 +7,6 @@
 
 import Foundation
 import UIKit
-import SwiftUI
 
 public class MobilePass {
     
@@ -55,9 +54,12 @@ public class MobilePass {
      */
     public func triggerQRCodeRead() -> UIViewController {
         DelegateManager.shared.clearFlags()
+        var controller = UIViewController()
         
-        let controller: PassFlowController = PassFlowController()
-        DelegateManager.shared.setMainDelegate(delegate: delegate, viewController: controller)
+        if #available(iOS 13.0, *) {
+            controller = PassFlowController()
+            DelegateManager.shared.setMainDelegate(delegate: delegate, viewController: controller)
+        }
         
         BluetoothManager.shared.setReady()
         

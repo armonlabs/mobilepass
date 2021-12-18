@@ -7,12 +7,12 @@
 
 import SwiftUI
 import AVFoundation
-import SwiftUI
 
 public enum ScanError: Error {
     case addInputFailed, addOutputFailed, noMatching, invalidFormat, invalidContent
 }
 
+@available(iOS 13.0, *)
 public struct QRCodeReaderView: UIViewControllerRepresentable {
     private let configScanInterval: Double = 2.0
     public var completion: (Result<String, ScanError>) -> Void
@@ -36,6 +36,7 @@ public struct QRCodeReaderView: UIViewControllerRepresentable {
     }
 }
 
+@available(iOS 13.0, *)
 struct QRCodeReaderView_Previews: PreviewProvider {
     static var previews: some View {
         QRCodeReaderView() { result in
@@ -44,6 +45,7 @@ struct QRCodeReaderView_Previews: PreviewProvider {
     }
 }
 
+@available(iOS 13.0, *)
 public class QRCodeReaderCoordinator: NSObject, AVCaptureMetadataOutputObjectsDelegate {
     var parent: QRCodeReaderView
     var isFound = false
@@ -123,6 +125,7 @@ public class QRCodeReaderCoordinator: NSObject, AVCaptureMetadataOutputObjectsDe
     }
 }
 
+@available(iOS 13.0, *)
 public class QRCodeReaderViewController: UIViewController {
     var captureSession: AVCaptureSession!
     var previewLayer: AVCaptureVideoPreviewLayer!

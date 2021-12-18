@@ -74,37 +74,41 @@ class BluetoothManager: NSObject {
             return
         }
         
-        let authorizationStatus: CBManagerAuthorization = self.currentCentralManager.authorization;
+        if #available(iOS 13.0, *) {
+            let authorizationStatus: CBManagerAuthorization = self.currentCentralManager.authorization
         
-        switch authorizationStatus {
-        case .allowedAlways:
-            LogManager.shared.info(message: "Bluetooth Authorization Status: Allowed Always")
-            break
-        case .denied:
-            LogManager.shared.info(message: "Bluetooth Authorization Status: Denied")
-            break
-        case .restricted:
-            LogManager.shared.info(message: "Bluetooth Authorization Status: Restricted")
-            break
-        case .notDetermined:
-            LogManager.shared.info(message: "Bluetooth Authorization Status: Not Determined")
-            break
-        @unknown default:
-            LogManager.shared.info(message: "Bluetooth Authorization Status: Unknown Default")
-        }
-        
-        if (authorizationStatus == .allowedAlways) {
-            if (self.currentCentralManager.state == .poweredOn) {
-                self.onScanningStarted?()
-                LogManager.shared.info(message: "Scanning nearby BLE devices now")
-                self.currentCentralManager.scanForPeripherals(withServices: filterServiceUUIDs,
-                                                              options: [CBCentralManagerScanOptionAllowDuplicatesKey: true])
-            } else {
-                LogManager.shared.info(message: "Bluetooth authorization status is allowed, but state is not powered on yet")
+            switch authorizationStatus {
+            case .allowedAlways:
+                LogManager.shared.info(message: "Bluetooth Authorization Status: Allowed Always")
+                break
+            case .denied:
+                LogManager.shared.info(message: "Bluetooth Authorization Status: Denied")
+                break
+            case .restricted:
+                LogManager.shared.info(message: "Bluetooth Authorization Status: Restricted")
+                break
+            case .notDetermined:
+                LogManager.shared.info(message: "Bluetooth Authorization Status: Not Determined")
+                break
+            @unknown default:
+                LogManager.shared.info(message: "Bluetooth Authorization Status: Unknown Default")
             }
-        } else if (authorizationStatus != .notDetermined) {
-            DelegateManager.shared.needPermission(type: NeedPermissionType.NEED_PERMISSION_BLUETOOTH, showMessage: true)
-        }
+            
+            if (authorizationStatus == .allowedAlways) {
+                if (self.currentCentralManager.state == .poweredOn) {
+                    self.onScanningStarted?()
+                    LogManager.shared.info(message: "Scanning nearby BLE devices now")
+                    self.currentCentralManager.scanForPeripherals(withServices: filterServiceUUIDs,
+                                                                  options: [CBCentralManagerScanOptionAllowDuplicatesKey: true])
+                } else {
+                    LogManager.shared.info(message: "Bluetooth authorization status is allowed, but state is not powered on yet")
+                }
+            } else if (authorizationStatus != .notDetermined) {
+                DelegateManager.shared.needPermission(type: NeedPermissionType.NEED_PERMISSION_BLUETOOTH, showMessage: true)
+            }
+        } else {
+            // Fallback on earlier versions
+        };
     }
     
     public func stopScan(disconnect: Bool) {

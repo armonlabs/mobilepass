@@ -9,6 +9,7 @@ import Foundation
 import SwiftUI
 import UIKit
 
+@available(iOS 13.0, *)
 public class PassFlowController: UIViewController {
     private var contentView: UIHostingController<PassFlowView> = UIHostingController(rootView: PassFlowView(key: Date.init().description))
     

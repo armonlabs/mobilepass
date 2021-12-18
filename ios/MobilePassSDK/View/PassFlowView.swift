@@ -12,6 +12,7 @@ public enum FlowViewType {
     case qr, map, action, permission
 }
 
+@available(iOS 13.0, *)
 class ActiveActionModel: ObservableObject {
     @Published var currentView:         FlowViewType = FlowViewType.qr
     @Published var actionList:          [String] = []
@@ -38,6 +39,7 @@ class ActiveActionModel: ObservableObject {
     }
 }
 
+@available(iOS 13.0, *)
 struct PassFlowView: View, PassFlowDelegate {
     @ObservedObject var viewModel: ActiveActionModel = ActiveActionModel()
     
@@ -228,6 +230,7 @@ struct PassFlowView: View, PassFlowDelegate {
     }
 }
 
+@available(iOS 13.0, *)
 struct PassFlowView_Previews: PreviewProvider {
     static var previews: some View {
         PassFlowView(key: "PREVIEW")

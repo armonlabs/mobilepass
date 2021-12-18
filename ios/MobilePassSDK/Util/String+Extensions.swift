@@ -33,18 +33,27 @@ extension String {
     }
     
     func localized(withComment comment: String = "") -> String {
-        return Bundle(for: PassFlowController.self).localizedString(forKey: self, value: "\(self)", table: nil)
+        if #available(iOS 13.0, *) {
+            return Bundle(for: PassFlowController.self).localizedString(forKey: self, value: "\(self)", table: nil)
+        } else {
+            return ""
+        }
     }
     
     func localized(_ language: String) -> String {
-        let path = Bundle(for: PassFlowController.self).path(forResource: language, ofType: "lproj")
-        let bundle: Bundle
-        if let path = path {
-            bundle = Bundle(path: path) ?? Bundle(for: PassFlowController.self)
-        } else {
-            bundle = Bundle(for: PassFlowController.self)
-        }
+        if #available(iOS 13.0, *) {
+            let path = Bundle(for: PassFlowController.self).path(forResource: language, ofType: "lproj")
         
-        return bundle.localizedString(forKey: self, value: "\(self)", table: nil)
+            let bundle: Bundle
+            if let path = path {
+                bundle = Bundle(path: path) ?? Bundle(for: PassFlowController.self)
+            } else {
+                bundle = Bundle(for: PassFlowController.self)
+            }
+            
+            return bundle.localizedString(forKey: self, value: "\(self)", table: nil)
+        } else {
+            return ""
+        }
     }
 }

@@ -8,6 +8,7 @@
 import SwiftUI
 import MapKit
 
+@available(iOS 13.0, *)
 struct MapView: View {
     @Environment(\.locale) var locale
     
@@ -47,6 +48,7 @@ struct MapView: View {
     }
 }
 
+@available(iOS 13.0, *)
 struct MapView_Previews: PreviewProvider {
     static var previews: some View {
         MapView(checkPoint: nil)
