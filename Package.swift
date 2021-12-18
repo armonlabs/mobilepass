@@ -3,7 +3,7 @@ import PackageDescription
 let package = Package(
     name: "MobilePassSDK",
 	platforms: [
-        .iOS(.v13)
+        .iOS(.v12)
     ],
     products: [
         .library(
@@ -13,7 +13,7 @@ let package = Package(
     targets: [
         .binaryTarget(
             name: "MobilePassSDK",
-            url: "https://github.com/armonlabs/mobilepass/raw/main/ios/Distribution/MobilePassSDK.xcframework.1.3.0.zip",
-            checksum: "091e7c79d19965d7b035558f25f0f843b35dd910c1d6d57723589ec8bcba0d63"),
+            url: "https://github.com/armonlabs/mobilepass/raw/main/ios/Distribution/MobilePassSDK.xcframework.1.3.1.zip",
+            checksum: "b92423b2399aaa8bc5845df003043205e4b7c7e0f85f383862201b2f47185528"),
     ]
 )
