@@ -25,6 +25,7 @@
     <string name="img_content_status_icon">status icon</string>
     <string name="btn_label_settings">Settings</string>
     <string name="text_permission_camera">"In order to scan QR code, you need to give camera access permission to the application. You can make the necessary change by tapping the \'Settings\' button.</string>
+    <string name="text_permission_ble_scan">In order to scan Bluetooth devices, you need to give permission to the application. You can make the necessary change by tapping the \'Settings\' button.</string>
     <string name="text_permission_location">You need to grant Location permission to the application. You can make the necessary change by tapping the \'Settings\' button.</string>
     <string name="text_permission_location_service">Location services must be turned on for this. You can re-scan the QR code after activating the location service by tapping the \'Settings\' button or from the control center.</string>
     <string name="text_qrcode_list_state_initializing">QR code list is being prepared</string>

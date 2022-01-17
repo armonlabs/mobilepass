@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.LocationManager;
+import android.os.Build;
 
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -13,6 +14,7 @@ public class SettingsManager {
 
     public static int REQUEST_CODE_CAMERA = 1001;
     public static int REQUEST_CODE_LOCATION = 1002;
+    public static int REQUEST_CODE_BLE_SCAN = 1003;
 
     // Singleton
 
@@ -39,6 +41,14 @@ public class SettingsManager {
 
     public boolean checkCameraPermission(Context context, Activity activity) {
         return this.checkPermission(context, Manifest.permission.CAMERA, REQUEST_CODE_CAMERA, activity);
+    }
+
+    public boolean checkBluetoothScanPermission(Context context, Activity activity) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            return this.checkPermission(context, Manifest.permission.BLUETOOTH_SCAN, REQUEST_CODE_BLE_SCAN, activity);
+        } else {
+            return true;
+        }
     }
 
     // Private Functions

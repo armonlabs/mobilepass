@@ -45,6 +45,8 @@ public class PermissionFragment extends Fragment  {
             resMessageId = R.string.text_permission_location;
         } else if (mParamType == NeedPermissionType.NEED_ENABLE_LOCATION_SERVICES) {
             resMessageId = R.string.text_permission_location_service;
+        } else if (mParamType == NeedPermissionType.NEED_PERMISSION_BLUETOOTH) {
+            resMessageId = R.string.text_permission_ble_scan;
         }
 
         TextView txtMessage = view.findViewById(R.id.armon_mp_txtMessage);

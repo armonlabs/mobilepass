@@ -92,6 +92,12 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
                 } else {
                     showPermissionMessage(NeedPermissionType.NEED_PERMISSION_LOCATION);
                 }
+            } else if (activePermissionCode == SettingsManager.REQUEST_CODE_BLE_SCAN) {
+                if (activePermissionGranted) {
+                    processAction();
+                } else {
+                    showPermissionMessage(NeedPermissionType.NEED_PERMISSION_BLUETOOTH);
+                }
             }
 
             activePermissionCode = -1;
@@ -235,17 +241,7 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
                         LogManager.getInstance().warn("Process qr code has been cancelled due to empty action type", LogCodes.PASSFLOW_PROCESS_QRCODE_EMPTY_ACTION);
                 }
 
-                boolean needLocationPermission = actionCurrent.equals(ACTION_BLUETOOTH) || actionCurrent.equals(ACTION_LOCATION) || actionList.contains(ACTION_BLUETOOTH) || actionList.contains(ACTION_LOCATION);
-
-                if (needLocationPermission && !SettingsManager.getInstance().checkLocationEnabled(getApplicationContext())) {
-                    showPermissionMessage(NeedPermissionType.NEED_ENABLE_LOCATION_SERVICES);
-                } else {
-                    if (!needLocationPermission || SettingsManager.getInstance().checkLocationPermission(getApplicationContext(), this)) {
-                        processAction();
-                    } else {
-                        replaceFragment(CheckFragment.class, null);
-                    }
-                }
+                processAction();
             }
         } else {
             LogManager.getInstance().warn("Process QR Code message received with empty or invalid content", LogCodes.PASSFLOW_EMPTY_QRCODE_CONTENT);
@@ -261,6 +257,24 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
 
         LogManager.getInstance().debug("Current action: " + actionCurrent);
         LogManager.getInstance().debug("Action list: " + actionList.toString());
+
+        boolean needLocationPermission = actionCurrent.equals(ACTION_BLUETOOTH) || actionCurrent.equals(ACTION_LOCATION) || actionList.contains(ACTION_BLUETOOTH) || actionList.contains(ACTION_LOCATION);
+
+        if (needLocationPermission && !SettingsManager.getInstance().checkLocationEnabled(getApplicationContext())) {
+            showPermissionMessage(NeedPermissionType.NEED_ENABLE_LOCATION_SERVICES);
+        } else {
+            if (!needLocationPermission || SettingsManager.getInstance().checkLocationPermission(getApplicationContext(), this)) {
+                if (actionCurrent.equals(ACTION_BLUETOOTH)) {
+                    if (!SettingsManager.getInstance().checkBluetoothScanPermission(getApplicationContext(), this)) {
+                        replaceFragment(CheckFragment.class, null);
+                        return;
+                    }
+                }
+            } else {
+                replaceFragment(CheckFragment.class, null);
+                return;
+            }
+        }
 
         if (actionCurrent.equals(ACTION_LOCATION)) {
             Bundle bundle = new Bundle();
