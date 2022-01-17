@@ -19,6 +19,7 @@ public struct ActionConfig: Codable {
     var nextAction:     String?
 }
 
+@available(iOS 13.0, *)
 class CurrentStatusModel: ObservableObject {
     @Published var icon:        String  = "waiting"
     @Published var message:     String  = "text_status_message_waiting"
@@ -29,6 +30,7 @@ class CurrentStatusModel: ObservableObject {
     }
 }
 
+@available(iOS 13.0, *)
 class StateModel: ObservableObject {
     @Published var timerConnection:     Timer?
     @Published var lastConnectionState: DeviceConnectionStatus.ConnectionState?
@@ -47,6 +49,7 @@ class StateModel: ObservableObject {
     }
 }
 
+@available(iOS 13.0, *)
 struct StatusView: View {
     @Environment(\.colorScheme) var colorScheme
     @Environment(\.locale) var locale
@@ -309,6 +312,7 @@ struct StatusView: View {
     
 }
 
+@available(iOS 13.0.0, *)
 struct StatusView_Previews: PreviewProvider {
     static var previews: some View {
         Group {
@@ -318,6 +322,7 @@ struct StatusView_Previews: PreviewProvider {
     }
 }
 
+@available(iOS 13.0, *)
 struct LoadingView: View {
     
     @Binding var size: CGFloat

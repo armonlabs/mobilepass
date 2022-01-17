@@ -8,6 +8,7 @@
 import SwiftUI
 import AVFoundation
 
+@available(iOS 13.0, *)
 class CurrentListStateModel: ObservableObject {
     @Published var state:           Int     = QRCodeListState.INITIALIZING.rawValue
     @Published var message:         String  = "text_qrcode_list_state_initializing"
@@ -57,6 +58,7 @@ class CurrentListStateModel: ObservableObject {
     }
 }
 
+@available(iOS 13.0, *)
 struct ScanQRCodeView: View, QRCodeListStateDelegate {
     @Environment(\.locale) var locale
     
@@ -165,6 +167,7 @@ struct ScanQRCodeView: View, QRCodeListStateDelegate {
 
 }
 
+@available(iOS 13.0, *)
 struct ScanQRCodeView_Previews: PreviewProvider {
     static var previews: some View {
         ScanQRCodeView()
