@@ -10,6 +10,8 @@ import android.os.Build;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import java.util.List;
+
 public class SettingsManager {
 
     public static int REQUEST_CODE_CAMERA = 1001;
@@ -36,16 +38,16 @@ public class SettingsManager {
     }
 
     public boolean checkLocationPermission(Context context, Activity activity) {
-        return this.checkPermission(context, Manifest.permission.ACCESS_FINE_LOCATION, REQUEST_CODE_LOCATION, activity);
+        return this.checkPermission(context, new String[] { Manifest.permission.ACCESS_FINE_LOCATION } , REQUEST_CODE_LOCATION, activity);
     }
 
     public boolean checkCameraPermission(Context context, Activity activity) {
-        return this.checkPermission(context, Manifest.permission.CAMERA, REQUEST_CODE_CAMERA, activity);
+        return this.checkPermission(context, new String[] { Manifest.permission.CAMERA }, REQUEST_CODE_CAMERA, activity);
     }
 
     public boolean checkBluetoothScanPermission(Context context, Activity activity) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            return this.checkPermission(context, Manifest.permission.BLUETOOTH_SCAN, REQUEST_CODE_BLE_SCAN, activity);
+            return this.checkPermission(context, new String[] { Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT }, REQUEST_CODE_BLE_SCAN, activity);
         } else {
             return true;
         }
@@ -53,13 +55,19 @@ public class SettingsManager {
 
     // Private Functions
 
-    private boolean checkPermission(Context context, String permission, int requestCode, Activity activity) {
-        if (ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED) {
-            return true;
+    private boolean checkPermission(Context context, String[] permissions, int requestCode, Activity activity) {
+        boolean result = true;
+
+        for (String permission :
+                permissions) {
+            result = result && ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED;
         }
 
-        ActivityCompat.requestPermissions(activity, new String[] { permission }, requestCode);
-        return false;
+        if (!result) {
+            ActivityCompat.requestPermissions(activity, permissions, requestCode);
+        }
+
+        return result;
     }
 
     private boolean checkLocationServicesOn(Context context) {
