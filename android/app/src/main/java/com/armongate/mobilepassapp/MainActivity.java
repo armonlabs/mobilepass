@@ -2,7 +2,6 @@ package com.armongate.mobilepassapp;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
@@ -19,8 +18,6 @@ import com.armongate.mobilepasssdk.delegate.MobilePassDelegate;
 import com.armongate.mobilepasssdk.model.Configuration;
 import com.armongate.mobilepasssdk.model.LogItem;
 
-import java.util.Collections;
-import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements MobilePassDelegate {
     private MobilePass passer;

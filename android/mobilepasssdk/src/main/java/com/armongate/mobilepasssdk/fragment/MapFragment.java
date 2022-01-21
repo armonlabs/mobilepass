@@ -1,6 +1,5 @@
 package com.armongate.mobilepasssdk.fragment;
 
-import android.annotation.SuppressLint;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
@@ -18,6 +17,7 @@ import com.armongate.mobilepasssdk.constant.LogCodes;
 import com.armongate.mobilepasssdk.manager.ConfigurationManager;
 import com.armongate.mobilepasssdk.manager.DelegateManager;
 import com.armongate.mobilepasssdk.manager.LogManager;
+import com.armongate.mobilepasssdk.manager.SettingsManager;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -80,7 +80,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         initMap();
     }
 
-    @SuppressLint("MissingPermission")
     private void initMap() {
         if (mPointLatitude != null && mPointLongitude != null && mPointRadius != null) {
             LatLng accessPoint = new LatLng(mPointLatitude, mPointLongitude);
@@ -91,32 +90,37 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         mMap.setOnMyLocationButtonClickListener(this);
         mMap.setOnMyLocationClickListener(this);
 
-        initLocationTracking();
-        mMap.setMyLocationEnabled(true);
+        if (SettingsManager.getInstance().checkLocationPermission(getContext(), getActivity())) {
+            initLocationTracking();
+            mMap.setMyLocationEnabled(true);
+        }
     }
 
     private void moveCamera(Location location) {
         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 15.0f));
     }
 
-    @SuppressLint("MissingPermission")
     private void initLocationTracking() {
-        fusedLocationClient.getLastLocation().addOnCompleteListener(new OnCompleteListener<Location>() {
-            @Override
-            public void onComplete(@NonNull Task<Location> task) {
-                if (task.isSuccessful()) {
-                    // Task completed successfully
-                    processLocation(task.getResult());
+        if (SettingsManager.getInstance().checkLocationPermission(getContext(), getActivity())) {
+            fusedLocationClient.getLastLocation().addOnCompleteListener(new OnCompleteListener<Location>() {
+                @Override
+                public void onComplete(@NonNull Task<Location> task) {
+                    if (task.isSuccessful()) {
+                        // Task completed successfully
+                        processLocation(task.getResult());
+                    }
+
+                    LocationRequest locationRequest = new LocationRequest();
+                    locationRequest.setInterval(10000);
+                    locationRequest.setFastestInterval(3000);
+                    locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
+                    if (SettingsManager.getInstance().checkLocationPermission(getContext(), getActivity())) {
+                        fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.myLooper());
+                    }
                 }
-
-                LocationRequest locationRequest = new LocationRequest();
-                locationRequest.setInterval(10000);
-                locationRequest.setFastestInterval(3000);
-                locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-
-                fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.myLooper());
-            }
-        });
+            });
+        }
     }
 
     @Override

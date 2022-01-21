@@ -38,7 +38,7 @@ public class SettingsManager {
     }
 
     public boolean checkLocationPermission(Context context, Activity activity) {
-        return this.checkPermission(context, new String[] { Manifest.permission.ACCESS_FINE_LOCATION } , REQUEST_CODE_LOCATION, activity);
+        return this.checkPermission(context, new String[] { Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION } , REQUEST_CODE_LOCATION, activity);
     }
 
     public boolean checkCameraPermission(Context context, Activity activity) {

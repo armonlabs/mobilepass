@@ -1,6 +1,5 @@
 package com.armongate.mobilepasssdk.fragment;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Bundle;
 import android.util.SparseArray;
@@ -21,6 +20,7 @@ import com.armongate.mobilepasssdk.delegate.QRCodeListStateDelegate;
 import com.armongate.mobilepasssdk.manager.ConfigurationManager;
 import com.armongate.mobilepasssdk.manager.DelegateManager;
 import com.armongate.mobilepasssdk.manager.LogManager;
+import com.armongate.mobilepasssdk.manager.SettingsManager;
 import com.armongate.mobilepasssdk.model.QRCodeContent;
 import com.google.android.gms.vision.CameraSource;
 import com.google.android.gms.vision.Detector;
@@ -107,11 +107,12 @@ public class QRCodeReaderFragment extends Fragment implements SurfaceHolder.Call
         }
     }
 
-    @SuppressLint("MissingPermission")
     @Override
     public void surfaceCreated(SurfaceHolder surfaceHolder) {
         try {
-            cameraSource.start(surfaceHolder);
+            if (SettingsManager.getInstance().checkCameraPermission(getContext(), getActivity())) {
+                cameraSource.start(surfaceHolder);
+            }
         } catch (Exception exception) {
             DelegateManager.getInstance().onErrorOccurred(exception);
         }
