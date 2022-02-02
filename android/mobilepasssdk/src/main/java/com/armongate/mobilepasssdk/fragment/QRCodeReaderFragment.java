@@ -1,6 +1,8 @@
 package com.armongate.mobilepasssdk.fragment;
 
+import android.Manifest;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
@@ -8,9 +10,12 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 
 import com.armongate.mobilepasssdk.R;
@@ -36,11 +41,12 @@ import java.util.regex.Pattern;
 
 public class QRCodeReaderFragment extends Fragment implements SurfaceHolder.Callback, Detector.Processor<Barcode>, QRCodeListStateDelegate {
 
-    private CameraSource    cameraSource;
-    private Context         mContext;
-    private View            mCurrentView;
-    private boolean         isQRFound = false;
-    private boolean         needSetupControls = false;
+    private CameraSource cameraSource;
+    private Context mContext;
+    private View mCurrentView;
+    private boolean isQRFound = false;
+    private boolean needSetupControls = false;
+    private int cameraFacing = CameraSource.CAMERA_FACING_BACK;
 
     private final Map<String, Long> foundQRCodes = new HashMap<>();
 
@@ -61,10 +67,7 @@ public class QRCodeReaderFragment extends Fragment implements SurfaceHolder.Call
         TextView txtListRefreshMessage = mCurrentView.findViewById(R.id.armon_mp_txtListRefreshInfo);
         txtListRefreshMessage.setVisibility(DelegateManager.getInstance().isQRCodeListRefreshable() ? View.VISIBLE : View.GONE);
 
-        setupControls((SurfaceView)mCurrentView.findViewById(R.id.armon_mp_qrSurfaceView));
-
-        View viewBottomMask = mCurrentView.findViewById(R.id.armon_mp_qrMaskBottom);
-        viewBottomMask.setOnClickListener(new View.OnClickListener() {
+        txtListStateMessage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (DelegateManager.getInstance().isQRCodeListRefreshable()) {
@@ -72,6 +75,41 @@ public class QRCodeReaderFragment extends Fragment implements SurfaceHolder.Call
                 }
             }
         });
+
+        txtListRefreshMessage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (DelegateManager.getInstance().isQRCodeListRefreshable()) {
+                    ConfigurationManager.getInstance().refreshList();
+                }
+            }
+        });
+
+        ImageView imgSwitchCamera = mCurrentView.findViewById(R.id.armon_mp_btnSwitchCamera);
+
+        imgSwitchCamera.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                try {
+                    if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+                        return;
+                    }
+
+                    cameraFacing = cameraFacing == CameraSource.CAMERA_FACING_BACK ? CameraSource.CAMERA_FACING_FRONT : CameraSource.CAMERA_FACING_BACK;
+
+                    SurfaceView cameraSurfaceView = (SurfaceView) mCurrentView.findViewById(R.id.armon_mp_qrSurfaceView);
+
+                    cameraSource.stop();
+                    setupControls(cameraSurfaceView);
+                    cameraSource.start(cameraSurfaceView.getHolder());
+                }catch (Exception ex){
+                    LogManager.getInstance().error("Switch camera failed! Exception: " + ex.getLocalizedMessage(), LogCodes.UI_SWITCH_CAMERA_FAILED);
+                }
+
+            }
+        });
+
+        setupControls((SurfaceView)mCurrentView.findViewById(R.id.armon_mp_qrSurfaceView));
 
         DelegateManager.getInstance().setCurrentQRCodeListStateDelegate(this);
 
@@ -97,7 +135,7 @@ public class QRCodeReaderFragment extends Fragment implements SurfaceHolder.Call
     private void setupControls(SurfaceView cameraSV) {
         if (mContext != null) {
             BarcodeDetector detector = new BarcodeDetector.Builder(mContext).setBarcodeFormats(Barcode.QR_CODE).build();
-            cameraSource = new CameraSource.Builder(mContext, detector).setAutoFocusEnabled(true).build();
+            cameraSource = new CameraSource.Builder(mContext, detector).setFacing(cameraFacing).setAutoFocusEnabled(true).build();
 
             cameraSV.getHolder().addCallback(this);
 

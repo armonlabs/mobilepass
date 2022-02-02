@@ -126,14 +126,15 @@ public class QRCodeReaderCoordinator: NSObject, AVCaptureMetadataOutputObjectsDe
 }
 
 @available(iOS 13.0, *)
-public class QRCodeReaderViewController: UIViewController {
+public class QRCodeReaderViewController: UIViewController, QRCodeScannerDelegate {
     var captureSession: AVCaptureSession!
     var previewLayer: AVCaptureVideoPreviewLayer!
     var delegate: QRCodeReaderCoordinator?
-
+    
     override public func viewDidLoad() {
         super.viewDidLoad()
 
+        DelegateManager.shared.setQRCodeScannerDelegate(delegate: self)
 
         NotificationCenter.default.addObserver(self,
                                                selector: #selector(updateOrientation),
@@ -218,5 +219,59 @@ public class QRCodeReaderViewController: UIViewController {
 
     override public var supportedInterfaceOrientations: UIInterfaceOrientationMask {
         return .all
+    }
+    
+    public func onSwitchCamera() {
+        //Change camera source
+        if let session = captureSession {
+            //Remove existing input
+            guard let currentCameraInput: AVCaptureInput = session.inputs.first else {
+                return
+            }
+
+            //Indicate that some changes will be made to the session
+            session.beginConfiguration()
+            session.removeInput(currentCameraInput)
+
+            //Get new input
+            var newCamera: AVCaptureDevice! = nil
+            if let input = currentCameraInput as? AVCaptureDeviceInput {
+                if (input.device.position == .back) {
+                    newCamera = cameraWithPosition(position: .front)
+                } else {
+                    newCamera = cameraWithPosition(position: .back)
+                }
+            }
+
+            //Add input to session
+            var err: NSError?
+            var newVideoInput: AVCaptureDeviceInput!
+            do {
+                newVideoInput = try AVCaptureDeviceInput(device: newCamera)
+            } catch let err1 as NSError {
+                err = err1
+                newVideoInput = nil
+            }
+
+            if newVideoInput == nil || err != nil {
+                LogManager.shared.error(message: "Switch camera failed! Exception: \(err?.localizedDescription ?? "-")", code: LogCodes.UI_SWITCH_CAMERA_FAILED)
+            } else {
+                session.addInput(newVideoInput)
+            }
+
+            //Commit all the configuration changes at once
+            session.commitConfiguration()
+        }
+    }
+    
+    private func cameraWithPosition(position: AVCaptureDevice.Position) -> AVCaptureDevice? {
+        let discoverySession = AVCaptureDevice.DiscoverySession(deviceTypes: [.builtInWideAngleCamera], mediaType: AVMediaType.video, position: .unspecified)
+        for device in discoverySession.devices {
+            if device.position == position {
+                return device
+            }
+        }
+
+        return nil
     }
 }

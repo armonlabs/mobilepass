@@ -40,6 +40,7 @@
 		DE45B1AB26C985A500FB8712 /* QRCodeListStateDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE45B1AA26C985A500FB8712 /* QRCodeListStateDelegate.swift */; };
 		DE46BB7F25E2A8F6006A727A /* CancelReason.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE46BB7E25E2A8F6006A727A /* CancelReason.swift */; };
 		DE46BB8225E2A971006A727A /* QRCodeListState.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE46BB8125E2A971006A727A /* QRCodeListState.swift */; };
+		DE4B4CDF27AA81FF004CA0AF /* QRCodeScannerDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE4B4CDE27AA81FF004CA0AF /* QRCodeScannerDelegate.swift */; };
 		DE57D5AF25DCDE700099D8AB /* LogManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE57D5AE25DCDE700099D8AB /* LogManager.swift */; };
 		DE79EE7025D8899400D8C072 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DE79EE6F25D8899400D8C072 /* Images.xcassets */; };
 		DE79EEAA25D9986100D8C072 /* PassFlowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE79EEA925D9986100D8C072 /* PassFlowController.swift */; };
@@ -115,6 +116,7 @@
 		DE45B1AA26C985A500FB8712 /* QRCodeListStateDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRCodeListStateDelegate.swift; sourceTree = "<group>"; };
 		DE46BB7E25E2A8F6006A727A /* CancelReason.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CancelReason.swift; sourceTree = "<group>"; };
 		DE46BB8125E2A971006A727A /* QRCodeListState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRCodeListState.swift; sourceTree = "<group>"; };
+		DE4B4CDE27AA81FF004CA0AF /* QRCodeScannerDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRCodeScannerDelegate.swift; sourceTree = "<group>"; };
 		DE57D5AE25DCDE700099D8AB /* LogManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogManager.swift; sourceTree = "<group>"; };
 		DE79EE6F25D8899400D8C072 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		DE79EEA925D9986100D8C072 /* PassFlowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PassFlowController.swift; sourceTree = "<group>"; };
@@ -334,6 +336,7 @@
 				DE147D5625D3FC70000B77C8 /* PassFlowDelegate.swift */,
 				DE19DF2425DA345300AB250C /* MobilePassDelegate.swift */,
 				DE45B1AA26C985A500FB8712 /* QRCodeListStateDelegate.swift */,
+				DE4B4CDE27AA81FF004CA0AF /* QRCodeScannerDelegate.swift */,
 			);
 			path = Delegate;
 			sourceTree = "<group>";
@@ -498,6 +501,7 @@
 				DEF0BF9A25D28D8F00397D18 /* DataParserUtil.swift in Sources */,
 				DEF0BF9425D28CA100397D18 /* StorageKeys.swift in Sources */,
 				DEF0BFB625D2AAF600397D18 /* StorageDataUserDetails.swift in Sources */,
+				DE4B4CDF27AA81FF004CA0AF /* QRCodeScannerDelegate.swift in Sources */,
 				DE45B1A526C97E4600FB8712 /* ResponseAccessPointListGeoLocation.swift in Sources */,
 				DE30E52B25DD182F004CAED2 /* ConfigurationManager.swift in Sources */,
 				DE46BB7F25E2A8F6006A727A /* CancelReason.swift in Sources */,

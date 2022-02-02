@@ -441,5 +441,6 @@ Details of received log item
 | Empty hardware id found during action of qr code             | 4506  |
 | Empty relay number value found during action of qr code      | 4507  |
 | Checking next action has been cancelled due to invalid value | 4508  |
+| Switch camera for qr code scanner is failed                  | 5101  |
 
 <br  />

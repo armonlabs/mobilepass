@@ -70,6 +70,7 @@ struct ScanQRCodeView: View, QRCodeListStateDelegate {
     
     init() {
         self.stateModel = CurrentListStateModel(state: DelegateManager.shared.qrCodeListState.rawValue)
+        
         DelegateManager.shared.setQRCodeStateDelegate(delegate: self)
     }
     
@@ -137,6 +138,7 @@ struct ScanQRCodeView: View, QRCodeListStateDelegate {
                                        height: maskHeight,
                                        positionX: maskPositionX,
                                        positionY: maskPositionY,
+                                       hasSwitchCamera: side == .bottom,
                                        label: side == .top ? "text_qrcode_message" : (side == .bottom ? stateModel.message : ""),
                                        labelSize: side == .bottom ? 12 : nil,
                                        info: side == .bottom && DelegateManager.shared.isQRCodeListRefreshable() ? "text_qrcode_list_tap_to_refresh" : nil,
@@ -146,21 +148,30 @@ struct ScanQRCodeView: View, QRCodeListStateDelegate {
                                        } : nil))
     }
     
-    private func renderMask(width: CGFloat, height: CGFloat, positionX: CGFloat, positionY: CGFloat, label: String, labelSize: CGFloat?, info: String?, infoSize: CGFloat?, onTap: (() -> Void)?) -> some View {
+    private func renderMask(width: CGFloat, height: CGFloat, positionX: CGFloat, positionY: CGFloat, hasSwitchCamera: Bool, label: String, labelSize: CGFloat?, info: String?, infoSize: CGFloat?, onTap: (() -> Void)?) -> some View {
         return VStack {
+            if (hasSwitchCamera) {
+                Image("cameraSwitch", bundle: Bundle(for: PassFlowController.self)).resizable()
+                    .frame(width: 32, height: 32, alignment: .center).padding(.bottom, 16).onTapGesture {
+                        DelegateManager.shared.qrCodeScannerSwitchCamera()
+                    }
+            }
+            
             if label.count > 0 {
-                Text(label.localized(locale.identifier)).padding(.horizontal, 16).foregroundColor(.white).font(labelSize != nil ? .system(size: labelSize!).bold() : .headline).multilineTextAlignment(.center)
+                Text(label.localized(locale.identifier)).padding(.horizontal, 16).foregroundColor(.white).font(labelSize != nil ? .system(size: labelSize!).bold() : .headline).multilineTextAlignment(.center).onTapGesture {
+                    onTap?()
+                }
                 
                 if (info != nil) {
-                    Text(info!.localized(locale.identifier)).padding(.horizontal, 16).padding(.top, 2).foregroundColor(.white).font(infoSize != nil ? .system(size: infoSize!) : .headline).multilineTextAlignment(.center)
+                    Text(info!.localized(locale.identifier)).padding(.horizontal, 16).padding(.top, 2).foregroundColor(.white).font(infoSize != nil ? .system(size: infoSize!) : .headline).multilineTextAlignment(.center).onTapGesture {
+                        onTap?()
+                    }
                 }
             }
         }
         .frame(minWidth: 0, idealWidth: width, maxWidth: width, minHeight: 0, idealHeight: height, maxHeight: height, alignment: .center)
         .background(stateModel.backgroundColor.opacity(0.6))
-        .position(x: positionX, y: positionY).onTapGesture {
-            onTap?()
-        }
+        .position(x: positionX, y: positionY)
     }
     
     

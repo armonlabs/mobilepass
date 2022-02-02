@@ -27,6 +27,7 @@ class DelegateManager: NSObject {
     private var mobilePassController: UIViewController?
     private var passFlowDelegate: PassFlowDelegate?
     private var qrCodeListStateDelegate: QRCodeListStateDelegate?
+    private var qrCodeScannerDelegate: QRCodeScannerDelegate?
     private var timerAutoClose: Timer? = nil
     
     // MARK: Public Functions
@@ -49,6 +50,10 @@ class DelegateManager: NSObject {
     
     func setQRCodeStateDelegate(delegate: QRCodeListStateDelegate?) {
         qrCodeListStateDelegate = delegate
+    }
+    
+    func setQRCodeScannerDelegate(delegate: QRCodeScannerDelegate) {
+        qrCodeScannerDelegate = delegate
     }
     
     func onLogItemCreated(log: LogItem) {
@@ -134,6 +139,10 @@ class DelegateManager: NSObject {
         }
         
         self.qrCodeListStateDelegate?.onStateChanged(state: state.rawValue)
+    }
+    
+    func qrCodeScannerSwitchCamera() {
+        self.qrCodeScannerDelegate?.onSwitchCamera()
     }
     
     func onMockLocationDetected() {
