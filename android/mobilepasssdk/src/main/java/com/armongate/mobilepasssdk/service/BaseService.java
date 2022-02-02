@@ -13,7 +13,6 @@ import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
-import com.armongate.mobilepasssdk.BuildConfig;
 import com.armongate.mobilepasssdk.manager.ConfigurationManager;
 import com.armongate.mobilepasssdk.manager.LogManager;
 import com.armongate.mobilepasssdk.model.response.ResponseMessage;
@@ -149,7 +148,7 @@ public class BaseService {
                 params.put("Authorization", token);
                 params.put("If-Modified-Since", "Mon, 26 Jul 1997 05:00:00 GMT");
                 params.put("Cache-Control", "no-cache");
-                params.put("mobilepass-version", BuildConfig.VERSION_NAME);
+                params.put("mobilepass-version", "1.3.5");
                 params.put("mobilepass-memberid", ConfigurationManager.getInstance().getMemberId());
                 params.put("mobilepass-config", ConfigurationManager.getInstance().getConfigurationLog());
 
