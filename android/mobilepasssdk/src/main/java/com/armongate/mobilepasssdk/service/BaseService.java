@@ -151,6 +151,7 @@ public class BaseService {
                 params.put("mobilepass-version", "1.3.7");
                 params.put("mobilepass-memberid", ConfigurationManager.getInstance().getMemberId());
                 params.put("mobilepass-config", ConfigurationManager.getInstance().getConfigurationLog());
+                params.put("mobilepass-provider", ConfigurationManager.getInstance().getServiceProvider());
 
                 return params;
             }

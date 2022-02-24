@@ -6,13 +6,16 @@
 	android:layout_width="match_parent"
 	android:layout_height="match_parent"
 	android:background="#FFFFFF"
-	tools:context=".fragment.MapFragment">
+	tools:context=".fragment.GoogleMapFragment">
 
 	<fragment
+		xmlns:map="http://schemas.android.com/apk/res-auto"
 		android:id="@+id/armon_mp_fragment_google_maps"
 		android:name="com.google.android.gms.maps.SupportMapFragment"
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
+		map:cameraTargetLat="39.912725"
+		map:cameraTargetLng="32.814499"
 		app:layout_constraintBottom_toBottomOf="parent"
 		app:layout_constraintLeft_toLeftOf="parent"
 		app:layout_constraintRight_toRightOf="parent"

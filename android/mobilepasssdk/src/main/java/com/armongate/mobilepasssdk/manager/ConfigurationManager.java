@@ -6,6 +6,7 @@ import com.armongate.mobilepasssdk.constant.ConfigurationDefaults;
 import com.armongate.mobilepasssdk.constant.LogCodes;
 import com.armongate.mobilepasssdk.constant.LogLevel;
 import com.armongate.mobilepasssdk.constant.QRCodeListState;
+import com.armongate.mobilepasssdk.constant.ServiceProviders;
 import com.armongate.mobilepasssdk.constant.StorageKeys;
 import com.armongate.mobilepasssdk.model.Configuration;
 import com.armongate.mobilepasssdk.model.CryptoKeyPair;
@@ -36,6 +37,7 @@ public class ConfigurationManager {
     private static Context          mCurrentContext;
     private static Configuration    mCurrentConfig;
     private static CryptoKeyPair    mCurrentKeyPair;
+    private static String           mCurrentServiceProvider;
 
     private static List<StorageDataUserDetails>                 mUserKeyDetails = new ArrayList<>();
     private static HashMap<String, QRCodeMatch>                 mQRCodes = new HashMap<>();
@@ -58,6 +60,9 @@ public class ConfigurationManager {
     }
 
     public void setConfig(Context context, Configuration data) {
+        DeviceManager deviceInfo = new DeviceManager();
+
+        mCurrentServiceProvider = deviceInfo.getServiceProvider(context);
         mCurrentContext = context;
         mCurrentConfig = data;
     }
@@ -135,6 +140,14 @@ public class ConfigurationManager {
 
     public Boolean waitForBLEEnabled() {
         return mCurrentConfig != null && mCurrentConfig.waitBLEEnabled != null ? mCurrentConfig.waitBLEEnabled : ConfigurationDefaults.WaitBleEnabled;
+    }
+
+    public boolean usingHMS() {
+        return mCurrentServiceProvider.equals(ServiceProviders.Huawei);
+    }
+
+    public String getServiceProvider() {
+        return mCurrentServiceProvider;
     }
 
     public int getLogLevel() {

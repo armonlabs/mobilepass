@@ -11,6 +11,24 @@ android {
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
+    signingConfigs {
+        debug {
+            if (project.hasProperty('DEBUG_KEYSTORE_FILE')) {
+                storeFile file(DEBUG_KEYSTORE_FILE)
+                storePassword DEBUG_KEYSTORE_PASSWORD
+                keyAlias DEBUG_KEYSTORE_ALIAS
+                keyPassword DEBUG_KEY_PASSWORD
+            }
+        }
+        release {
+            if (project.hasProperty('PROD_KEYSTORE_FILE')) {
+                storeFile file(PROD_KEYSTORE_FILE)
+                storePassword PROD_KEYSTORE_PASSWORD
+                keyAlias PROD_KEYSTORE_ALIAS
+                keyPassword PROD_KEY_PASSWORD
+            }
+        }
+    }
     buildTypes {
         release {
             minifyEnabled true
@@ -29,3 +47,5 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.1'
     implementation project(path: ':mobilepasssdk')
 }
+
+apply plugin: 'com.huawei.agconnect'

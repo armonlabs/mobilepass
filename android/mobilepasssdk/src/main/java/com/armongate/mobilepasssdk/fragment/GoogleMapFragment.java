@@ -33,7 +33,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
-public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnMyLocationButtonClickListener, GoogleMap.OnMyLocationClickListener {
+public class GoogleMapFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnMyLocationButtonClickListener, GoogleMap.OnMyLocationClickListener {
 
     private GoogleMap mMap;
     private FusedLocationProviderClient fusedLocationClient;
@@ -50,7 +50,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         mPointRadius = getArguments() != null && getArguments().containsKey("radius") ? getArguments().getInt("radius") : null;
 
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_armon_map, container, false);
+        View view = inflater.inflate(R.layout.fragment_armon_map_gms, container, false);
 
         SupportMapFragment supportMapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.armon_mp_fragment_google_maps);
 

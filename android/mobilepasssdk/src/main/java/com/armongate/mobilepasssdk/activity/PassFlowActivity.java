@@ -1,5 +1,6 @@
 package com.armongate.mobilepasssdk.activity;
 
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -16,7 +17,8 @@ import com.armongate.mobilepasssdk.constant.NeedPermissionType;
 import com.armongate.mobilepasssdk.constant.QRTriggerType;
 import com.armongate.mobilepasssdk.delegate.PassFlowDelegate;
 import com.armongate.mobilepasssdk.fragment.CheckFragment;
-import com.armongate.mobilepasssdk.fragment.MapFragment;
+import com.armongate.mobilepasssdk.fragment.HuaweiMapFragment;
+import com.armongate.mobilepasssdk.fragment.GoogleMapFragment;
 import com.armongate.mobilepasssdk.fragment.PermissionFragment;
 import com.armongate.mobilepasssdk.fragment.QRCodeReaderFragment;
 import com.armongate.mobilepasssdk.fragment.StatusFragment;
@@ -26,16 +28,23 @@ import com.armongate.mobilepasssdk.manager.LogManager;
 import com.armongate.mobilepasssdk.manager.SettingsManager;
 import com.armongate.mobilepasssdk.model.QRCodeContent;
 import com.google.gson.Gson;
+import com.huawei.hms.hmsscankit.ScanUtil;
+import com.huawei.hms.ml.scan.HmsScan;
+import com.huawei.hms.ml.scan.HmsScanAnalyzerOptions;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class PassFlowActivity extends AppCompatActivity implements PassFlowDelegate {
 
     public PassFlowActivity() {
         super(R.layout.activity_armon_pass_flow);
     }
+
+    public static int REQUEST_HMS_SCAN_KIT = 90001;
 
     public static final String ACTION_BLUETOOTH    = "bluetooth";
     public static final String ACTION_REMOTEACCESS = "remoteAccess";
@@ -57,10 +66,21 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
         DelegateManager.getInstance().setCurrentPassFlowDelegate(this);
 
         if (savedInstanceState == null) {
-            getSupportFragmentManager().beginTransaction()
-                    .setReorderingAllowed(true)
-                    .add(R.id.armon_mp_fragment_container, SettingsManager.getInstance().checkCameraPermission(getApplicationContext(), this) ? QRCodeReaderFragment.class : CheckFragment.class, null)
-                    .commit();
+            if (ConfigurationManager.getInstance().usingHMS()) {
+                if (SettingsManager.getInstance().checkCameraPermission(getApplicationContext(), this)) {
+                    scanQRCodesForHMS();
+                } else {
+                    getSupportFragmentManager().beginTransaction()
+                            .setReorderingAllowed(true)
+                            .add(R.id.armon_mp_fragment_container, CheckFragment.class, null)
+                            .commit();
+                }
+            } else {
+                getSupportFragmentManager().beginTransaction()
+                        .setReorderingAllowed(true)
+                        .add(R.id.armon_mp_fragment_container, SettingsManager.getInstance().checkCameraPermission(getApplicationContext(), this) ? QRCodeReaderFragment.class : CheckFragment.class, null)
+                        .commit();
+            }
         }
 
         setLocale(ConfigurationManager.getInstance().getLanguage());
@@ -76,13 +96,63 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
     }
 
     @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == REQUEST_HMS_SCAN_KIT) {
+            assert data != null;
+            HmsScan obj = data.getParcelableExtra(ScanUtil.RESULT);
+
+            if ( obj != null) {
+                String qrcodeContent = obj.getOriginalValue();
+                Pattern sPattern = Pattern.compile("https://(app|sdk).armongate.com/(rq|bd|o|s)/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})(/[0-2])?$");
+
+                Matcher matcher = sPattern.matcher(qrcodeContent);
+
+                if (matcher.matches()) {
+                    String prefix       = matcher.group(2);
+                    String uuid         = matcher.group(3);
+                    String direction    = matcher.group(4);
+
+                    String parsedContent = (prefix != null ? prefix : "") + "/" + (uuid != null ? uuid : "");
+
+                    if (prefix != null && prefix.equals("rq")) {
+                        parsedContent += (direction != null ? direction : "");
+                    }
+
+                    QRCodeContent activeQRCodeContent = ConfigurationManager.getInstance().getQRCodeContent(parsedContent);
+
+                    if (activeQRCodeContent == null) {
+                        LogManager.getInstance().warn("QR code reader could not find matching content for " + parsedContent, LogCodes.PASSFLOW_QRCODE_READER_NO_MATCHING);
+                        DelegateManager.getInstance().onCancelled(true);
+                    } else  {
+                        if (activeQRCodeContent.valid) {
+                            DelegateManager.getInstance().flowQRCodeFound(parsedContent);
+                        } else {
+                            LogManager.getInstance().warn("QR code reader found content for " + parsedContent + " but it is invalid", LogCodes.PASSFLOW_QRCODE_READER_INVALID_CONTENT);
+                            DelegateManager.getInstance().onCancelled(true);
+                        }
+                    }
+                } else {
+                    LogManager.getInstance().warn("QR code reader found unknown format > " + qrcodeContent, LogCodes.PASSFLOW_QRCODE_READER_INVALID_FORMAT);
+                    DelegateManager.getInstance().onCancelled(true);
+                }
+            }
+        }
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
 
         if (activePermissionCode > 0) {
             if (activePermissionCode == SettingsManager.REQUEST_CODE_CAMERA) {
                 if (activePermissionGranted) {
-                    replaceFragment(QRCodeReaderFragment.class, null);
+                    if (ConfigurationManager.getInstance().usingHMS()) {
+                        scanQRCodesForHMS();
+                    } else {
+                        replaceFragment(QRCodeReaderFragment.class, null);
+                    }
                 } else {
                     showPermissionMessage(NeedPermissionType.NEED_PERMISSION_CAMERA);
                 }
@@ -103,6 +173,11 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
             activePermissionCode = -1;
             activePermissionGranted = false;
         }
+    }
+
+    private void scanQRCodesForHMS() {
+        HmsScanAnalyzerOptions options = new HmsScanAnalyzerOptions.Creator().setHmsScanTypes(HmsScan.QRCODE_SCAN_TYPE).create();
+        ScanUtil.startScan(this, REQUEST_HMS_SCAN_KIT, options);
     }
 
     private void setLocale(String languageCode) {
@@ -293,7 +368,11 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
                 }
             }
 
-            replaceFragment(MapFragment.class, bundle);
+            if (ConfigurationManager.getInstance().usingHMS()) {
+                replaceFragment(HuaweiMapFragment.class, bundle);
+            } else {
+                replaceFragment(GoogleMapFragment.class, bundle);
+            }
         } else {
             Gson gson = new Gson();
             String deviceDetails = activeQRCodeContent != null ? gson.toJson(activeQRCodeContent.terminals) : "";
