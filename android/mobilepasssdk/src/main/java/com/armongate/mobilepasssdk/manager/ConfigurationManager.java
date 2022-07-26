@@ -142,6 +142,10 @@ public class ConfigurationManager {
         return mCurrentConfig != null && mCurrentConfig.waitBLEEnabled != null ? mCurrentConfig.waitBLEEnabled : ConfigurationDefaults.WaitBleEnabled;
     }
 
+    public Boolean closeWhenInvalidQRCode() {
+        return mCurrentConfig != null && mCurrentConfig.closeWhenInvalidQRCode != null ? mCurrentConfig.closeWhenInvalidQRCode : ConfigurationDefaults.CloseWhenInvalidQRCode;
+    }
+
     public boolean usingHMS() {
         return mCurrentServiceProvider.equals(ServiceProviders.Huawei);
     }

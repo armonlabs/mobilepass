@@ -84,6 +84,14 @@ class DelegateManager: NSObject {
     func flowQRCodeFound(code: String) {
         passFlowDelegate?.onQRCodeFound(code: code)
     }
+    
+    func flowCloseWithInvalidQRCode(code: String) {
+        DispatchQueue.main.async {
+            self.mobilePassDelegate?.onInvalidQRCode(content: code)
+        }
+        
+        endFlow(dismiss: true, cancelReason: CancelReason.INVALID_QR_CODE)
+    }
 
     func flowNextActionRequired() {
         if (!isPassFlowCompleted) {

@@ -115,6 +115,10 @@ class ConfigurationManager: NSObject {
         return mCurrentConfig?.waitBLEEnabled ?? ConfigurationDefaults.WaitBleEnabled
     }
     
+    public func closeWhenInvalidQRCode() -> Bool {
+        return mCurrentConfig?.closeWhenInvalidQRCode ?? ConfigurationDefaults.CloseWhenInvalidQRCode
+    }
+    
     public func getLogLevel() -> Int {
         return mCurrentConfig?.logLevel?.rawValue ?? LogLevel.Info.rawValue
     }

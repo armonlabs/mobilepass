@@ -97,6 +97,14 @@ public class DelegateManager {
         }
     }
 
+    public void flowCloseWithInvalidQRCode(String code) {
+        if (mCurrentMobilePassDelegate != null) {
+            mCurrentMobilePassDelegate.onInvalidQRCode(code);
+        }
+
+        endFlow(true, CancelReason.INVALID_QR_CODE);
+    }
+
     public void flowNextActionRequired() {
         if (mCurrentPassFlowDelegate != null) {
             mCurrentPassFlowDelegate.onNextActionRequired();

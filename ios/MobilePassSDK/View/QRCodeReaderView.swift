@@ -8,16 +8,31 @@
 import SwiftUI
 import AVFoundation
 
-public enum ScanError: Error {
-    case addInputFailed, addOutputFailed, noMatching, invalidFormat, invalidContent
+enum ScanResult: Int {
+    case success            = 1
+    case addInputFailed     = 2
+    case addOutputFailed    = 3
+    case noMatching         = 4
+    case invalidFormat      = 5
+    case invalidContent     = 6
+}
+
+public struct QRCodeScanResult {
+    var code:   String
+    var result: ScanResult
+    
+    init(code: String, result: ScanResult) {
+        self.code   = code
+        self.result = result
+    }
 }
 
 @available(iOS 13.0, *)
 public struct QRCodeReaderView: UIViewControllerRepresentable {
     private let configScanInterval: Double = 2.0
-    public var completion: (Result<String, ScanError>) -> Void
+    public var completion: (QRCodeScanResult) -> Void
 
-    public init(completion: @escaping (Result<String, ScanError>) -> Void) {
+    public init(completion: @escaping (QRCodeScanResult) -> Void) {
         self.completion = completion
     }
 
@@ -100,28 +115,28 @@ public class QRCodeReaderCoordinator: NSObject, AVCaptureMetadataOutputObjectsDe
                     LogManager.shared.warn(message: "QR code reader could not find matching content for \(qrCodeContent)", code: LogCodes.PASSFLOW_QRCODE_READER_NO_MATCHING)
                     
                     isFound = false
-                    parent.completion(.failure(.noMatching))
+                    parent.completion(QRCodeScanResult(code: stringValue, result: .noMatching))
                 } else {
                     if (activeQRCodeContent!.valid) {
-                        parent.completion(.success(qrCodeContent))
+                        parent.completion(QRCodeScanResult(code: qrCodeContent, result: .success))
                     } else {
                         LogManager.shared.warn(message: "QR code reader found content for \(qrCodeContent) but it is invalid", code: LogCodes.PASSFLOW_QRCODE_READER_INVALID_CONTENT)
                         
                         isFound = false
-                        parent.completion(.failure(.invalidContent))
+                        parent.completion(QRCodeScanResult(code: stringValue, result: .invalidContent))
                     }
                 }
             } else {
                 LogManager.shared.warn(message: "QR code reader found unknown format > \(stringValue)", code: LogCodes.PASSFLOW_QRCODE_READER_INVALID_FORMAT)
                 
                 isFound = false
-                parent.completion(.failure(.invalidFormat))
+                parent.completion(QRCodeScanResult(code: stringValue, result: .invalidFormat))
             }
         }
     }
 
-    func didFail(reason: ScanError) {
-        parent.completion(.failure(reason))
+    func didFail(result: ScanResult) {
+        parent.completion(QRCodeScanResult(code: "", result: result))
     }
 }
 
@@ -156,7 +171,7 @@ public class QRCodeReaderViewController: UIViewController, QRCodeScannerDelegate
         if (captureSession.canAddInput(videoInput)) {
             captureSession.addInput(videoInput)
         } else {
-            delegate?.didFail(reason: .addInputFailed)
+            delegate?.didFail(result: .addInputFailed)
             return
         }
 
@@ -168,7 +183,7 @@ public class QRCodeReaderViewController: UIViewController, QRCodeScannerDelegate
             metadataOutput.setMetadataObjectsDelegate(delegate, queue: DispatchQueue.main)
             metadataOutput.metadataObjectTypes = [.qr]
         } else {
-            delegate?.didFail(reason: .addOutputFailed)
+            delegate?.didFail(result: .addOutputFailed)
             return
         }
     }

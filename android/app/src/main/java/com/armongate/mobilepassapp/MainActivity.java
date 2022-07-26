@@ -42,12 +42,13 @@ public class MainActivity extends AppCompatActivity implements MobilePassDelegat
             config.serverUrl = "https://qr.marsathletic.com";
             config.language = "tr";
             config.waitBLEEnabled = true;
+            config.closeWhenInvalidQRCode = true;
             config.connectionTimeout = 10;
             config.listener = this;
             config.logLevel = LogLevel.INFO;
 
             passer = new MobilePass(this, config);
-            // passer.setDelegate(this);
+            passer.setDelegate(this);
 
             passer.triggerQRCodeRead();
         }
@@ -100,5 +101,10 @@ public class MainActivity extends AppCompatActivity implements MobilePassDelegat
     @Override
     public void onLogReceived(LogItem log) {
         // Log.i("MobilePass", "Log Received >> " + log.level + " | " + log.message);
+    }
+
+    @Override
+    public void onInvalidQRCode(String content) {
+        Log.i("MobilePass", "Main - Invalid QR Code received: " + content);
     }
 }

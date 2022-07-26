@@ -7,4 +7,5 @@ public interface MobilePassDelegate {
     void onPassCompleted(boolean succeed);
     void onQRCodeListStateChanged(int state);
     void onLogReceived(LogItem log);
+    void onInvalidQRCode(String content);
 }

@@ -32,6 +32,9 @@ public class Configuration {
     /** Auto close timeout for screen after pass completed, nil means stay opened */
     var autoCloseTimeout: Int?
     
+    /** Close QR code scanner and give information if content is invalid to pass | default: false */
+    var closeWhenInvalidQRCode: Bool?
+    
     /**
         Flag to decide action for disabled Bluetooth state
         "true" means wait user to enable Bluetooth
@@ -47,18 +50,19 @@ public class Configuration {
     /** Optional listener instance for MobilePass SDK callbacks */
     var delegate: MobilePassDelegate?
     
-    public init(memberId: String, serverUrl: String, token: String?, language: String?, qrCodeMessage: String?, allowMockLocation: Bool?, connectionTimeout: Int?, autoCloseTimeout: Int?, waitBLEEnabled: Bool?, logLevel: LogLevel? = nil, delegate: MobilePassDelegate? = nil) {
-        self.memberId           = memberId
-        self.serverUrl          = serverUrl
-        self.qrCodeMessage      = qrCodeMessage
-        self.token              = token
-        self.language           = language
-        self.allowMockLocation  = allowMockLocation
-        self.connectionTimeout  = connectionTimeout
-        self.autoCloseTimeout   = autoCloseTimeout
-        self.waitBLEEnabled     = waitBLEEnabled
-        self.logLevel           = logLevel
-        self.delegate           = delegate
+    public init(memberId: String, serverUrl: String, token: String?, language: String?, qrCodeMessage: String?, allowMockLocation: Bool?, connectionTimeout: Int?, autoCloseTimeout: Int?, waitBLEEnabled: Bool?, closeWhenInvalidQRCode: Bool?, logLevel: LogLevel? = nil, delegate: MobilePassDelegate? = nil) {
+        self.memberId               = memberId
+        self.serverUrl              = serverUrl
+        self.qrCodeMessage          = qrCodeMessage
+        self.token                  = token
+        self.language               = language
+        self.allowMockLocation      = allowMockLocation
+        self.connectionTimeout      = connectionTimeout
+        self.autoCloseTimeout       = autoCloseTimeout
+        self.waitBLEEnabled         = waitBLEEnabled
+        self.closeWhenInvalidQRCode = closeWhenInvalidQRCode
+        self.logLevel               = logLevel
+        self.delegate               = delegate
     }
     
     public func getLog() -> String {
