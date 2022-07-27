@@ -81,7 +81,7 @@ struct ScanQRCodeView: View, QRCodeListStateDelegate {
                     if (result.result == .success) {
                         DelegateManager.shared.flowQRCodeFound(code: result.code)
                     } else {
-                        if (ConfigurationManager.shared.closeWhenInvalidQRCode()) {
+                        if (ConfigurationManager.shared.closeWhenInvalidQRCode() && result.result == .invalidFormat) {
                             DelegateManager.shared.flowCloseWithInvalidQRCode(code: result.code)
                         } else {
                             stateModel.setInvalid(isValidationError: result.result == .invalidContent)

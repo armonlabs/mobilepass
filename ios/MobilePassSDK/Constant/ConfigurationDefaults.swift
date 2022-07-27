@@ -13,4 +13,5 @@ struct ConfigurationDefaults {
     static let CloseWhenInvalidQRCode   = false
     static let BLEConnectionTimeout     = 5
     static let Language                 = "en"
+    static let CurrentListVersion       = "1"
 }

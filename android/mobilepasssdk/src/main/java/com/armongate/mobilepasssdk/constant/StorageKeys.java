@@ -7,4 +7,5 @@ public class StorageKeys {
     public static final String LIST_QRCODES         = "armon_mobilepass_sdk_list_qrcodes";
     public static final String LIST_ACCESSPOINTS    = "armon_mobilepass_sdk_list_accesspoints";
     public static final String LIST_SYNC_DATE       = "armon_mobilepass_sdk_list_sync_date";
+    public static final String LIST_VERSION         = "armon_mobilepass_sdk_list_version";
 }

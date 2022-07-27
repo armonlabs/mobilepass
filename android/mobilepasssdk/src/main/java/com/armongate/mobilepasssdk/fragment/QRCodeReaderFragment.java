@@ -202,7 +202,7 @@ public class QRCodeReaderFragment extends Fragment implements SurfaceHolder.Call
                         LogManager.getInstance().warn("QR code reader could not find matching content for " + parsedContent, LogCodes.PASSFLOW_QRCODE_READER_NO_MATCHING);
 
                         isQRFound = false;
-                        setInvalid(code.displayValue,false);
+                        setInvalid(code.displayValue,false, false);
                     } else  {
                         if (activeQRCodeContent.valid) {
                             DelegateManager.getInstance().flowQRCodeFound(parsedContent);
@@ -210,14 +210,14 @@ public class QRCodeReaderFragment extends Fragment implements SurfaceHolder.Call
                             LogManager.getInstance().warn("QR code reader found content for " + parsedContent + " but it is invalid", LogCodes.PASSFLOW_QRCODE_READER_INVALID_CONTENT);
 
                             isQRFound = false;
-                            setInvalid(code.displayValue,true);
+                            setInvalid(code.displayValue,true, false);
                         }
                     }
                 } else {
                     LogManager.getInstance().warn("QR code reader found unknown format > " + code.displayValue, LogCodes.PASSFLOW_QRCODE_READER_INVALID_FORMAT);
 
                     isQRFound = false;
-                    setInvalid(code.displayValue, false);
+                    setInvalid(code.displayValue, false, true);
                 }
             }
         }
@@ -251,8 +251,8 @@ public class QRCodeReaderFragment extends Fragment implements SurfaceHolder.Call
         }
     }
 
-    private void setInvalid(String code, boolean isInvalidContent) {
-        if (ConfigurationManager.getInstance().closeWhenInvalidQRCode()) {
+    private void setInvalid(String code, boolean isInvalidContent, boolean isInvalidFormat) {
+        if (ConfigurationManager.getInstance().closeWhenInvalidQRCode() && isInvalidFormat) {
             DelegateManager.getInstance().flowCloseWithInvalidQRCode(code);
         } else {
             setMaskColor(isInvalidContent ? R.color.qrcode_mask_content_failure : R.color.qrcode_mask_invalid);
