@@ -89,7 +89,7 @@ public class ConfigurationManager {
             ResponseAccessPointListItem details = mAccessPoints.get(match.accessPointId);
 
             if (details != null) {
-                return new QRCodeContent(details.i, match.qrCode, details.t, details.g);
+                return new QRCodeContent(details.i, match.qrCode, details.t, details.g, details.c);
             }
         }
 

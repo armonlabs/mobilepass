@@ -17,6 +17,7 @@ import com.armongate.mobilepasssdk.constant.LogLevel;
 import com.armongate.mobilepasssdk.delegate.MobilePassDelegate;
 import com.armongate.mobilepasssdk.model.Configuration;
 import com.armongate.mobilepasssdk.model.LogItem;
+import com.armongate.mobilepasssdk.model.PassResult;
 
 
 public class MainActivity extends AppCompatActivity implements MobilePassDelegate {
@@ -89,8 +90,8 @@ public class MainActivity extends AppCompatActivity implements MobilePassDelegat
     }
 
     @Override
-    public void onPassCompleted(boolean succeed) {
-        Log.i("MobilePass", "Main - Pass Completed, Result: " + succeed);
+    public void onPassCompleted(PassResult result) {
+        Log.i("MobilePass", "Main - Pass Completed, Result: " + result.success);
     }
 
     @Override

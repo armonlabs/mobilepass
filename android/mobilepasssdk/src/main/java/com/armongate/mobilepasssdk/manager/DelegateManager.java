@@ -8,6 +8,7 @@ import com.armongate.mobilepasssdk.delegate.MobilePassDelegate;
 import com.armongate.mobilepasssdk.delegate.PassFlowDelegate;
 import com.armongate.mobilepasssdk.delegate.QRCodeListStateDelegate;
 import com.armongate.mobilepasssdk.model.LogItem;
+import com.armongate.mobilepasssdk.model.PassResult;
 
 public class DelegateManager {
 
@@ -59,11 +60,11 @@ public class DelegateManager {
         mDismissedManual = false;
     }
 
-    public void onCompleted(boolean succeed) {
+    public void onCompleted(boolean success, Integer direction, String clubId, String clubName) {
         mFlowCompleted = true;
 
         if (mCurrentMobilePassDelegate != null) {
-            mCurrentMobilePassDelegate.onPassCompleted(succeed);
+            mCurrentMobilePassDelegate.onPassCompleted(new PassResult(success, direction, clubId, clubName));
         }
 
         startAutoCloseTimer();

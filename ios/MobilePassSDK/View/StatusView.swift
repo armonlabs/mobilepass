@@ -15,6 +15,7 @@ public enum ActionState {
 public struct ActionConfig: Codable {
     var currentAction:  String
     var devices:        [ResponseAccessPointListTerminal]
+    var clubInfo:       ResponseAccessPointListClubInfo?
     var qrCode:         ResponseAccessPointListQRCode?
     var nextAction:     String?
 }
@@ -120,7 +121,7 @@ struct StatusView: View {
         AccessPointService().remoteOpen(request: RequestAccess(q: currentConfig!.qrCode!.i!), completion: { (result) in
             if case .success(_) = result {
                 self.viewModel.update(message: "text_status_message_succeed", icon: "success")
-                DelegateManager.shared.onCompleted(succeed: true)
+                onPassCompleted(success: true)
                 
                 DelegateManager.shared.flowConnectionStateChanged(isActive: false)
             } else if case .failure(let error) = result {
@@ -219,7 +220,7 @@ struct StatusView: View {
         
         if (state.state == .connected) {
             self.viewModel.update(message: "text_status_message_succeed", icon: "success")
-            DelegateManager.shared.onCompleted(succeed: true)
+            onPassCompleted(success: true)
             self.onBluetoothConnectionSucceed()
         } else if (state.state == .failed
                     || state.state == .notFound
@@ -266,11 +267,11 @@ struct StatusView: View {
             } else {
                 LogManager.shared.warn(message: "Bluetooth connection failed and next action has invalid value", code: LogCodes.PASSFLOW_ACTION_INVALID_NEXT_ACTION)
                 self.viewModel.update(message: "text_status_message_failed", icon: "error")
-                DelegateManager.shared.onCompleted(succeed: false)
+                onPassCompleted(success: false)
             }
         } else {
             self.viewModel.update(message: message != nil ? message! : "text_status_message_failed", icon: "error")
-            DelegateManager.shared.onCompleted(succeed: false)
+            onPassCompleted(success: false)
         }
     }
     
@@ -302,14 +303,19 @@ struct StatusView: View {
             }
             
             self.viewModel.update(message: (message == nil || message!.isEmpty) ? failMessage : message!, icon: "error")
-            DelegateManager.shared.onCompleted(succeed: false)
+            onPassCompleted(success: false)
         } else {
             self.viewModel.update(message: (message == nil || message!.isEmpty) ? "text_status_message_failed" : message!, icon: "error")
-            DelegateManager.shared.onCompleted(succeed: false)
+            onPassCompleted(success: false)
         }
     }
     
-    
+    private func onPassCompleted(success: Bool) {
+        DelegateManager.shared.onCompleted(success: success,
+                                           direction: currentConfig?.qrCode?.d,
+                                           clubId: currentConfig?.clubInfo?.i,
+                                           clubName: currentConfig?.clubInfo?.n)
+    }
 }
 
 @available(iOS 13.0.0, *)

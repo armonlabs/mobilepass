@@ -7,7 +7,7 @@
 
 public protocol MobilePassDelegate {
     func onPassCancelled(reason: Int)
-    func onPassCompleted(succeed: Bool)
+    func onPassCompleted(result: PassResult)
     func onQRCodeListStateChanged(state: Int)
     func onLogReceived(log: LogItem)
     func onInvalidQRCode(content: String)

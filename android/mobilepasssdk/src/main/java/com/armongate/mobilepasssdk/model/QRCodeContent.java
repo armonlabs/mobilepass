@@ -4,6 +4,7 @@ import androidx.annotation.Nullable;
 
 import com.armongate.mobilepasssdk.constant.LogCodes;
 import com.armongate.mobilepasssdk.manager.LogManager;
+import com.armongate.mobilepasssdk.model.response.ResponseAccessPointListClubInfo;
 import com.armongate.mobilepasssdk.model.response.ResponseAccessPointListGeoLocation;
 import com.armongate.mobilepasssdk.model.response.ResponseAccessPointListQRCode;
 import com.armongate.mobilepasssdk.model.response.ResponseAccessPointListTerminal;
@@ -17,13 +18,15 @@ public class QRCodeContent {
     public @Nullable ResponseAccessPointListTerminal[]  terminals;
     public @Nullable ResponseAccessPointListQRCode      qrCode;
     public @Nullable ResponseAccessPointListGeoLocation geoLocation;
+    public @Nullable ResponseAccessPointListClubInfo    clubInfo;
     public Boolean                                      valid;
 
-    public QRCodeContent(@Nullable String accessPointId, @Nullable ResponseAccessPointListQRCode qrCode, @Nullable ResponseAccessPointListTerminal[] terminals, @Nullable ResponseAccessPointListGeoLocation geoLocation) {
+    public QRCodeContent(@Nullable String accessPointId, @Nullable ResponseAccessPointListQRCode qrCode, @Nullable ResponseAccessPointListTerminal[] terminals, @Nullable ResponseAccessPointListGeoLocation geoLocation, @Nullable ResponseAccessPointListClubInfo clubInfo) {
         this.accessPointId  = accessPointId;
         this.terminals      = terminals;
         this.qrCode         = qrCode;
         this.geoLocation    = geoLocation;
+        this.clubInfo       = clubInfo;
 
         this.valid = validateQRCodeContent();
     }

@@ -18,7 +18,9 @@ struct ResponseAccessPointListItem: Codable {
     var t: [ResponseAccessPointListTerminal]?
     /** GeoLocation */
     var g: ResponseAccessPointListGeoLocation?
-    
+    /** Club Info */
+    var c: ResponseAccessPointListClubInfo?
+        
     /** QR Code Ids | Only for mapping on storage */
     var d: [String]?
 }

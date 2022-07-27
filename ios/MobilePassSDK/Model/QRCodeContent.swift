@@ -12,13 +12,15 @@ struct QRCodeContent: Codable {
     var terminals:      [ResponseAccessPointListTerminal]?
     var qrCode:         ResponseAccessPointListQRCode?
     var geoLocation:    ResponseAccessPointListGeoLocation?
+    var clubInfo:       ResponseAccessPointListClubInfo?
     var valid:          Bool = false
     
-    init(accessPointId: String?, terminals: [ResponseAccessPointListTerminal]?, qrCode: ResponseAccessPointListQRCode?, geoLocation: ResponseAccessPointListGeoLocation?) {
+    init(accessPointId: String?, terminals: [ResponseAccessPointListTerminal]?, qrCode: ResponseAccessPointListQRCode?, geoLocation: ResponseAccessPointListGeoLocation?, clubInfo: ResponseAccessPointListClubInfo?) {
         self.accessPointId  = accessPointId
         self.terminals      = terminals
         self.qrCode         = qrCode
         self.geoLocation    = geoLocation
+        self.clubInfo       = clubInfo
         
         self.valid = self.validateQRCodeContent()
     }
