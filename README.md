@@ -50,7 +50,7 @@ allprojects {
 
 ```
 dependencies {
-	implementation 'com.github.armonlabs:mobilepass:1.3.9'
+	implementation 'com.github.armonlabs:mobilepass:1.4.0'
 }
 ```
 
@@ -346,16 +346,29 @@ Details of received log item
 | time      | Create time of log item                       | Date                  | Yes      |
 
 <br />
+
+### `PassResult`
+
+Details of received pass result event
+
+| Parameter | Description          | Type                    | Required |
+| --------- | -------------------- | ----------------------- | -------- |
+| success   | Result of pass       | Bool                    | Yes      |
+| direction | Pass direction       | [Direction](#Direction) | No       |
+| clubId    | Id of matched club   | String                  | No       |
+| clubName  | Name of matched club | String                  | No       |
+
 <br />
 
 ### **Events**
 
 | Name                      | Description                                         | Type                          |
 | ------------------------- | --------------------------------------------------- | ----------------------------- |
-| onPassCompleted           | Passing operation completed                         | boolean                       |
+| onPassCompleted           | Passing operation completed                         | [PassResult](#PassResult)     |
 | onPassCancelled           | Operation has been cancelled with given reason code | [CancelReason](#CancelReason) |
 | onQRCodeListStateChanged  | QR code definition list updated                     | [QRCodeState](#QRCodeState)   |
 | onLogReceived             | Receive log items                                   | [LogItem](#LogItem)           |
+| onInvalidQRCode           | QR code content when invalid format found           | String                        |
 
 <br />
 <br />
@@ -394,6 +407,14 @@ Details of received log item
 | Error | 4     |
 
 <br />
+
+### `Direction`
+
+| Name     | Value |
+| -------- | ----- |
+| All      | 0     |
+| Entrance | 1     |
+| Exit     | 2     |
 
 ### `LogCode`
 

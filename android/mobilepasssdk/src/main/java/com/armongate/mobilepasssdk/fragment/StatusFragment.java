@@ -28,6 +28,7 @@ import com.armongate.mobilepasssdk.model.DeviceCapability;
 import com.armongate.mobilepasssdk.model.DeviceConnectionStatus;
 import com.armongate.mobilepasssdk.model.WaitingStatusUpdate;
 import com.armongate.mobilepasssdk.model.request.RequestAccess;
+import com.armongate.mobilepasssdk.model.response.ResponseAccessPointListClubInfo;
 import com.armongate.mobilepasssdk.model.response.ResponseAccessPointListQRCode;
 import com.armongate.mobilepasssdk.model.response.ResponseAccessPointListTerminal;
 import com.armongate.mobilepasssdk.service.AccessPointService;
@@ -44,6 +45,7 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
     private String  mNextAction;
     private View    mCurrentView;
     private ResponseAccessPointListQRCode           mQRCode;
+    private ResponseAccessPointListClubInfo         mClubInfo;
     private List<ResponseAccessPointListTerminal>   mDevices;
 
     private Handler mTimerHandler;
@@ -65,6 +67,9 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
         String qrCodesJson = getArguments() != null && getArguments().containsKey("qrCode") ? getArguments().getString("qrCode") : "";
         Type typeQRCodeList = new TypeToken<ResponseAccessPointListQRCode>(){}.getType();
 
+        String clubInfoJson = getArguments() != null && getArguments().containsKey("clubInfo") ? getArguments().getString("clubInfo") : "";
+        Type typeClubInfo = new TypeToken<ResponseAccessPointListClubInfo>(){}.getType();
+
         if (devicesJson != null && !devicesJson.isEmpty()) {
             mDevices = gson.fromJson(devicesJson, typeDeviceList);
         } else {
@@ -75,6 +80,12 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
             mQRCode = gson.fromJson(qrCodesJson, typeQRCodeList);
         } else {
             mQRCode = null;
+        }
+
+        if (clubInfoJson != null && !clubInfoJson.isEmpty()) {
+            mClubInfo = gson.fromJson(clubInfoJson, typeClubInfo);
+        } else {
+            mClubInfo = null;
         }
 
         mActionType = getArguments() != null && getArguments().containsKey("type") ? getArguments().getString("type") : "";
@@ -150,7 +161,7 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
             @Override
             public void onCompleted(Object result) {
                 updateStatus( R.string.text_status_message_succeed,"", R.drawable.success);
-                DelegateManager.getInstance().onCompleted(true);
+                onPassCompleted(true);
 
                 DelegateManager.getInstance().flowConnectionStateChanged(false);
             }
@@ -257,11 +268,11 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
             } else {
                 LogManager.getInstance().warn("Bluetooth connection failed and next action has invalid value", LogCodes.PASSFLOW_ACTION_INVALID_NEXT_ACTION);
                 updateStatus(R.string.text_status_message_failed,"", R.drawable.error);
-                DelegateManager.getInstance().onCompleted(false);
+                onPassCompleted(false);
             }
         } else {
             updateStatus(messageId != -1 ? messageId :  R.string.text_status_message_failed, "", R.drawable.error);
-            DelegateManager.getInstance().onCompleted(false);
+            onPassCompleted(false);
         }
     }
 
@@ -289,7 +300,7 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
                 updateStatus(-1, message, R.drawable.error);
             }
 
-            DelegateManager.getInstance().onCompleted(false);
+            onPassCompleted(false);
         } else {
             if (message == null || message.isEmpty()) {
                 updateStatus(messageId != -1 ? messageId : R.string.text_status_message_failed, "", R.drawable.error);
@@ -297,7 +308,15 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
                 updateStatus(-1, message, R.drawable.error);
             }
 
-            DelegateManager.getInstance().onCompleted(false);
+            onPassCompleted(false);
+        }
+    }
+
+    private void onPassCompleted(boolean success) {
+        if (mQRCode != null && mClubInfo != null) {
+            DelegateManager.getInstance().onCompleted(success, mQRCode.d, mClubInfo.i, mClubInfo.n);
+        } else {
+            DelegateManager.getInstance().onCompleted(success, null, null, null);
         }
     }
 
@@ -335,7 +354,7 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
 
         if (state.state == DeviceConnectionStatus.ConnectionState.CONNECTED) {
             updateStatus( R.string.text_status_message_succeed, "", R.drawable.success);
-            DelegateManager.getInstance().onCompleted(true);
+            onPassCompleted(true);
 
             onBluetoothConnectionSucceed();
         } else if (state.state == DeviceConnectionStatus.ConnectionState.FAILED

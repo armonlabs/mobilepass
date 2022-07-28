@@ -64,10 +64,10 @@ class DelegateManager: NSObject {
         return qrCodeListState != QRCodeListState.INITIALIZING && qrCodeListState != QRCodeListState.SYNCING
     }
     
-    func onCompleted(succeed: Bool) {
+    func onCompleted(success: Bool, direction: Direction?, clubId: String?, clubName: String?) {
         isPassFlowCompleted = true
         DispatchQueue.main.async {
-            self.mobilePassDelegate?.onPassCompleted(succeed: succeed)
+            self.mobilePassDelegate?.onPassCompleted(result: PassResult(success: success, direction: direction, clubId: clubId, clubName: clubName))
         }
         
         startAutoCloseTimer()
@@ -83,6 +83,14 @@ class DelegateManager: NSObject {
 
     func flowQRCodeFound(code: String) {
         passFlowDelegate?.onQRCodeFound(code: code)
+    }
+    
+    func flowCloseWithInvalidQRCode(code: String) {
+        DispatchQueue.main.async {
+            self.mobilePassDelegate?.onInvalidQRCode(content: code)
+        }
+        
+        endFlow(dismiss: true, cancelReason: CancelReason.INVALID_QR_CODE)
     }
 
     func flowNextActionRequired() {

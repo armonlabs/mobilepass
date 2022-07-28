@@ -59,6 +59,7 @@ struct PassFlowView: View, PassFlowDelegate {
                 } else if viewModel.currentView == FlowViewType.action {
                     StatusView(config: ActionConfig(currentAction: viewModel.actionCurrent,
                                                     devices: viewModel.activeQRCodeContent?.terminals ?? [],
+                                                    clubInfo: viewModel.activeQRCodeContent?.clubInfo,
                                                     qrCode: viewModel.activeQRCodeContent?.qrCode,
                                                     nextAction: viewModel.actionList.count > 0 ? viewModel.actionList.first : nil))
                 } else {

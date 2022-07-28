@@ -78,10 +78,14 @@ struct ScanQRCodeView: View, QRCodeListStateDelegate {
         ZStack {
             QRCodeReaderView(
                 completion: { result in
-                    if case let .success(code) = result {
-                        DelegateManager.shared.flowQRCodeFound(code: code)
-                    } else if case let .failure(reason) = result {
-                        stateModel.setInvalid(isValidationError: reason == .invalidContent)
+                    if (result.result == .success) {
+                        DelegateManager.shared.flowQRCodeFound(code: result.code)
+                    } else {
+                        if (ConfigurationManager.shared.closeWhenInvalidQRCode() && result.result == .invalidFormat) {
+                            DelegateManager.shared.flowCloseWithInvalidQRCode(code: result.code)
+                        } else {
+                            stateModel.setInvalid(isValidationError: result.result == .invalidContent)
+                        }
                     }
                 }
             )

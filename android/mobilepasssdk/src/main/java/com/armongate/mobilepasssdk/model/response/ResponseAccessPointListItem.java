@@ -13,6 +13,8 @@ public class ResponseAccessPointListItem {
     public @Nullable ResponseAccessPointListTerminal[]  t;
     /** GeoLocation */
     public @Nullable ResponseAccessPointListGeoLocation g;
+    /** Club Info */
+    public @Nullable ResponseAccessPointListClubInfo    c;
 
     /** QR Code Ids | Only for mapping on storage */
     public String[] d;

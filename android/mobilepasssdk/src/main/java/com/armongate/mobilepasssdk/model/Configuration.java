@@ -65,6 +65,13 @@ public class Configuration {
     public @Nullable Boolean waitBLEEnabled;
 
     /**
+     * Close QR code scanner and give information if content is invalid to pass
+     *
+     * default: false
+     */
+    public @Nullable Boolean closeWhenInvalidQRCode;
+
+    /**
      * Minimum level to be informed about logs
      *
      * default: LogLevel.INFO (2)
@@ -82,6 +89,7 @@ public class Configuration {
                 + " | WaitBLEEnabled: " + (this.waitBLEEnabled != null ? this.waitBLEEnabled : ConfigurationDefaults.WaitBleEnabled)
                 + " | BLEConnectionTimeout: " + (this.connectionTimeout != null ? this.connectionTimeout : ConfigurationDefaults.BLEConnectionTimeout)
                 + " | AutoCloseTimeout: " + (this.autoCloseTimeout != null ? this.autoCloseTimeout : "null")
+                + " | CloseWhenInvalidQRCode: " + (this.closeWhenInvalidQRCode != null ? this.closeWhenInvalidQRCode : ConfigurationDefaults.CloseWhenInvalidQRCode)
                 + " | AllowMockLocation: " + (this.allowMockLocation != null ? this.allowMockLocation : ConfigurationDefaults.AllowMockLocation);
     }
 }

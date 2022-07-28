@@ -89,7 +89,7 @@ public class ConfigurationManager {
             ResponseAccessPointListItem details = mAccessPoints.get(match.accessPointId);
 
             if (details != null) {
-                return new QRCodeContent(details.i, match.qrCode, details.t, details.g);
+                return new QRCodeContent(details.i, match.qrCode, details.t, details.g, details.c);
             }
         }
 
@@ -140,6 +140,10 @@ public class ConfigurationManager {
 
     public Boolean waitForBLEEnabled() {
         return mCurrentConfig != null && mCurrentConfig.waitBLEEnabled != null ? mCurrentConfig.waitBLEEnabled : ConfigurationDefaults.WaitBleEnabled;
+    }
+
+    public Boolean closeWhenInvalidQRCode() {
+        return mCurrentConfig != null && mCurrentConfig.closeWhenInvalidQRCode != null ? mCurrentConfig.closeWhenInvalidQRCode : ConfigurationDefaults.CloseWhenInvalidQRCode;
     }
 
     public boolean usingHMS() {
@@ -354,12 +358,13 @@ public class ConfigurationManager {
             String valueQRCodesToStore      = new Gson().toJson(mQRCodes);
             String valueAccessPointsToStore = new Gson().toJson(mAccessPoints);
 
+            StorageManager.getInstance().setValue(mCurrentContext, StorageKeys.LIST_VERSION, ConfigurationDefaults.CurrentListVersion);
             StorageManager.getInstance().setValue(mCurrentContext, StorageKeys.LIST_QRCODES, valueQRCodesToStore);
             StorageManager.getInstance().setValue(mCurrentContext, StorageKeys.LIST_ACCESSPOINTS, valueAccessPointsToStore);
             StorageManager.getInstance().setValue(mCurrentContext, StorageKeys.LIST_SYNC_DATE, new Date().getTime() + "");
 
-            LogManager.getInstance().info("Updated QR Code list is ready to use, total: " + mQRCodes.size());
-            LogManager.getInstance().info("Updated Access Point list is ready to use, total: " + mAccessPoints.size());
+            LogManager.getInstance().info("Updated QR Code list is ready to use, total: " + mQRCodes.size() + ", version: " + ConfigurationDefaults.CurrentListVersion);
+            LogManager.getInstance().info("Updated Access Point list is ready to use, total: " + mAccessPoints.size() + ", version: " + ConfigurationDefaults.CurrentListVersion);
 
             if (mQRCodes.size() > 0) {
                 LogManager.getInstance().info("Up to date qr code list will be used for passing flow");
@@ -396,9 +401,18 @@ public class ConfigurationManager {
         LogManager.getInstance().info("Syncing definition list with server has been started");
         DelegateManager.getInstance().onQRCodeListStateChanged(QRCodeListState.SYNCING);
 
-        mListClearFlag = clear;
+        boolean force = false;
 
-        if (clear) {
+        String storedListVersion = StorageManager.getInstance().getValue(mCurrentContext, StorageKeys.LIST_VERSION);
+
+        if (storedListVersion == null || storedListVersion.isEmpty() || !storedListVersion.equals(ConfigurationDefaults.CurrentListVersion)) {
+            LogManager.getInstance().info("Force to clear definition list before fetch because of difference on version");
+            force = true;
+        }
+
+        mListClearFlag = clear || force;
+
+        if (mListClearFlag) {
             mListSyncDate = null;
         } else {
             String storedSyncDate = StorageManager.getInstance().getValue(mCurrentContext, StorageKeys.LIST_SYNC_DATE);
