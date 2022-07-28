@@ -15,5 +15,6 @@ struct StorageKeys {
     static let LIST_QRCODES         = "armon_mobilepass_sdk_list_qrcodes"
     static let LIST_ACCESSPOINTS    = "armon_mobilepass_sdk_list_accesspoints"
     static let LIST_SYNC_DATE       = "armon_mobilepass_sdk_list_sync_date"
+    static let LIST_VERSION         = "armon_mobilepass_sdk_list_version"
     
 }

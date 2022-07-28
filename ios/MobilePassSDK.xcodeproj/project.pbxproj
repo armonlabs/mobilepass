@@ -55,6 +55,8 @@
 		DEB3116C25EC2FD900DD91AF /* DeviceCapability.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEB3116B25EC2FD900DD91AF /* DeviceCapability.swift */; };
 		DECEC29126CE50A700280603 /* ConfigurationDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = DECEC29026CE50A700280603 /* ConfigurationDefaults.swift */; };
 		DECEC29326CFF35E00280603 /* LogCodes.swift in Sources */ = {isa = PBXBuildFile; fileRef = DECEC29226CFF35E00280603 /* LogCodes.swift */; };
+		DED2AE1C289016E600CDF0FB /* PassResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = DED2AE1B289016E600CDF0FB /* PassResult.swift */; };
+		DED2AE1E2890355000CDF0FB /* ResponseAccessPointListClubInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = DED2AE1D2890355000CDF0FB /* ResponseAccessPointListClubInfo.swift */; };
 		DEEF5AC9263172B5006004DD /* DeviceConnectionInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEF5AC8263172B5006004DD /* DeviceConnectionInfo.swift */; };
 		DEEFD88126CDACDA00E2E4F9 /* LogLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEFD88026CDACDA00E2E4F9 /* LogLevel.swift */; };
 		DEEFD88326CDAD1E00E2E4F9 /* LogItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEFD88226CDAD1E00E2E4F9 /* LogItem.swift */; };
@@ -131,6 +133,8 @@
 		DEB3116B25EC2FD900DD91AF /* DeviceCapability.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceCapability.swift; sourceTree = "<group>"; };
 		DECEC29026CE50A700280603 /* ConfigurationDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigurationDefaults.swift; sourceTree = "<group>"; };
 		DECEC29226CFF35E00280603 /* LogCodes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogCodes.swift; sourceTree = "<group>"; };
+		DED2AE1B289016E600CDF0FB /* PassResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PassResult.swift; sourceTree = "<group>"; };
+		DED2AE1D2890355000CDF0FB /* ResponseAccessPointListClubInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResponseAccessPointListClubInfo.swift; sourceTree = "<group>"; };
 		DEEF5AC8263172B5006004DD /* DeviceConnectionInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceConnectionInfo.swift; sourceTree = "<group>"; };
 		DEEFD88026CDACDA00E2E4F9 /* LogLevel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogLevel.swift; sourceTree = "<group>"; };
 		DEEFD88226CDAD1E00E2E4F9 /* LogItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogItem.swift; sourceTree = "<group>"; };
@@ -246,6 +250,7 @@
 				DEB3116B25EC2FD900DD91AF /* DeviceCapability.swift */,
 				DE30AAEF26CCF42700F015C5 /* QRCodeMatch.swift */,
 				DEEFD88226CDAD1E00E2E4F9 /* LogItem.swift */,
+				DED2AE1B289016E600CDF0FB /* PassResult.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -299,6 +304,7 @@
 				DE45B1A426C97E4600FB8712 /* ResponseAccessPointListGeoLocation.swift */,
 				DE45B1A626C97E5800FB8712 /* ResponseAccessPointListTerminal.swift */,
 				DE45B1A826C97E6800FB8712 /* ResponseAccessPointListQRCode.swift */,
+				DED2AE1D2890355000CDF0FB /* ResponseAccessPointListClubInfo.swift */,
 			);
 			path = Response;
 			sourceTree = "<group>";
@@ -465,6 +471,7 @@
 				DEB3116C25EC2FD900DD91AF /* DeviceCapability.swift in Sources */,
 				DEF0BFA925D2A0C100397D18 /* JSONUtil.swift in Sources */,
 				DECEC29126CE50A700280603 /* ConfigurationDefaults.swift in Sources */,
+				DED2AE1E2890355000CDF0FB /* ResponseAccessPointListClubInfo.swift in Sources */,
 				DE46BB8225E2A971006A727A /* QRCodeListState.swift in Sources */,
 				DE9089A126B301F200C33845 /* ResponseMessage.swift in Sources */,
 				DEEFD88526CDAEBF00E2E4F9 /* Date+Extensions.swift in Sources */,
@@ -494,6 +501,7 @@
 				DEF0BF8725D286A600397D18 /* String+Extensions.swift in Sources */,
 				DE30E52725DD15CD004CAED2 /* Configuration.swift in Sources */,
 				DE30E53725DD393D004CAED2 /* RequestSetUserData.swift in Sources */,
+				DED2AE1C289016E600CDF0FB /* PassResult.swift in Sources */,
 				DE45B1A926C97E6800FB8712 /* ResponseAccessPointListQRCode.swift in Sources */,
 				DE3BBF7725DE862E00963B80 /* QRCodeContent.swift in Sources */,
 				DE30E55425DD3C26004CAED2 /* QRTriggerType.swift in Sources */,
@@ -690,7 +698,7 @@
 					"@loader_path/Frameworks",
 					"$(SRCROOT)",
 				);
-				MARKETING_VERSION = 1.3.7;
+				MARKETING_VERSION = 1.4.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.armongate.MobilePassSDK;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
@@ -722,7 +730,7 @@
 					"@loader_path/Frameworks",
 					"$(SRCROOT)",
 				);
-				MARKETING_VERSION = 1.3.7;
+				MARKETING_VERSION = 1.4.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.armongate.MobilePassSDK;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;

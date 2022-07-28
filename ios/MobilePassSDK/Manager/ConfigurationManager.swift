@@ -62,7 +62,11 @@ class ConfigurationManager: NSObject {
             let details = mAccessPoints.index(forKey: match!.accessPointId) != nil ? mAccessPoints[match!.accessPointId] : nil
             
             if (details != nil) {
-                return QRCodeContent(accessPointId: match!.accessPointId, terminals: details!.t, qrCode: match!.qrCode, geoLocation: details!.g)
+                return QRCodeContent(accessPointId: match!.accessPointId,
+                                     terminals: details!.t,
+                                     qrCode: match!.qrCode,
+                                     geoLocation: details!.g,
+                                     clubInfo: details!.c)
             }
         }
         
@@ -113,6 +117,10 @@ class ConfigurationManager: NSObject {
     
     public func waitForBLEEnabled() -> Bool {
         return mCurrentConfig?.waitBLEEnabled ?? ConfigurationDefaults.WaitBleEnabled
+    }
+    
+    public func closeWhenInvalidQRCode() -> Bool {
+        return mCurrentConfig?.closeWhenInvalidQRCode ?? ConfigurationDefaults.CloseWhenInvalidQRCode
     }
     
     public func getLogLevel() -> Int {
@@ -309,12 +317,13 @@ class ConfigurationManager: NSObject {
                     let valueQRCodesToStore:        String? = try? JSONUtil.shared.encodeJSONData(data: self.mQRCodes)
                     let valueAccessPointsToStore:   String? = try? JSONUtil.shared.encodeJSONData(data: self.mAccessPoints)
                     
+                    _ = try StorageManager.shared.setValue(key: StorageKeys.LIST_VERSION, value: ConfigurationDefaults.CurrentListVersion, secure: false)
                     _ = try StorageManager.shared.setValue(key: StorageKeys.LIST_QRCODES, value: valueQRCodesToStore ?? "", secure: false)
                     _ = try StorageManager.shared.setValue(key: StorageKeys.LIST_ACCESSPOINTS, value: valueAccessPointsToStore ?? "", secure: false)
                     _ = try StorageManager.shared.setValue(key: StorageKeys.LIST_SYNC_DATE, value: (Int64(Date().timeIntervalSince1970 * 1000)).description, secure: false)
                     
-                    LogManager.shared.info(message: "Updated QR Code list is ready to use, total: \(mQRCodes.count)")
-                    LogManager.shared.info(message: "Updated Access Point list is ready to use, total: \(mAccessPoints.count)")
+                    LogManager.shared.info(message: "Updated QR Code list is ready to use, total: \(mQRCodes.count), version: \(ConfigurationDefaults.CurrentListVersion)")
+                    LogManager.shared.info(message: "Updated Access Point list is ready to use, total: \(mAccessPoints.count), version: \(ConfigurationDefaults.CurrentListVersion)")
 
                     if (mQRCodes.count > 0) {
                         LogManager.shared.info(message: "Up to date qr code list will be used for passing flow")
@@ -352,9 +361,18 @@ class ConfigurationManager: NSObject {
         LogManager.shared.info(message: "Syncing definition list with server has been started")
         DelegateManager.shared.qrCodeListChanged(state: .SYNCING)
         
-        mListClearFlag = clear
+        var force: Bool = false
         
-        if (clear) {
+        let storedListVersion: String? = try? StorageManager.shared.getValue(key: StorageKeys.LIST_VERSION, secure: false)
+            
+        if (storedListVersion == nil || storedListVersion!.count == 0 || storedListVersion! != ConfigurationDefaults.CurrentListVersion) {
+            LogManager.shared.info(message: "Force to clear definition list before fetch because of difference on version")
+            force = true
+        }
+        
+        mListClearFlag = clear || force
+        
+        if (mListClearFlag) {
             mListSyncDate = nil
         } else {
             let storedSyncDate: String? = try? StorageManager.shared.getValue(key: StorageKeys.LIST_SYNC_DATE, secure: false)
