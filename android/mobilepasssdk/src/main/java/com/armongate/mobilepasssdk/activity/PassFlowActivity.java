@@ -377,11 +377,13 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
             Gson gson = new Gson();
             String deviceDetails = activeQRCodeContent != null ? gson.toJson(activeQRCodeContent.terminals) : "";
             String qrCodeInfo = activeQRCodeContent != null ? gson.toJson(activeQRCodeContent.qrCode) : "";
+            String clubInfo = activeQRCodeContent != null ? gson.toJson(activeQRCodeContent.clubInfo) : "";
 
             Bundle bundle = new Bundle();
             bundle.putString("type", actionCurrent);
             bundle.putString("devices", deviceDetails);
             bundle.putString("qrCode", qrCodeInfo);
+            bundle.putString("clubInfo", clubInfo);
             bundle.putString("nextAction", actionList.size() > 0 ? actionList.get(0) : "");
 
             replaceFragment(StatusFragment.class, bundle);
