@@ -135,7 +135,7 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
                     }
                 } else {
                     LogManager.getInstance().warn("QR code reader found unknown format > " + qrcodeContent, LogCodes.PASSFLOW_QRCODE_READER_INVALID_FORMAT);
-                    DelegateManager.getInstance().onCancelled(true);
+                    DelegateManager.getInstance().flowCloseWithInvalidQRCode(qrcodeContent);
                 }
             }
         }
