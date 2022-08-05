@@ -58,6 +58,7 @@ public class DelegateManager {
     public void clearFlowFlags() {
         mFlowCompleted = false;
         mDismissedManual = false;
+        mFinishedBefore = false;
     }
 
     public void onCompleted(boolean success, Integer direction, String clubId, String clubName) {
@@ -99,11 +100,11 @@ public class DelegateManager {
     }
 
     public void flowCloseWithInvalidQRCode(String code) {
+        endFlow(true, CancelReason.INVALID_QR_CODE);
+
         if (mCurrentMobilePassDelegate != null) {
             mCurrentMobilePassDelegate.onInvalidQRCode(code);
         }
-
-        endFlow(true, CancelReason.INVALID_QR_CODE);
     }
 
     public void flowNextActionRequired() {
