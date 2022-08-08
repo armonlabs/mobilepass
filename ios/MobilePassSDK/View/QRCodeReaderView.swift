@@ -214,20 +214,34 @@ public class QRCodeReaderViewController: UIViewController, QRCodeScannerDelegate
         view.layer.addSublayer(previewLayer)
 
         if (captureSession?.isRunning == false) {
+            LogManager.shared.debug(message: "Starting QR Code capture session")
             captureSession.startRunning()
         }
     }
-
-    override public func viewDidDisappear(_ animated: Bool) {
-        super.viewDidDisappear(animated)
-
+    
+    public override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        
         if (captureSession?.isRunning == true) {
+            LogManager.shared.debug(message: "Stopping QR Code capture session")
             captureSession.stopRunning()
         }
 
         NotificationCenter.default.removeObserver(self)
     }
 
+    override public func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+
+        /*
+        if (captureSession?.isRunning == true) {
+            captureSession.stopRunning()
+        }
+
+        NotificationCenter.default.removeObserver(self)
+         */
+    }
+    
     override public var prefersStatusBarHidden: Bool {
         return true
     }
