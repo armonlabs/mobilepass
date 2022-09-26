@@ -231,23 +231,35 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
 
     private void checkNextAction() {
         LogManager.getInstance().debug("Checking next action now");
-        if (this.actionList.size() > 0) {
-            actionCurrent = this.actionList.get(0);
-            this.actionList.remove(0);
 
-            processAction();
-        } else {
-            LogManager.getInstance().warn("Checking next action has been cancelled due to empty action list", LogCodes.PASSFLOW_EMPTY_ACTION_LIST);
+        if (this.isFinishing() || this.isDestroyed()) {
+            LogManager.getInstance().warn("Checking next action has been cancelled due to activity state: " + (this.isFinishing() ? "finishing" : "destroyed"), LogCodes.UI_INVALID_STATE_TO_REPLACE_FRAGMENT);
             finish();
+        } else {
+            if (this.actionList.size() > 0) {
+                actionCurrent = this.actionList.get(0);
+                this.actionList.remove(0);
+
+                processAction();
+            } else {
+                LogManager.getInstance().warn("Checking next action has been cancelled due to empty action list", LogCodes.PASSFLOW_EMPTY_ACTION_LIST);
+                finish();
+            }
         }
     }
 
     private void replaceFragment(Class<? extends androidx.fragment.app.Fragment> newFragment, @Nullable Bundle args) {
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        fragmentManager.beginTransaction()
-                .replace(R.id.armon_mp_fragment_container, newFragment, args)
-                .setReorderingAllowed(true)
-                .commit();
+        try {
+            FragmentManager fragmentManager = getSupportFragmentManager();
+            fragmentManager.beginTransaction()
+                    .replace(R.id.armon_mp_fragment_container, newFragment, args)
+                    .replace(R.id.armon_mp_fragment_container, newFragment, args)
+                    .setReorderingAllowed(true)
+                    .commit();
+        } catch (Exception ex) {
+            LogManager.getInstance().warn("Replace fragment failed with error message: " + ex.getLocalizedMessage(), LogCodes.UI_INVALID_STATE_TO_REPLACE_FRAGMENT);
+            finish();
+        }
     }
 
     private void showPermissionMessage(int needPermissionType) {
