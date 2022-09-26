@@ -337,6 +337,7 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
 
         if (needLocationPermission && !SettingsManager.getInstance().checkLocationEnabled(getApplicationContext())) {
             showPermissionMessage(NeedPermissionType.NEED_ENABLE_LOCATION_SERVICES);
+            return;
         } else {
             if (!needLocationPermission || SettingsManager.getInstance().checkLocationPermission(getApplicationContext(), this)) {
                 if (actionCurrent.equals(ACTION_BLUETOOTH)) {
