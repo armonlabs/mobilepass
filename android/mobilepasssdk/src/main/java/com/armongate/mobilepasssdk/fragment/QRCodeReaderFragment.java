@@ -102,8 +102,9 @@ public class QRCodeReaderFragment extends Fragment implements SurfaceHolder.Call
                     cameraSource.stop();
                     setupControls(cameraSurfaceView);
                     cameraSource.start(cameraSurfaceView.getHolder());
-                }catch (Exception ex){
+                } catch (Exception ex){
                     LogManager.getInstance().error("Switch camera failed! Exception: " + ex.getLocalizedMessage(), LogCodes.UI_SWITCH_CAMERA_FAILED);
+                    DelegateManager.getInstance().onErrorOccurred(ex);
                 }
 
             }
@@ -133,15 +134,19 @@ public class QRCodeReaderFragment extends Fragment implements SurfaceHolder.Call
     }
 
     private void setupControls(SurfaceView cameraSV) {
-        if (mContext != null) {
-            BarcodeDetector detector = new BarcodeDetector.Builder(mContext).setBarcodeFormats(Barcode.QR_CODE).build();
-            cameraSource = new CameraSource.Builder(mContext, detector).setFacing(cameraFacing).setAutoFocusEnabled(true).build();
+        try {
+            if (mContext != null) {
+                BarcodeDetector detector = new BarcodeDetector.Builder(mContext).setBarcodeFormats(Barcode.QR_CODE).build();
+                cameraSource = new CameraSource.Builder(mContext, detector).setFacing(cameraFacing).setAutoFocusEnabled(true).build();
 
-            cameraSV.getHolder().addCallback(this);
+                cameraSV.getHolder().addCallback(this);
 
-            detector.setProcessor(this);
-        } else {
-            needSetupControls = true;
+                detector.setProcessor(this);
+            } else {
+                needSetupControls = true;
+            }
+        } catch (Exception exception) {
+            DelegateManager.getInstance().onErrorOccurred(exception);
         }
     }
 
@@ -161,7 +166,11 @@ public class QRCodeReaderFragment extends Fragment implements SurfaceHolder.Call
 
     @Override
     public void surfaceDestroyed(SurfaceHolder surfaceHolder) {
-        cameraSource.stop();
+        try {
+            cameraSource.stop();
+        } catch (Exception exception) {
+            DelegateManager.getInstance().onErrorOccurred(exception);
+        }
     }
 
     @Override
