@@ -147,7 +147,7 @@ public class ConfigurationManager {
     }
 
     public boolean usingHMS() {
-        return mCurrentServiceProvider.equals(ServiceProviders.Huawei);
+        return mCurrentServiceProvider != null && mCurrentServiceProvider.equals(ServiceProviders.Huawei);
     }
 
     public String getServiceProvider() {
