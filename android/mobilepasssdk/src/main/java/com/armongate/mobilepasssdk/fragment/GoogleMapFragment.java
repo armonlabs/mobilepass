@@ -1,5 +1,7 @@
 package com.armongate.mobilepasssdk.fragment;
 
+import android.app.Activity;
+import android.content.Context;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
@@ -101,7 +103,10 @@ public class GoogleMapFragment extends Fragment implements OnMapReadyCallback, G
     }
 
     private void initLocationTracking() {
-        if (SettingsManager.getInstance().checkLocationPermission(getContext(), getActivity())) {
+        Context ctx = getContext();
+        Activity act = getActivity();
+
+        if (SettingsManager.getInstance().checkLocationPermission(ctx, act)) {
             fusedLocationClient.getLastLocation().addOnCompleteListener(new OnCompleteListener<Location>() {
                 @Override
                 public void onComplete(@NonNull Task<Location> task) {
@@ -115,7 +120,7 @@ public class GoogleMapFragment extends Fragment implements OnMapReadyCallback, G
                     locationRequest.setFastestInterval(3000);
                     locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
-                    if (SettingsManager.getInstance().checkLocationPermission(getContext(), getActivity())) {
+                    if (SettingsManager.getInstance().checkLocationPermission(ctx, act)) {
                         fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.myLooper());
                     }
                 }
