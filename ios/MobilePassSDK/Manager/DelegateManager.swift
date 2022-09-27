@@ -82,7 +82,9 @@ class DelegateManager: NSObject {
     }
 
     func flowQRCodeFound(code: String) {
-        passFlowDelegate?.onQRCodeFound(code: code)
+        DispatchQueue.main.async {
+            self.passFlowDelegate?.onQRCodeFound(code: code)
+        }
     }
     
     func flowCloseWithInvalidQRCode(code: String) {
@@ -144,9 +146,8 @@ class DelegateManager: NSObject {
         
         DispatchQueue.main.async {
             self.mobilePassDelegate?.onQRCodeListStateChanged(state: state.rawValue)
+            self.qrCodeListStateDelegate?.onStateChanged(state: state.rawValue)
         }
-        
-        self.qrCodeListStateDelegate?.onStateChanged(state: state.rawValue)
     }
     
     func qrCodeScannerSwitchCamera() {

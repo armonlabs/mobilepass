@@ -119,14 +119,16 @@ struct StatusView: View {
         DelegateManager.shared.flowConnectionStateChanged(isActive: true)
            
         AccessPointService().remoteOpen(request: RequestAccess(q: currentConfig!.qrCode!.i!), completion: { (result) in
-            if case .success(_) = result {
-                self.viewModel.update(message: "text_status_message_succeed", icon: "success")
-                onPassCompleted(success: true)
-                
-                DelegateManager.shared.flowConnectionStateChanged(isActive: false)
-            } else if case .failure(let error) = result {
-                onRemoteAccessFailed(errorCode: error.code, message: error.message)
-                DelegateManager.shared.flowConnectionStateChanged(isActive: false)
+            DispatchQueue.main.async {
+                if case .success(_) = result {
+                    self.viewModel.update(message: "text_status_message_succeed", icon: "success")
+                    onPassCompleted(success: true)
+                    
+                    DelegateManager.shared.flowConnectionStateChanged(isActive: false)
+                } else if case .failure(let error) = result {
+                    onRemoteAccessFailed(errorCode: error.code, message: error.message)
+                    DelegateManager.shared.flowConnectionStateChanged(isActive: false)
+                }
             }
         })
         
