@@ -15,6 +15,8 @@ enum ScanResult: Int {
     case noMatching         = 4
     case invalidFormat      = 5
     case invalidContent     = 6
+    case missingInput       = 7
+    case missionSession     = 8
 }
 
 public struct QRCodeScanResult {
@@ -142,8 +144,8 @@ public class QRCodeReaderCoordinator: NSObject, AVCaptureMetadataOutputObjectsDe
 
 @available(iOS 13.0, *)
 public class QRCodeReaderViewController: UIViewController, QRCodeScannerDelegate {
-    var captureSession: AVCaptureSession!
-    var previewLayer: AVCaptureVideoPreviewLayer!
+    var captureSession: AVCaptureSession?
+    var previewLayer: AVCaptureVideoPreviewLayer?
     var delegate: QRCodeReaderCoordinator?
     
     override public func viewDidLoad() {
@@ -160,6 +162,7 @@ public class QRCodeReaderViewController: UIViewController, QRCodeScannerDelegate
         captureSession = AVCaptureSession()
 
         guard let videoCaptureDevice = AVCaptureDevice.default(for: .video) else { return }
+        
         let videoInput: AVCaptureDeviceInput
 
         do {
@@ -168,8 +171,8 @@ public class QRCodeReaderViewController: UIViewController, QRCodeScannerDelegate
             return
         }
 
-        if (captureSession.canAddInput(videoInput)) {
-            captureSession.addInput(videoInput)
+        if (captureSession != nil && captureSession!.canAddInput(videoInput)) {
+            captureSession!.addInput(videoInput)
         } else {
             delegate?.didFail(result: .addInputFailed)
             return
@@ -177,8 +180,8 @@ public class QRCodeReaderViewController: UIViewController, QRCodeScannerDelegate
 
         let metadataOutput = AVCaptureMetadataOutput()
 
-        if (captureSession.canAddOutput(metadataOutput)) {
-            captureSession.addOutput(metadataOutput)
+        if (captureSession != nil && captureSession!.canAddOutput(metadataOutput)) {
+            captureSession!.addOutput(metadataOutput)
 
             metadataOutput.setMetadataObjectsDelegate(delegate, queue: DispatchQueue.main)
             metadataOutput.metadataObjectTypes = [.qr]
@@ -189,13 +192,17 @@ public class QRCodeReaderViewController: UIViewController, QRCodeScannerDelegate
     }
 
     override public func viewWillLayoutSubviews() {
-        previewLayer?.frame = view.layer.bounds
+        if (previewLayer != nil) {
+            previewLayer!.frame = view.layer.bounds
+        }
     }
 
     @objc func updateOrientation() {
-        guard let orientation = UIApplication.shared.windows.first?.windowScene?.interfaceOrientation else { return }
-        guard let connection = captureSession.connections.last, connection.isVideoOrientationSupported else { return }
-        connection.videoOrientation = AVCaptureVideoOrientation(rawValue: orientation.rawValue) ?? .portrait
+        if (captureSession != nil) {
+            guard let orientation = UIApplication.shared.windows.first?.windowScene?.interfaceOrientation else { return }
+            guard let connection = captureSession!.connections.last, connection.isVideoOrientationSupported else { return }
+            connection.videoOrientation = AVCaptureVideoOrientation(rawValue: orientation.rawValue) ?? .portrait
+        }
     }
 
     override public func viewDidAppear(_ animated: Bool) {
@@ -206,25 +213,36 @@ public class QRCodeReaderViewController: UIViewController, QRCodeScannerDelegate
     override public func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        if previewLayer == nil {
-            previewLayer = AVCaptureVideoPreviewLayer(session: captureSession)
+        if (captureSession == nil) {
+            delegate?.didFail(result: .missionSession)
+            return
         }
-        previewLayer.frame = view.layer.bounds
-        previewLayer.videoGravity = .resizeAspectFill
-        view.layer.addSublayer(previewLayer)
+        
+        if previewLayer == nil {
+            previewLayer = AVCaptureVideoPreviewLayer(session: captureSession!)
+        }
+        
+        previewLayer!.frame = view.layer.bounds
+        previewLayer!.videoGravity = .resizeAspectFill
+        view.layer.addSublayer(previewLayer!)
 
-        if (captureSession?.isRunning == false) {
+        if (captureSession!.isRunning == false) {
             LogManager.shared.debug(message: "Starting QR Code capture session")
-            captureSession.startRunning()
+            
+            if (captureSession!.inputs.count > 0) {
+                captureSession!.startRunning()
+            } else {
+                delegate?.didFail(result: .missingInput)
+            }
         }
     }
     
     public override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         
-        if (captureSession?.isRunning == true) {
+        if (captureSession != nil && captureSession!.isRunning == true) {
             LogManager.shared.debug(message: "Stopping QR Code capture session")
-            captureSession.stopRunning()
+            captureSession!.stopRunning()
         }
 
         NotificationCenter.default.removeObserver(self)
@@ -251,8 +269,13 @@ public class QRCodeReaderViewController: UIViewController, QRCodeScannerDelegate
     }
     
     public func onSwitchCamera() {
+        if (captureSession == nil) {
+            return
+        }
+        
         //Change camera source
         if let session = captureSession {
+            
             //Remove existing input
             guard let currentCameraInput: AVCaptureInput = session.inputs.first else {
                 return
@@ -263,7 +286,7 @@ public class QRCodeReaderViewController: UIViewController, QRCodeScannerDelegate
             session.removeInput(currentCameraInput)
 
             //Get new input
-            var newCamera: AVCaptureDevice! = nil
+            var newCamera: AVCaptureDevice? = nil
             if let input = currentCameraInput as? AVCaptureDeviceInput {
                 if (input.device.position == .back) {
                     newCamera = cameraWithPosition(position: .front)
@@ -274,9 +297,11 @@ public class QRCodeReaderViewController: UIViewController, QRCodeScannerDelegate
 
             //Add input to session
             var err: NSError?
-            var newVideoInput: AVCaptureDeviceInput!
+            var newVideoInput: AVCaptureDeviceInput?
             do {
-                newVideoInput = try AVCaptureDeviceInput(device: newCamera)
+                if (newCamera != nil) {
+                    newVideoInput = try AVCaptureDeviceInput(device: newCamera!)
+                }
             } catch let err1 as NSError {
                 err = err1
                 newVideoInput = nil
@@ -285,7 +310,7 @@ public class QRCodeReaderViewController: UIViewController, QRCodeScannerDelegate
             if newVideoInput == nil || err != nil {
                 LogManager.shared.error(message: "Switch camera failed! Exception: \(err?.localizedDescription ?? "-")", code: LogCodes.UI_SWITCH_CAMERA_FAILED)
             } else {
-                session.addInput(newVideoInput)
+                session.addInput(newVideoInput!)
             }
 
             //Commit all the configuration changes at once
