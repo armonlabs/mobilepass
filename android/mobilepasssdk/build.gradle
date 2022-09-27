@@ -4,7 +4,7 @@ plugins {
 }
 
 group = 'com.github.armonlabs'
-version = '1.4.2'
+version = '1.4.4'
 
 android {
     compileSdkVersion 31
@@ -13,7 +13,7 @@ android {
         minSdkVersion 21
         targetSdkVersion 31
         versionCode 1
-        versionName "1.4.2"
+        versionName "1.4.4"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles 'consumer-rules.pro'
@@ -60,7 +60,7 @@ afterEvaluate {
             release(MavenPublication) {
                 from components.release
                 groupId = 'com.github.armonlabs'
-                version = '1.4.2'
+                version = '1.4.4'
             }
         }
     }
