@@ -148,7 +148,7 @@ public class BaseService {
                 params.put("Authorization", token);
                 params.put("If-Modified-Since", "Mon, 26 Jul 1997 05:00:00 GMT");
                 params.put("Cache-Control", "no-cache");
-                params.put("mobilepass-version", "1.4.4");
+                params.put("mobilepass-version", "1.4.5");
                 params.put("mobilepass-memberid", ConfigurationManager.getInstance().getMemberId());
                 params.put("mobilepass-config", ConfigurationManager.getInstance().getConfigurationLog());
                 params.put("mobilepass-provider", ConfigurationManager.getInstance().getServiceProvider());
