@@ -2,14 +2,10 @@ package com.armongate.mobilepassapp;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.content.Intent;
 import android.os.Bundle;
-import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.armongate.mobilepasssdk.MobilePass;
@@ -21,15 +17,11 @@ import com.armongate.mobilepasssdk.model.PassResult;
 
 
 public class MainActivity extends AppCompatActivity implements MobilePassDelegate {
-    private MobilePass passer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        TextView txtLogs = findViewById(R.id.armon_test_txtLogs);
-        txtLogs.setMovementMethod(new ScrollingMovementMethod());
     }
 
     public void onButtonStartClicked(View v) {
@@ -40,7 +32,7 @@ public class MainActivity extends AppCompatActivity implements MobilePassDelegat
         } else {
             Configuration config = new Configuration();
             config.memberId = txtMemberId.getText().toString(); // "00988791";
-            config.serverUrl = "https://qr.marsathletic.com";
+            config.serverUrl = "https://dev3.armon.com.tr:4334"; // "https://qr.marsathletic.com";
             config.language = "tr";
             config.waitBLEEnabled = true;
             config.closeWhenInvalidQRCode = true;
@@ -48,40 +40,11 @@ public class MainActivity extends AppCompatActivity implements MobilePassDelegat
             config.listener = this;
             config.logLevel = LogLevel.INFO;
 
-            passer = new MobilePass(this, config);
+            MobilePass passer = new MobilePass(this, config);
             passer.setDelegate(this);
 
             passer.triggerQRCodeRead();
         }
-    }
-
-    public void onButtonGetLogsClicked(View v) {
-        Button btnShare = findViewById(R.id.armon_test_btnShare);
-
-        if(passer != null) {
-            TextView txtLogs = findViewById(R.id.armon_test_txtLogs);
-
-            String logs = getLogs();
-            txtLogs.setText(logs);
-
-            btnShare.setVisibility(logs.isEmpty() ? Button.INVISIBLE : Button.VISIBLE);
-        } else {
-            Toast.makeText(this, "Kayıtları almak için öncelikle geçiş akışı başlatınız", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    public void onButtonShareClicked(View v) {
-        Intent myIntent = new Intent(Intent.ACTION_SEND);
-        myIntent.setType("text/plain");
-        String body = getLogs();
-        String sub = "SDK Kayıtları";
-        myIntent.putExtra(Intent.EXTRA_SUBJECT,sub);
-        myIntent.putExtra(Intent.EXTRA_TEXT,body);
-        startActivity(Intent.createChooser(myIntent, "Paylaş"));
-    }
-
-    private String getLogs() {
-        return "";
     }
 
     @Override
@@ -91,7 +54,7 @@ public class MainActivity extends AppCompatActivity implements MobilePassDelegat
 
     @Override
     public void onPassCompleted(PassResult result) {
-        Log.i("MobilePass", "Main - Pass Completed, Result: " + result.success);
+        Log.i("MobilePass", "Main - Pass Completed, Result: " + result.success + ", ClubId: " + result.clubId + ", ClubName: " + result.clubName + ", Direction: " + result.direction);
     }
 
     @Override
