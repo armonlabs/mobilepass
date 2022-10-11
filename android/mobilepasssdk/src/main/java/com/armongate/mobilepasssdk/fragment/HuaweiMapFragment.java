@@ -29,6 +29,7 @@ import com.huawei.hms.location.LocationResult;
 import com.huawei.hms.location.LocationServices;
 import com.huawei.hms.maps.CameraUpdateFactory;
 import com.huawei.hms.maps.HuaweiMap;
+import com.huawei.hms.maps.MapsInitializer;
 import com.huawei.hms.maps.OnMapReadyCallback;
 import com.huawei.hms.maps.SupportMapFragment;
 import com.huawei.hms.maps.model.CircleOptions;
@@ -42,10 +43,13 @@ public class HuaweiMapFragment extends Fragment implements OnMapReadyCallback, H
     private Double mPointLatitude;
     private Double mPointLongitude;
     private Integer mPointRadius;
+    private boolean mUpdatesCancelled;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        MapsInitializer.initialize(getContext());
+        mUpdatesCancelled = false;
 
         mPointLatitude = getArguments() != null && getArguments().containsKey("latitude") ? getArguments().getDouble("latitude") : null;
         mPointLongitude = getArguments() != null && getArguments().containsKey("longitude") ? getArguments().getDouble("longitude") : null;
@@ -58,8 +62,10 @@ public class HuaweiMapFragment extends Fragment implements OnMapReadyCallback, H
 
         try {
             fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
-            assert supportMapFragment != null;
-            supportMapFragment.getMapAsync(this);
+
+            if (supportMapFragment != null) {
+                supportMapFragment.getMapAsync(this);
+            }
         } catch (Exception ex) {
             LogManager.getInstance().error("Error occurred while initializing map for location validation, error: " + ex.getLocalizedMessage(), LogCodes.PASSFLOW_MAP_ERROR);
         }
@@ -131,11 +137,18 @@ public class HuaweiMapFragment extends Fragment implements OnMapReadyCallback, H
     @Override
     public void onDestroy() {
         super.onDestroy();
+        cancelUpdates();
+    }
+
+    private void cancelUpdates() {
+        mUpdatesCancelled = true;
+
         fusedLocationClient.removeLocationUpdates(locationCallback);
+        mMap.setMyLocationEnabled(false);
     }
 
     private void processLocation(Location location) {
-        if (location != null) {
+        if (location != null && !mUpdatesCancelled) {
             LogManager.getInstance().debug("User location changed; Latitude: " + location.getLatitude() + ", Longitude: " + location.getLongitude());
 
             if (location.isFromMockProvider() && !ConfigurationManager.getInstance().allowMockLocation()) {
@@ -150,6 +163,7 @@ public class HuaweiMapFragment extends Fragment implements OnMapReadyCallback, H
                     float distance = location.distanceTo(dest);
 
                     if (distance < mPointRadius) {
+                        cancelUpdates();
                         LogManager.getInstance().info("User is in validation area now, distance to center point: " + distance);
                         DelegateManager.getInstance().flowLocationValidated();
                     } else {

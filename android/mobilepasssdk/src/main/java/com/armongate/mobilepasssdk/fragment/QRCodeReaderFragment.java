@@ -184,7 +184,9 @@ public class QRCodeReaderFragment extends Fragment implements SurfaceHolder.Call
 
             Pattern sPattern = Pattern.compile("https://(app|sdk).armongate.com/(rq|bd|o|s)/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})(/[0-2])?$");
 
-            if (foundQRCodes.containsKey(code.displayValue) && new Date().getTime() - foundQRCodes.get(code.displayValue) < 2500) {
+            Long foundTime = foundQRCodes.containsKey(code.displayValue) ? foundQRCodes.get(code.displayValue) : null;
+
+            if (foundTime != null &&  new Date().getTime() - foundTime < 2500) {
                 return;
             }
 
