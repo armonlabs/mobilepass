@@ -351,12 +351,13 @@ Details of received log item
 
 Details of received pass result event
 
-| Parameter | Description          | Type                    | Required |
-| --------- | -------------------- | ----------------------- | -------- |
-| success   | Result of pass       | Bool                    | Yes      |
-| direction | Pass direction       | [Direction](#Direction) | No       |
-| clubId    | Id of matched club   | String                  | No       |
-| clubName  | Name of matched club | String                  | No       |
+| Parameter | Description          | Type                          | Required |
+| --------- | -------------------- | ----------------------------- | -------- |
+| success   | Result of pass       | Bool                          | Yes      |
+| direction | Pass direction       | [Direction](#Direction)       | No       |
+| clubId    | Id of matched club   | String                        | No       |
+| clubName  | Name of matched club | String                        | No       |
+| failCode  | Fail reason          | [PassFailCode](#PassFailCode) | No       |
 
 <br />
 
@@ -416,6 +417,8 @@ Details of received pass result event
 | Entrance | 1     |
 | Exit     | 2     |
 
+<br />
+
 ### `LogCode`
 
 | Name                                                         | Value |
@@ -463,5 +466,29 @@ Details of received pass result event
 | Empty relay number value found during action of qr code      | 4507  |
 | Checking next action has been cancelled due to invalid value | 4508  |
 | Switch camera for qr code scanner is failed                  | 5101  |
+
+<br />
+
+### `PassFailCode`
+
+| Value | Name                             |
+| ----- | -------------------------------- |
+| 1001  | REMOTE_ACCESS_FAILED             |
+| 1002  | REMOTE_ACCESS_UNAUTHORIZED       |
+| 1003  | REMOTE_ACCESS_NOT_CONNECTED      |
+| 1004  | REMOTE_ACCESS_TIMEOUT            |
+| 1005  | REMOTE_ACCESS_COULD_NOT_BE_SENT  |
+| 1006  | REMOTE_ACCESS_REQUEST_ERROR      |
+| 1007  | REMOTE_ACCESS_INVALID_QR_CONTENT |
+| 1008  | REMOTE_ACCESS_INVALID_QR_CODE_ID |
+| 2001  | BLUETOOTH_CONNECTION_FAILED      |
+| 2002  | BLUETOOTH_CONNECTION_TIMEOUT     |
+| 2003  | BLUETOOTH_EMPTY_CONFIG           |
+| 2004  | BLUETOOTH_INVALID_QR_CONTENT     |
+| 2005  | BLUETOOTH_INVALID_DIRECTION      |
+| 2006  | BLUETOOTH_INVALID_HARDWARE_ID    |
+| 2007  | BLUETOOTH_INVALID_RELAY_NUMBER   |
+| 2008  | BLUETOOTH_DISABLED               |
+| 2009  | BLUETOOTH_INVALID_NEXT_ACTION    |
 
 <br  />

@@ -129,12 +129,14 @@ public class BaseService {
                             }
                         }
 
-                        if (error instanceof TimeoutError) {
+                        if (error.networkResponse == null) {
+                            listener.onError(0, message);
+                        } else if (error instanceof TimeoutError) {
                             listener.onError(408, message);
                         } else if (error instanceof AuthFailureError) {
                             listener.onError(401, message);
                         } else {
-                            listener.onError(error.networkResponse != null ? error.networkResponse.statusCode : 0, message);
+                            listener.onError(error.networkResponse.statusCode, message);
                         }
                     }
                 }) {

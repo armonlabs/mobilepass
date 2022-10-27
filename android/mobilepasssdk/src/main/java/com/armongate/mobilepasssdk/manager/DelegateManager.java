@@ -61,11 +61,11 @@ public class DelegateManager {
         mFinishedBefore = false;
     }
 
-    public void onCompleted(boolean success, Integer direction, String clubId, String clubName) {
+    public void onCompleted(boolean success, Integer direction, String clubId, String clubName, Integer failCode) {
         mFlowCompleted = true;
 
         if (mCurrentMobilePassDelegate != null) {
-            mCurrentMobilePassDelegate.onPassCompleted(new PassResult(success, direction, clubId, clubName));
+            mCurrentMobilePassDelegate.onPassCompleted(new PassResult(success, direction, clubId, clubName, failCode));
         }
 
         startAutoCloseTimer();

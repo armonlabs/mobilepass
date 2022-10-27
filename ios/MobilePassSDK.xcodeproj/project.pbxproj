@@ -57,6 +57,7 @@
 		DECEC29326CFF35E00280603 /* LogCodes.swift in Sources */ = {isa = PBXBuildFile; fileRef = DECEC29226CFF35E00280603 /* LogCodes.swift */; };
 		DED2AE1C289016E600CDF0FB /* PassResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = DED2AE1B289016E600CDF0FB /* PassResult.swift */; };
 		DED2AE1E2890355000CDF0FB /* ResponseAccessPointListClubInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = DED2AE1D2890355000CDF0FB /* ResponseAccessPointListClubInfo.swift */; };
+		DED3447B290AA5BF0055C58E /* PassFailCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = DED3447A290AA5BF0055C58E /* PassFailCode.swift */; };
 		DEEF5AC9263172B5006004DD /* DeviceConnectionInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEF5AC8263172B5006004DD /* DeviceConnectionInfo.swift */; };
 		DEEFD88126CDACDA00E2E4F9 /* LogLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEFD88026CDACDA00E2E4F9 /* LogLevel.swift */; };
 		DEEFD88326CDAD1E00E2E4F9 /* LogItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEFD88226CDAD1E00E2E4F9 /* LogItem.swift */; };
@@ -135,6 +136,7 @@
 		DECEC29226CFF35E00280603 /* LogCodes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogCodes.swift; sourceTree = "<group>"; };
 		DED2AE1B289016E600CDF0FB /* PassResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PassResult.swift; sourceTree = "<group>"; };
 		DED2AE1D2890355000CDF0FB /* ResponseAccessPointListClubInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResponseAccessPointListClubInfo.swift; sourceTree = "<group>"; };
+		DED3447A290AA5BF0055C58E /* PassFailCode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PassFailCode.swift; sourceTree = "<group>"; };
 		DEEF5AC8263172B5006004DD /* DeviceConnectionInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceConnectionInfo.swift; sourceTree = "<group>"; };
 		DEEFD88026CDACDA00E2E4F9 /* LogLevel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogLevel.swift; sourceTree = "<group>"; };
 		DEEFD88226CDAD1E00E2E4F9 /* LogItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogItem.swift; sourceTree = "<group>"; };
@@ -319,6 +321,7 @@
 				DE90899E26B2BA5B00C33845 /* NeedPermissionType.swift */,
 				DEEFD88026CDACDA00E2E4F9 /* LogLevel.swift */,
 				DECEC29226CFF35E00280603 /* LogCodes.swift */,
+				DED3447A290AA5BF0055C58E /* PassFailCode.swift */,
 			);
 			path = Enum;
 			sourceTree = "<group>";
@@ -498,6 +501,7 @@
 				DE14A0A325D11F7400F8B8B3 /* CryptoKeyPair.swift in Sources */,
 				DEB3115F25EC2F0500DD91AF /* BLEScanConfiguration.swift in Sources */,
 				DEEFD88126CDACDA00E2E4F9 /* LogLevel.swift in Sources */,
+				DED3447B290AA5BF0055C58E /* PassFailCode.swift in Sources */,
 				DEF0BF8725D286A600397D18 /* String+Extensions.swift in Sources */,
 				DE30E52725DD15CD004CAED2 /* Configuration.swift in Sources */,
 				DE30E53725DD393D004CAED2 /* RequestSetUserData.swift in Sources */,

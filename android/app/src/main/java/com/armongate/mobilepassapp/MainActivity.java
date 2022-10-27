@@ -54,7 +54,7 @@ public class MainActivity extends AppCompatActivity implements MobilePassDelegat
 
     @Override
     public void onPassCompleted(PassResult result) {
-        Log.i("MobilePass", "Main - Pass Completed, Result: " + result.success + ", ClubId: " + result.clubId + ", ClubName: " + result.clubName + ", Direction: " + result.direction);
+        Log.i("MobilePass", "Main - Pass Completed, Result: " + result.success + ", ClubId: " + result.clubId + ", ClubName: " + result.clubName + ", Direction: " + result.direction + ", FailCode: " + (result.failCode != null ? result.failCode : "-"));
     }
 
     @Override
