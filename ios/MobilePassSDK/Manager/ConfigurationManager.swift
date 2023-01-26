@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import UIKit
 
 enum ConfigurationError: Error {
     case validationError(String)
@@ -131,6 +132,14 @@ class ConfigurationManager: NSObject {
         return mCurrentConfig?.getLog() ?? ""
     }
     
+    public func getCloseColor() -> UIColor {
+        return mCurrentConfig?.closeColor ?? UIColor.systemBlue
+    }
+        
+    public func getQRCodesCount() -> Int {
+        return mQRCodes.count;
+    }
+        
     public func refreshList() -> Void {
         if (DelegateManager.shared.isQRCodeListRefreshable()) {
             LogManager.shared.info(message: "QR Code definition list will be retrieved again with user request")

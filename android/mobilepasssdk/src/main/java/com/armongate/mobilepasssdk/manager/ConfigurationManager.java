@@ -162,6 +162,10 @@ public class ConfigurationManager {
         return mCurrentConfig != null ? mCurrentConfig.getLog() : "";
     }
 
+    public int getQRCodesCount() {
+        return mQRCodes.size();
+    }
+
     public void refreshList() {
         if (DelegateManager.getInstance().isQRCodeListRefreshable()) {
             LogManager.getInstance().info("QR Code definition list will be retrieved again with user request");

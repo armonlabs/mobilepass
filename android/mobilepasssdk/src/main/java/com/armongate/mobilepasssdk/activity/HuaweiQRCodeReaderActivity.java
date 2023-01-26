@@ -129,7 +129,7 @@ public class HuaweiQRCodeReaderActivity extends Activity implements QRCodeListSt
                                     LogManager.getInstance().warn("QR code reader could not find matching content for " + parsedContent, LogCodes.PASSFLOW_QRCODE_READER_NO_MATCHING);
 
                                     isQRFound = false;
-                                    setInvalid(qrcodeContent,false, false);
+                                    setInvalid(parsedContent,false, false);
                                 } else  {
                                     if (activeQRCodeContent.valid) {
                                         HuaweiQRCodeReaderActivity.this.finish();
@@ -139,7 +139,7 @@ public class HuaweiQRCodeReaderActivity extends Activity implements QRCodeListSt
                                         LogManager.getInstance().warn("QR code reader found content for " + parsedContent + " but it is invalid", LogCodes.PASSFLOW_QRCODE_READER_INVALID_CONTENT);
 
                                         isQRFound = false;
-                                        setInvalid(qrcodeContent,true, false);
+                                        setInvalid(parsedContent,true, false);
                                     }
                                 }
                             } else {
@@ -241,8 +241,6 @@ public class HuaweiQRCodeReaderActivity extends Activity implements QRCodeListSt
 
     private int getQRCodeListStateMessage(int state) {
         switch (state) {
-            case QRCodeListState.INITIALIZING:
-                return R.string.text_qrcode_list_state_initializing;
             case QRCodeListState.EMPTY:
                 return R.string.text_qrcode_list_state_empty;
             case QRCodeListState.SYNCING:
@@ -262,14 +260,37 @@ public class HuaweiQRCodeReaderActivity extends Activity implements QRCodeListSt
             HuaweiQRCodeReaderActivity.this.finish();
             DelegateManager.getInstance().flowCloseWithInvalidQRCode(code);
         } else {
-            setMaskColor(isInvalidContent ? R.color.qrcode_mask_content_failure : R.color.qrcode_mask_invalid);
+            TextView txtListStateMessage = findViewById(R.id.armon_mp_hms_txtListStateInfo);
+            TextView txtQRCodeContent = findViewById(R.id.armon_mp_hms_txtQRCodeContent);
+
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (isInvalidContent) {
+                        txtListStateMessage.setText(R.string.text_qrcode_invalid);
+                    } else if (isInvalidFormat) {
+                        txtListStateMessage.setText(R.string.text_qrcode_unknown);
+                    } else {
+                        txtListStateMessage.setText(R.string.text_qrcode_not_found);
+                    }
+
+                    String qrCodeContent = code + " [" + ConfigurationManager.getInstance().getQRCodesCount() + "]";
+
+                    txtQRCodeContent.setText(qrCodeContent);
+                    txtQRCodeContent.setVisibility(View.VISIBLE);
+                    setMaskColor(isInvalidContent ? R.color.qrcode_mask_content_failure : R.color.qrcode_mask_invalid);
+                }
+            });
 
             handler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
+                    txtListStateMessage.setText(getQRCodeListStateMessage(DelegateManager.getInstance().getQRCodeListState()));
+                    txtQRCodeContent.setText("");
+                    txtQRCodeContent.setVisibility(View.GONE);
                     setMaskColor(R.color.qrcode_mask);
                 }
-            }, TimeUnit.SECONDS.toMillis(2));
+            }, TimeUnit.SECONDS.toMillis(4));
         }
     }
 

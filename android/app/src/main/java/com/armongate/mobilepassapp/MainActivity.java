@@ -35,7 +35,7 @@ public class MainActivity extends AppCompatActivity implements MobilePassDelegat
             config.serverUrl = "https://dev3.armon.com.tr:4334"; // "https://qr.marsathletic.com";
             config.language = "tr";
             config.waitBLEEnabled = true;
-            config.closeWhenInvalidQRCode = true;
+            config.closeWhenInvalidQRCode = false;
             config.connectionTimeout = 10;
             config.listener = this;
             config.logLevel = LogLevel.INFO;

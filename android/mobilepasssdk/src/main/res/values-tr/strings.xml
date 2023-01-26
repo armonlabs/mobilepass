@@ -34,4 +34,7 @@
 	<string name="text_qrcode_list_state_synced_data">Karekod tanımlaması güncel</string>
 	<string name="text_qrcode_list_state_stored_data">Karekod tanımlaması güncellenemedi</string>
 	<string name="text_qrcode_list_tap_to_refresh">Listeyi yenilemek için dokunun</string>
+	<string name="text_qrcode_not_found">Karekod tanımı bulunamadı!</string>
+	<string name="text_qrcode_invalid">Karekod tanımı geçersiz!</string>
+	<string name="text_qrcode_unknown">Geçersiz karekod formatı</string>
 </resources>

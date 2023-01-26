@@ -12,6 +12,7 @@ import AVFoundation
 class CurrentListStateModel: ObservableObject {
     @Published var state:           Int     = QRCodeListState.INITIALIZING.rawValue
     @Published var message:         String  = "text_qrcode_list_state_initializing"
+    @Published var qrCode:          String  = ""
     @Published var backgroundColor: Color   = Color.black
     
     private var timerInstance: Timer? = nil
@@ -25,17 +26,28 @@ class CurrentListStateModel: ObservableObject {
         self.message    = self.getQRCodeListStateLabel(state: state)
     }
     
-    func setInvalid(isValidationError: Bool) {
+    func setInvalid(isInvalidContent: Bool, isInvalidFormat: Bool, qrCodeContent: String) {
         if (timerInstance != nil) {
             timerInstance!.invalidate()
             timerInstance = nil
         }
         
-        backgroundColor = isValidationError ? Color.orange : Color.red
+        if (isInvalidContent) {
+            message = "text_qrcode_invalid"
+        } else if (isInvalidFormat) {
+            message = "text_qrcode_unknown"
+        } else {
+            message = "text_qrcode_not_found"
+        }
         
-        self.timerInstance = Timer.scheduledTimer(withTimeInterval: Double(2), repeats: false, block: {_ in
+        qrCode = "\(qrCodeContent) [\(ConfigurationManager.shared.getQRCodesCount())]"
+        backgroundColor = isInvalidContent ? Color.orange : Color.red
+        
+        self.timerInstance = Timer.scheduledTimer(withTimeInterval: Double(4), repeats: false, block: {_ in
             DispatchQueue.main.async {
-                self.backgroundColor = Color.black
+                self.message            = self.getQRCodeListStateLabel(state: self.state)
+                self.qrCode             = ""
+                self.backgroundColor    = Color.black
             }
         })
     }
@@ -84,7 +96,9 @@ struct ScanQRCodeView: View, QRCodeListStateDelegate {
                         if (ConfigurationManager.shared.closeWhenInvalidQRCode() && result.result == .invalidFormat) {
                             DelegateManager.shared.flowCloseWithInvalidQRCode(code: result.code)
                         } else {
-                            stateModel.setInvalid(isValidationError: result.result == .invalidContent)
+                            stateModel.setInvalid(isInvalidContent: result.result == .invalidContent,
+                                                  isInvalidFormat: result.result == .invalidFormat,
+                                                  qrCodeContent: result.code)
                         }
                     }
                 }
@@ -147,12 +161,14 @@ struct ScanQRCodeView: View, QRCodeListStateDelegate {
                                        labelSize: side == .bottom ? 12 : nil,
                                        info: side == .bottom && DelegateManager.shared.isQRCodeListRefreshable() ? "text_qrcode_list_tap_to_refresh" : nil,
                                        infoSize: side == .bottom ? 11 : nil,
+                                       qrCode: side == .bottom ? stateModel.qrCode : "",
+                                       qrCodeSize: side == .bottom ? 11 : nil,
                                        onTap: side == .bottom && DelegateManager.shared.isQRCodeListRefreshable() ? {
                                         ConfigurationManager.shared.refreshList()
                                        } : nil))
     }
     
-    private func renderMask(width: CGFloat, height: CGFloat, positionX: CGFloat, positionY: CGFloat, hasSwitchCamera: Bool, label: String, labelSize: CGFloat?, info: String?, infoSize: CGFloat?, onTap: (() -> Void)?) -> some View {
+    private func renderMask(width: CGFloat, height: CGFloat, positionX: CGFloat, positionY: CGFloat, hasSwitchCamera: Bool, label: String, labelSize: CGFloat?, info: String?, infoSize: CGFloat?, qrCode: String?, qrCodeSize: CGFloat?, onTap: (() -> Void)?) -> some View {
         return VStack {
             if (hasSwitchCamera) {
                 Image("cameraSwitch", bundle: Bundle(for: PassFlowController.self)).resizable()
@@ -168,6 +184,12 @@ struct ScanQRCodeView: View, QRCodeListStateDelegate {
                 
                 if (info != nil) {
                     Text(info!.localized(locale.identifier)).padding(.horizontal, 16).padding(.top, 2).foregroundColor(.white).font(infoSize != nil ? .system(size: infoSize!) : .headline).multilineTextAlignment(.center).onTapGesture {
+                        onTap?()
+                    }
+                }
+                
+                if (qrCode != nil && !qrCode!.isEmpty) {
+                    Text(qrCode!).padding(.horizontal, 16).padding(.top, 2).foregroundColor(.white).font(qrCodeSize != nil ? .system(size: qrCodeSize!) : .headline).multilineTextAlignment(.center).onTapGesture {
                         onTap?()
                     }
                 }
