@@ -370,7 +370,6 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
         } else if (state.state == DeviceConnectionStatus.ConnectionState.FAILED
                 || state.state == DeviceConnectionStatus.ConnectionState.NOT_FOUND
                 || (mLastConnectionState == DeviceConnectionStatus.ConnectionState.CONNECTING && state.state == DeviceConnectionStatus.ConnectionState.DISCONNECTED)) {
-
             onBluetoothConnectionFailed(-1, PassFailCode.BLUETOOTH_CONNECTION_FAILED);
         }
 

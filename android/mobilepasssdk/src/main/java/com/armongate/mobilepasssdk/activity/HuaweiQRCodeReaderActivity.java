@@ -20,7 +20,6 @@ import com.armongate.mobilepasssdk.manager.ConfigurationManager;
 import com.armongate.mobilepasssdk.manager.DelegateManager;
 import com.armongate.mobilepasssdk.manager.LogManager;
 import com.armongate.mobilepasssdk.model.QRCodeContent;
-import com.huawei.hms.hmsscankit.OnResultCallback;
 import com.huawei.hms.hmsscankit.RemoteView;
 import com.huawei.hms.ml.scan.HmsScan;
 
@@ -87,20 +86,23 @@ public class HuaweiQRCodeReaderActivity extends Activity implements QRCodeListSt
         //Initialize the RemoteView instance, and set callback for the scanning result.
         remoteView = new RemoteView.Builder().setContext(this).setBoundingBox(rect).setFormat(HmsScan.ALL_SCAN_TYPE).build();
 
+        remoteView.setOnErrorCallback(i -> {
+            LogManager.getInstance().error("QRCodeReader | Barcode process failure > " + i, LogCodes.PASSFLOW_QRCODE_READER_PROCESS_EXCEPTION, this);
+        });
+
         // Subscribe to the scanning result callback event.
-        remoteView.setOnResultCallback(new OnResultCallback() {
-            @Override
-            public void onResult(HmsScan[] result) {
-                //Check the result.
-                if (result != null && result.length > 0 && result[0] != null && !TextUtils.isEmpty(result[0].getOriginalValue())) {
-                    HmsScan obj = result[0];
+        remoteView.setOnResultCallback(result -> {
+            //Check the result.
+            if (result != null && result.length > 0) {
+                HmsScan barcodeObj = result[0];
 
-                    if (obj != null) {
-                        String qrcodeContent = obj.getOriginalValue();
+                if (barcodeObj != null) {
+                    String qrcodeContent = barcodeObj.getOriginalValue();
 
+                    if (qrcodeContent != null && !TextUtils.isEmpty(qrcodeContent)) {
                         Long foundTime = foundQRCodes.containsKey(qrcodeContent) ? foundQRCodes.get(qrcodeContent) : null;
 
-                        if (foundTime != null &&  new Date().getTime() - foundTime < 2500) {
+                        if (foundTime != null && new Date().getTime() - foundTime < 2500) {
                             return;
                         }
 
@@ -113,9 +115,9 @@ public class HuaweiQRCodeReaderActivity extends Activity implements QRCodeListSt
                             if (matcher.matches()) {
                                 isQRFound = true;
 
-                                String prefix       = matcher.group(2);
-                                String uuid         = matcher.group(3);
-                                String direction    = matcher.group(4);
+                                String prefix = matcher.group(2);
+                                String uuid = matcher.group(3);
+                                String direction = matcher.group(4);
 
                                 String parsedContent = (prefix != null ? prefix : "") + "/" + (uuid != null ? uuid : "");
 
@@ -129,8 +131,8 @@ public class HuaweiQRCodeReaderActivity extends Activity implements QRCodeListSt
                                     LogManager.getInstance().warn("QR code reader could not find matching content for " + parsedContent, LogCodes.PASSFLOW_QRCODE_READER_NO_MATCHING);
 
                                     isQRFound = false;
-                                    setInvalid(qrcodeContent,false, false);
-                                } else  {
+                                    setInvalid(parsedContent, false, false);
+                                } else {
                                     if (activeQRCodeContent.valid) {
                                         HuaweiQRCodeReaderActivity.this.finish();
                                         validQRCode = parsedContent;
@@ -139,7 +141,7 @@ public class HuaweiQRCodeReaderActivity extends Activity implements QRCodeListSt
                                         LogManager.getInstance().warn("QR code reader found content for " + parsedContent + " but it is invalid", LogCodes.PASSFLOW_QRCODE_READER_INVALID_CONTENT);
 
                                         isQRFound = false;
-                                        setInvalid(qrcodeContent,true, false);
+                                        setInvalid(parsedContent, true, false);
                                     }
                                 }
                             } else {
@@ -149,7 +151,11 @@ public class HuaweiQRCodeReaderActivity extends Activity implements QRCodeListSt
                                 setInvalid(qrcodeContent, false, true);
                             }
                         }
+                    } else {
+                        LogManager.getInstance().error("Barcode display value is empty", LogCodes.PASSFLOW_QRCODE_READER_EMPTY_RESULT, this);
                     }
+                } else {
+                    LogManager.getInstance().error("Received barcode result object is empty", LogCodes.PASSFLOW_QRCODE_READER_EMPTY_RESULT, this);
                 }
             }
         });
@@ -170,21 +176,15 @@ public class HuaweiQRCodeReaderActivity extends Activity implements QRCodeListSt
         TextView txtListRefreshMessage = findViewById(R.id.armon_mp_hms_txtListRefreshInfo);
         txtListRefreshMessage.setVisibility(DelegateManager.getInstance().isQRCodeListRefreshable() ? View.VISIBLE : View.GONE);
 
-        txtListStateMessage.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (DelegateManager.getInstance().isQRCodeListRefreshable()) {
-                    ConfigurationManager.getInstance().refreshList();
-                }
+        txtListStateMessage.setOnClickListener(view -> {
+            if (DelegateManager.getInstance().isQRCodeListRefreshable()) {
+                ConfigurationManager.getInstance().refreshList();
             }
         });
 
-        txtListRefreshMessage.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (DelegateManager.getInstance().isQRCodeListRefreshable()) {
-                    ConfigurationManager.getInstance().refreshList();
-                }
+        txtListRefreshMessage.setOnClickListener(view -> {
+            if (DelegateManager.getInstance().isQRCodeListRefreshable()) {
+                ConfigurationManager.getInstance().refreshList();
             }
         });
     }
@@ -241,8 +241,6 @@ public class HuaweiQRCodeReaderActivity extends Activity implements QRCodeListSt
 
     private int getQRCodeListStateMessage(int state) {
         switch (state) {
-            case QRCodeListState.INITIALIZING:
-                return R.string.text_qrcode_list_state_initializing;
             case QRCodeListState.EMPTY:
                 return R.string.text_qrcode_list_state_empty;
             case QRCodeListState.SYNCING:
@@ -262,14 +260,31 @@ public class HuaweiQRCodeReaderActivity extends Activity implements QRCodeListSt
             HuaweiQRCodeReaderActivity.this.finish();
             DelegateManager.getInstance().flowCloseWithInvalidQRCode(code);
         } else {
-            setMaskColor(isInvalidContent ? R.color.qrcode_mask_content_failure : R.color.qrcode_mask_invalid);
+            TextView txtListStateMessage = findViewById(R.id.armon_mp_hms_txtListStateInfo);
+            TextView txtQRCodeContent = findViewById(R.id.armon_mp_hms_txtQRCodeContent);
 
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    setMaskColor(R.color.qrcode_mask);
+            handler.post(() -> {
+                if (isInvalidContent) {
+                    txtListStateMessage.setText(R.string.text_qrcode_invalid);
+                } else if (isInvalidFormat) {
+                    txtListStateMessage.setText(R.string.text_qrcode_unknown);
+                } else {
+                    txtListStateMessage.setText(R.string.text_qrcode_not_found);
                 }
-            }, TimeUnit.SECONDS.toMillis(2));
+
+                String qrCodeContent = code + " [" + ConfigurationManager.getInstance().getQRCodesCount() + "]";
+
+                txtQRCodeContent.setText(qrCodeContent);
+                txtQRCodeContent.setVisibility(View.VISIBLE);
+                setMaskColor(isInvalidContent ? R.color.qrcode_mask_content_failure : R.color.qrcode_mask_invalid);
+            });
+
+            handler.postDelayed(() -> {
+                txtListStateMessage.setText(getQRCodeListStateMessage(DelegateManager.getInstance().getQRCodeListState()));
+                txtQRCodeContent.setText("");
+                txtQRCodeContent.setVisibility(View.GONE);
+                setMaskColor(R.color.qrcode_mask);
+            }, TimeUnit.SECONDS.toMillis(4));
         }
     }
 
@@ -287,7 +302,7 @@ public class HuaweiQRCodeReaderActivity extends Activity implements QRCodeListSt
                 maskBottom.setBackgroundResource(colorId);
             }
         } catch (Exception ex) {
-            LogManager.getInstance().error("Set mask color for invalid qr code has been failed!, error: " + ex.getLocalizedMessage(), null);
+            LogManager.getInstance().error("Set mask color for invalid qr code has been failed!, error: " + ex.getLocalizedMessage(), LogCodes.PASSFLOW_QRCODE_READER_CHANGE_MASK_FAILED);
         }
     }
 }

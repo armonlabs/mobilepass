@@ -27,10 +27,6 @@ import com.armongate.mobilepasssdk.manager.DelegateManager;
 import com.armongate.mobilepasssdk.manager.LogManager;
 import com.armongate.mobilepasssdk.manager.SettingsManager;
 import com.armongate.mobilepasssdk.model.QRCodeContent;
-import com.google.android.gms.vision.CameraSource;
-import com.google.android.gms.vision.Detector;
-import com.google.android.gms.vision.barcode.Barcode;
-import com.google.android.gms.vision.barcode.BarcodeDetector;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -39,14 +35,14 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class QRCodeReaderFragment extends Fragment implements SurfaceHolder.Callback, Detector.Processor<Barcode>, QRCodeListStateDelegate {
+public class QRCodeReaderFragment extends Fragment implements SurfaceHolder.Callback {
 
-    private CameraSource cameraSource;
+    // private CameraSource cameraSource;
     private Context mContext;
     private View mCurrentView;
     private boolean isQRFound = false;
     private boolean needSetupControls = false;
-    private int cameraFacing = CameraSource.CAMERA_FACING_BACK;
+    // private int cameraFacing = CameraSource.CAMERA_FACING_BACK;
 
     private final Map<String, Long> foundQRCodes = new HashMap<>();
 
@@ -87,6 +83,7 @@ public class QRCodeReaderFragment extends Fragment implements SurfaceHolder.Call
 
         ImageView imgSwitchCamera = mCurrentView.findViewById(R.id.armon_mp_btnSwitchCamera);
 
+        /*
         imgSwitchCamera.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -109,10 +106,11 @@ public class QRCodeReaderFragment extends Fragment implements SurfaceHolder.Call
 
             }
         });
+         */
 
-        setupControls((SurfaceView)mCurrentView.findViewById(R.id.armon_mp_qrSurfaceView));
+        // setupControls((SurfaceView)mCurrentView.findViewById(R.id.armon_mp_qrSurfaceView));
 
-        DelegateManager.getInstance().setCurrentQRCodeListStateDelegate(this);
+        // DelegateManager.getInstance().setCurrentQRCodeListStateDelegate(this);
 
         return mCurrentView;
     }
@@ -123,7 +121,7 @@ public class QRCodeReaderFragment extends Fragment implements SurfaceHolder.Call
         mContext = context;
 
         if (needSetupControls && mCurrentView != null) {
-            setupControls((SurfaceView)mCurrentView.findViewById(R.id.armon_mp_qrSurfaceView));
+            // setupControls((SurfaceView)mCurrentView.findViewById(R.id.armon_mp_qrSurfaceView));
         }
     }
 
@@ -133,6 +131,7 @@ public class QRCodeReaderFragment extends Fragment implements SurfaceHolder.Call
         foundQRCodes.clear();
     }
 
+    /*
     private void setupControls(SurfaceView cameraSV) {
         try {
             if (mContext != null) {
@@ -149,14 +148,15 @@ public class QRCodeReaderFragment extends Fragment implements SurfaceHolder.Call
             DelegateManager.getInstance().onErrorOccurred(exception);
         }
     }
-
+*/
     @Override
     public void surfaceCreated(SurfaceHolder surfaceHolder) {
         try {
             if (SettingsManager.getInstance().checkCameraPermission(getContext(), getActivity())) {
-                cameraSource.start(surfaceHolder);
+                // cameraSource.start(surfaceHolder);
             }
         } catch (Exception exception) {
+            LogManager.getInstance().debug("Something went wrong");
             DelegateManager.getInstance().onErrorOccurred(exception);
         }
     }
@@ -167,12 +167,13 @@ public class QRCodeReaderFragment extends Fragment implements SurfaceHolder.Call
     @Override
     public void surfaceDestroyed(SurfaceHolder surfaceHolder) {
         try {
-            cameraSource.stop();
+            // cameraSource.stop();
         } catch (Exception exception) {
             DelegateManager.getInstance().onErrorOccurred(exception);
         }
     }
 
+    /*
     @Override
     public void release() { }
 
@@ -213,7 +214,7 @@ public class QRCodeReaderFragment extends Fragment implements SurfaceHolder.Call
                         LogManager.getInstance().warn("QR code reader could not find matching content for " + parsedContent, LogCodes.PASSFLOW_QRCODE_READER_NO_MATCHING);
 
                         isQRFound = false;
-                        setInvalid(code.displayValue,false, false);
+                        setInvalid(parsedContent,false, false);
                     } else  {
                         if (activeQRCodeContent.valid) {
                             DelegateManager.getInstance().flowQRCodeFound(parsedContent);
@@ -221,7 +222,7 @@ public class QRCodeReaderFragment extends Fragment implements SurfaceHolder.Call
                             LogManager.getInstance().warn("QR code reader found content for " + parsedContent + " but it is invalid", LogCodes.PASSFLOW_QRCODE_READER_INVALID_CONTENT);
 
                             isQRFound = false;
-                            setInvalid(code.displayValue,true, false);
+                            setInvalid(parsedContent,true, false);
                         }
                     }
                 } else {
@@ -234,6 +235,7 @@ public class QRCodeReaderFragment extends Fragment implements SurfaceHolder.Call
         }
     }
 
+
     @Override
     public void onStateChanged(int state) {
         if (mCurrentView != null) {
@@ -245,10 +247,10 @@ public class QRCodeReaderFragment extends Fragment implements SurfaceHolder.Call
         }
     }
 
+     */
+
     private int getQRCodeListStateMessage(int state) {
         switch (state) {
-            case QRCodeListState.INITIALIZING:
-                return R.string.text_qrcode_list_state_initializing;
             case QRCodeListState.EMPTY:
                 return R.string.text_qrcode_list_state_empty;
             case QRCodeListState.SYNCING:
@@ -266,13 +268,36 @@ public class QRCodeReaderFragment extends Fragment implements SurfaceHolder.Call
         if (ConfigurationManager.getInstance().closeWhenInvalidQRCode() && isInvalidFormat) {
             DelegateManager.getInstance().flowCloseWithInvalidQRCode(code);
         } else {
-            setMaskColor(isInvalidContent ? R.color.qrcode_mask_content_failure : R.color.qrcode_mask_invalid);
+            TextView txtListStateMessage = mCurrentView.findViewById(R.id.armon_mp_txtListStateInfo);
+            TextView txtQRCodeContent = mCurrentView.findViewById(R.id.armon_mp_txtQRCodeContent);
+
+            mCurrentView.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (isInvalidContent) {
+                        txtListStateMessage.setText(R.string.text_qrcode_invalid);
+                    } else if (isInvalidFormat) {
+                        txtListStateMessage.setText(R.string.text_qrcode_unknown);
+                    } else {
+                        txtListStateMessage.setText(R.string.text_qrcode_not_found);
+                    }
+
+                    String qrCodeContent = code + " [" + ConfigurationManager.getInstance().getQRCodesCount() + "]";
+
+                    txtQRCodeContent.setText(qrCodeContent);
+                    txtQRCodeContent.setVisibility(View.VISIBLE);
+                    setMaskColor(isInvalidContent ? R.color.qrcode_mask_content_failure : R.color.qrcode_mask_invalid);
+                }
+            });
 
             mCurrentView.postDelayed(new Runnable() {
                 public void run() {
+                    txtListStateMessage.setText(getQRCodeListStateMessage(DelegateManager.getInstance().getQRCodeListState()));
+                    txtQRCodeContent.setText("");
+                    txtQRCodeContent.setVisibility(View.GONE);
                     setMaskColor(R.color.qrcode_mask);
                 }
-            }, TimeUnit.SECONDS.toMillis(2));
+            }, TimeUnit.SECONDS.toMillis(4));
         }
     }
 

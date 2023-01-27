@@ -1,16 +1,11 @@
 package com.armongate.mobilepasssdk.activity;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Bundle;
 
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -25,7 +20,6 @@ import com.armongate.mobilepasssdk.fragment.CheckFragment;
 import com.armongate.mobilepasssdk.fragment.HuaweiMapFragment;
 import com.armongate.mobilepasssdk.fragment.GoogleMapFragment;
 import com.armongate.mobilepasssdk.fragment.PermissionFragment;
-import com.armongate.mobilepasssdk.fragment.QRCodeReaderFragment;
 import com.armongate.mobilepasssdk.fragment.StatusFragment;
 import com.armongate.mobilepasssdk.manager.ConfigurationManager;
 import com.armongate.mobilepasssdk.manager.DelegateManager;
@@ -33,15 +27,10 @@ import com.armongate.mobilepasssdk.manager.LogManager;
 import com.armongate.mobilepasssdk.manager.SettingsManager;
 import com.armongate.mobilepasssdk.model.QRCodeContent;
 import com.google.gson.Gson;
-import com.huawei.hms.hmsscankit.ScanUtil;
-import com.huawei.hms.ml.scan.HmsScan;
-import com.huawei.hms.ml.scan.HmsScanAnalyzerOptions;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class PassFlowActivity extends AppCompatActivity implements PassFlowDelegate {
 
@@ -69,19 +58,16 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
         DelegateManager.getInstance().setCurrentPassFlowDelegate(this);
 
         if (savedInstanceState == null) {
-            if (ConfigurationManager.getInstance().usingHMS()) {
-                if (SettingsManager.getInstance().checkCameraPermission(getApplicationContext(), this)) {
+            if (SettingsManager.getInstance().checkCameraPermission(getApplicationContext(), this)) {
+                if (ConfigurationManager.getInstance().usingHMS()) {
                     scanQRCodesForHMS();
                 } else {
-                    getSupportFragmentManager().beginTransaction()
-                            .setReorderingAllowed(true)
-                            .add(R.id.armon_mp_fragment_container, CheckFragment.class, null)
-                            .commit();
+                    scanQRCodesForGMS();
                 }
             } else {
                 getSupportFragmentManager().beginTransaction()
                         .setReorderingAllowed(true)
-                        .add(R.id.armon_mp_fragment_container, SettingsManager.getInstance().checkCameraPermission(getApplicationContext(), this) ? QRCodeReaderFragment.class : CheckFragment.class, null)
+                        .add(R.id.armon_mp_fragment_container, CheckFragment.class, null)
                         .commit();
             }
         }
@@ -108,7 +94,7 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
                     if (ConfigurationManager.getInstance().usingHMS()) {
                         scanQRCodesForHMS();
                     } else {
-                        replaceFragment(QRCodeReaderFragment.class, null);
+                        scanQRCodesForGMS();
                     }
                 } else {
                     showPermissionMessage(NeedPermissionType.NEED_PERMISSION_CAMERA);
@@ -130,6 +116,11 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
             activePermissionCode = -1;
             activePermissionGranted = false;
         }
+    }
+
+    private void scanQRCodesForGMS() {
+        Intent intent = new Intent(this, GoogleQRCodeReaderActivity.class);
+        this.startActivity(intent);
     }
 
     private void scanQRCodesForHMS() {
@@ -200,7 +191,7 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
 
                 processAction();
             } else {
-                LogManager.getInstance().warn("Checking next action has been cancelled due to empty action list", LogCodes.PASSFLOW_EMPTY_ACTION_LIST);
+                LogManager.getInstance().error("Checking next action has been cancelled due to empty action list", LogCodes.PASSFLOW_EMPTY_ACTION_LIST, this);
                 finish();
             }
         }
@@ -215,7 +206,7 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
                     .setReorderingAllowed(true)
                     .commit();
         } catch (Exception ex) {
-            LogManager.getInstance().warn("Replace fragment failed with error message: " + ex.getLocalizedMessage(), LogCodes.UI_INVALID_STATE_TO_REPLACE_FRAGMENT);
+            LogManager.getInstance().error("Replace fragment failed with error message: " + ex.getLocalizedMessage(), LogCodes.UI_INVALID_STATE_TO_REPLACE_FRAGMENT, this);
             finish();
         }
     }
@@ -248,7 +239,7 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
             actionCurrent   = "";
 
             if (activeQRCodeContent.qrCode == null || activeQRCodeContent.qrCode.t == null) {
-                LogManager.getInstance().warn("Process qr code has been cancelled due to empty trigger type", LogCodes.PASSFLOW_PROCESS_QRCODE_TRIGGERTYPE);
+                LogManager.getInstance().error("Process qr code has been cancelled due to empty trigger type", LogCodes.PASSFLOW_PROCESS_QRCODE_TRIGGERTYPE, this);
             } else {
                 switch (activeQRCodeContent.qrCode.t) {
                     case QRTriggerType.Bluetooth:
@@ -282,20 +273,20 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
                         }
                         break;
                     default:
-                        LogManager.getInstance().warn("Process qr code has been cancelled due to empty action type", LogCodes.PASSFLOW_PROCESS_QRCODE_EMPTY_ACTION);
+                        LogManager.getInstance().error("Process qr code has been cancelled due to empty action type", LogCodes.PASSFLOW_PROCESS_QRCODE_EMPTY_ACTION, this);
                 }
 
                 processAction();
             }
         } else {
-            LogManager.getInstance().warn("Process QR Code message received with empty or invalid content", LogCodes.PASSFLOW_EMPTY_QRCODE_CONTENT);
+            LogManager.getInstance().error("Process QR Code message received with empty or invalid content", LogCodes.PASSFLOW_EMPTY_QRCODE_CONTENT, this);
         }
 
     }
 
     private void processAction() {
         if (actionCurrent.isEmpty()) {
-            LogManager.getInstance().warn("Process qr code has been cancelled due to empty action type", LogCodes.PASSFLOW_PROCESS_QRCODE_EMPTY_ACTION);
+            LogManager.getInstance().error("Process qr code has been cancelled due to empty action type", LogCodes.PASSFLOW_PROCESS_QRCODE_EMPTY_ACTION, this);
             return;
         }
 

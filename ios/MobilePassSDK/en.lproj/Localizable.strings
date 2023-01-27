@@ -38,3 +38,6 @@
 "text_qrcode_list_state_synced_data" = "QR code list is up to date";
 "text_qrcode_list_state_stored_data" = "Failed to update QR code list";
 "text_qrcode_list_tap_to_refresh" = "Tap to refresh list";
+"text_qrcode_not_found" = "QR code not found!";
+"text_qrcode_invalid" = "QR code definition is invalid!";
+"text_qrcode_unknown" = "Invalid QR code format";

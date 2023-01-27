@@ -67,7 +67,7 @@ public class HuaweiMapFragment extends Fragment implements OnMapReadyCallback, H
                 supportMapFragment.getMapAsync(this);
             }
         } catch (Exception ex) {
-            LogManager.getInstance().error("Error occurred while initializing map for location validation, error: " + ex.getLocalizedMessage(), LogCodes.PASSFLOW_MAP_ERROR);
+            LogManager.getInstance().error("Error occurred while initializing map for location validation, error: " + ex.getLocalizedMessage(), LogCodes.PASSFLOW_MAP_ERROR, getActivity());
         }
 
         return view;

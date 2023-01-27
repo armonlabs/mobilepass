@@ -38,3 +38,6 @@
 "text_qrcode_list_state_synced_data" = "Karekod tanımlaması güncel";
 "text_qrcode_list_state_stored_data" = "Karekod tanımlaması güncellenemedi";
 "text_qrcode_list_tap_to_refresh" = "Listeyi yenilemek için dokunun";
+"text_qrcode_not_found" = "Karekod tanımı bulunamadı!";
+"text_qrcode_invalid" = "Karekod tanımı geçersiz!";
+"text_qrcode_unknown" = "Geçersiz karekod formatı";

@@ -1,6 +1,8 @@
 package com.armongate.mobilepasssdk.manager;
 
+import android.content.Context;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.armongate.mobilepasssdk.constant.LogLevel;
 import com.armongate.mobilepasssdk.model.LogItem;
@@ -42,6 +44,15 @@ public class LogManager {
 
     public void error(String message, Integer code) {
         log(LogLevel.ERROR, message, code);
+    }
+
+    public void error(String message, Integer code, Context toastContext) {
+        error(message, code);
+        try {
+            Toast.makeText(toastContext, "" + code, Toast.LENGTH_SHORT).show();
+        } catch (Exception ex) {
+            error("Show toast message failed!", code);
+        }
     }
 
     public void debug(String message) {

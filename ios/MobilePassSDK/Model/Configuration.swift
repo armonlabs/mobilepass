@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import UIKit
 
 public class Configuration {
     /** Member id that will be used for validation to pass */
@@ -50,7 +51,22 @@ public class Configuration {
     /** Optional listener instance for MobilePass SDK callbacks */
     var delegate: MobilePassDelegate?
     
-    public init(memberId: String, serverUrl: String, token: String?, language: String?, qrCodeMessage: String?, allowMockLocation: Bool?, connectionTimeout: Int?, autoCloseTimeout: Int?, waitBLEEnabled: Bool?, closeWhenInvalidQRCode: Bool?, logLevel: LogLevel? = nil, delegate: MobilePassDelegate? = nil) {
+    /*** Optional close button color */
+    var closeColor: UIColor?
+    
+    public init(memberId: String,
+                serverUrl: String,
+                token: String?,
+                language: String?,
+                qrCodeMessage: String?,
+                allowMockLocation: Bool?,
+                connectionTimeout: Int?,
+                autoCloseTimeout: Int?,
+                waitBLEEnabled: Bool?,
+                closeWhenInvalidQRCode: Bool?,
+                logLevel: LogLevel? = nil,
+                closeColor: UIColor? = nil,
+                delegate: MobilePassDelegate? = nil) {
         self.memberId               = memberId
         self.serverUrl              = serverUrl
         self.qrCodeMessage          = qrCodeMessage
@@ -62,6 +78,7 @@ public class Configuration {
         self.waitBLEEnabled         = waitBLEEnabled
         self.closeWhenInvalidQRCode = closeWhenInvalidQRCode
         self.logLevel               = logLevel
+        self.closeColor             = closeColor
         self.delegate               = delegate
     }
     
