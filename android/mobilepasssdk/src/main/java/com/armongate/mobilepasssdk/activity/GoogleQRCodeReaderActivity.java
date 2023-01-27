@@ -1,11 +1,14 @@
 package com.armongate.mobilepasssdk.activity;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.TextUtils;
 import android.view.Surface;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -16,6 +19,7 @@ import androidx.camera.core.ImageProxy;
 import androidx.camera.core.Preview;
 import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.camera.view.PreviewView;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.armongate.mobilepasssdk.R;
@@ -50,7 +54,7 @@ public class GoogleQRCodeReaderActivity extends AppCompatActivity implements QRC
     private PreviewView previewView = null;
     private ProcessCameraProvider cameraProvider = null;
     private CameraSelector cameraSelector = null;
-    // private int lensFacing = CameraSelector.LENS_FACING_BACK;
+    private int lensFacing = CameraSelector.LENS_FACING_BACK;
     private Preview previewUseCase = null;
     private ImageAnalysis analysisUseCase = null;
 
@@ -100,6 +104,23 @@ public class GoogleQRCodeReaderActivity extends AppCompatActivity implements QRC
                 ConfigurationManager.getInstance().refreshList();
             }
         });
+
+        ImageView imgSwitchCamera = findViewById(R.id.armon_mp_gms_btnSwitchCamera);
+
+        imgSwitchCamera.setOnClickListener(view -> {
+            try {
+                if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+                    return;
+                }
+
+                lensFacing = lensFacing == CameraSelector.LENS_FACING_BACK ? CameraSelector.LENS_FACING_FRONT : CameraSelector.LENS_FACING_BACK;
+                setupCamera();
+            } catch (Exception ex){
+                LogManager.getInstance().error("Switch camera failed! Exception: " + ex.getLocalizedMessage(), LogCodes.UI_SWITCH_CAMERA_FAILED, getApplicationContext());
+                DelegateManager.getInstance().onErrorOccurred(ex);
+            }
+
+        });
     }
 
     @Override
@@ -133,7 +154,6 @@ public class GoogleQRCodeReaderActivity extends AppCompatActivity implements QRC
         final ListenableFuture<ProcessCameraProvider> cameraProviderFuture =
                 ProcessCameraProvider.getInstance(this);
 
-        int lensFacing = CameraSelector.LENS_FACING_BACK;
         cameraSelector = new CameraSelector.Builder().requireLensFacing(lensFacing).build();
 
         cameraProviderFuture.addListener(() -> {
