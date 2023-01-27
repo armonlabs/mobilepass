@@ -18,9 +18,19 @@
             android:exported="false"
             android:screenOrientation="portrait" />
         <activity
+            android:name=".activity.GoogleQRCodeReaderActivity"
+            android:exported="false"
+            android:theme="@style/MobilePassTheme"
+            android:screenOrientation="portrait" />
+        <activity
             android:name=".activity.PassFlowActivity"
             android:screenOrientation="portrait"
             android:theme="@style/MobilePassTheme" />
+
+        <meta-data
+            android:name="com.google.mlkit.vision.DEPENDENCIES"
+            android:value="barcode" />
+
         <!-- <activity android:name="com.huawei.hms.hmsscankit.ScanKitActivity" /> -->
     </application>
 

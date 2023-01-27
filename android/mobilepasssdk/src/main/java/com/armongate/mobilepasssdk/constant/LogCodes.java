@@ -36,6 +36,11 @@ public class LogCodes {
     public static final int PASSFLOW_QRCODE_READER_INVALID_FORMAT       = 4401;
     public static final int PASSFLOW_QRCODE_READER_INVALID_CONTENT      = 4402;
     public static final int PASSFLOW_QRCODE_READER_NO_MATCHING          = 4403;
+    public static final int PASSFLOW_QRCODE_READER_SETUP_EXCEPTION      = 4209;
+    public static final int PASSFLOW_QRCODE_READER_PROCESS_EXCEPTION    = 4210;
+    public static final int PASSFLOW_QRCODE_READER_ANALYZE_EXCEPTION    = 4211;
+    public static final int PASSFLOW_QRCODE_READER_CHANGE_MASK_FAILED   = 4212;
+    public static final int PASSFLOW_QRCODE_READER_EMPTY_RESULT         = 4213;
     public static final int PASSFLOW_ACTION_EMPTY_CONFIG                = 4501;
     public static final int PASSFLOW_ACTION_INVALID_TYPE                = 4502;
     public static final int PASSFLOW_ACTION_EMPTY_QRCODE_CONTENT        = 4503;
