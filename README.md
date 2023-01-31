@@ -329,6 +329,7 @@ Library is configurable while initialization. Available props are listed below
 | connectionTimeout | Bluetooth connection timeout in seconds. **Default: 5 seconds**                                                                                                   | Integer               | No       |
 | autoCloseTimeout  | Auto close timeout for screen after pass completed, null means stay opened                                                                                        | Integer               | No       |
 | waitBLEEnabled    | Flag to decide action for disabled Bluetooth state. "true" means wait user to enable Bluetooth, "false" means continue to next step if exists. **Default: false** | Bool                  | No       |
+| closeColor        | [iOS] Color selection for close button. **Default: SystemBlue**                                                                                                   | UIColor               | No       |
 | logLevel          | Minimum log level to follow. **Default: Info**                                                                                                                    | [LogLevel](#LogLevel) | No       |
 | delegate          | Listener instance to get information about SDK events. Giving this instance in configuration allows to get logs with start of SDK initialization                  | MobilePassDelegate    | No       |
 
