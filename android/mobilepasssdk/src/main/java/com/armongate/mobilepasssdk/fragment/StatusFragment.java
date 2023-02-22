@@ -363,7 +363,7 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
         }
 
         if (state.state == DeviceConnectionStatus.ConnectionState.CONNECTED) {
-            updateStatus( R.string.text_status_message_succeed, "", R.drawable.success);
+            updateStatus(R.string.text_status_message_succeed, "", R.drawable.success);
             onPassCompleted();
 
             onBluetoothConnectionSucceed();

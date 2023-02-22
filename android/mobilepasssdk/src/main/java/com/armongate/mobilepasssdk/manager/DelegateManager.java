@@ -1,6 +1,7 @@
 package com.armongate.mobilepasssdk.manager;
 
 import android.os.Handler;
+import android.os.Looper;
 
 import com.armongate.mobilepasssdk.constant.CancelReason;
 import com.armongate.mobilepasssdk.constant.QRCodeListState;
@@ -157,7 +158,7 @@ public class DelegateManager {
 
     private void startAutoCloseTimer() {
         if (ConfigurationManager.getInstance().autoCloseTimeout() != null) {
-            Handler handler = new Handler();
+            Handler handler = new Handler(Looper.getMainLooper());
             handler.postDelayed(new Runnable() {
                 public void run() {
                     endFlow(true, -1);

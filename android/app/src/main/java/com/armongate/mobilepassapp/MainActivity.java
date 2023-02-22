@@ -37,6 +37,7 @@ public class MainActivity extends AppCompatActivity implements MobilePassDelegat
             config.waitBLEEnabled = true;
             config.closeWhenInvalidQRCode = false;
             config.connectionTimeout = 10;
+            config.autoCloseTimeout = 5;
             config.listener = this;
             config.logLevel = LogLevel.INFO;
 
