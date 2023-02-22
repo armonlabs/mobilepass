@@ -4,6 +4,7 @@ import android.os.Handler;
 import android.os.Looper;
 
 import com.armongate.mobilepasssdk.constant.CancelReason;
+import com.armongate.mobilepasssdk.constant.PassFailCode;
 import com.armongate.mobilepasssdk.constant.QRCodeListState;
 import com.armongate.mobilepasssdk.delegate.MobilePassDelegate;
 import com.armongate.mobilepasssdk.delegate.PassFlowDelegate;
@@ -21,6 +22,7 @@ public class DelegateManager {
     private static boolean mFlowCompleted = false;
     private static boolean mDismissedManual = false;
     private static boolean mFinishedBefore = false;
+    private static Handler mAutoCloseHandler = null;
 
     private int mQRCodeListState = QRCodeListState.INITIALIZING;
 
@@ -154,16 +156,27 @@ public class DelegateManager {
         } else if (mCurrentMobilePassDelegate != null && !mFlowCompleted && !mDismissedManual && reason >= 0) {
             mCurrentMobilePassDelegate.onPassCancelled(reason);
         }
+
+        endAutoCloseTime();
     }
 
     private void startAutoCloseTimer() {
         if (ConfigurationManager.getInstance().autoCloseTimeout() != null) {
-            Handler handler = new Handler(Looper.getMainLooper());
-            handler.postDelayed(new Runnable() {
+            LogManager.getInstance().info("Start auto close timer for " + ConfigurationManager.getInstance().autoCloseTimeout() + " second(s)");
+            mAutoCloseHandler = new Handler(Looper.getMainLooper());
+            mAutoCloseHandler.postDelayed(new Runnable() {
                 public void run() {
+                    LogManager.getInstance().debug("Auto close timer has been triggered");
                     endFlow(true, -1);
                 }
             }, ConfigurationManager.getInstance().autoCloseTimeout() * 1000);
+        }
+    }
+
+    private void endAutoCloseTime() {
+        if (mAutoCloseHandler != null) {
+            LogManager.getInstance().info("End auto close timer");
+            mAutoCloseHandler.removeCallbacksAndMessages(null);
         }
     }
 
