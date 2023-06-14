@@ -116,6 +116,11 @@ struct PassFlowView: View, PassFlowDelegate {
     
     private func checkCameraPermission() -> Void {
         let videoAuthStatus = AVCaptureDevice.authorizationStatus(for: .video)
+        
+        if (videoAuthStatus != .authorized) {
+            PassFlowManager.shared.addToStates(state: .SCAN_QRCODE_NEED_PERMISSION)
+        }
+        
         switch (videoAuthStatus) {
         case .authorized:
             LogManager.shared.info(message: "Camera Permission Status: Authorized")
@@ -151,6 +156,8 @@ struct PassFlowView: View, PassFlowDelegate {
             viewModel.setAction(list: viewModel.actionList, current: nextOne)
             processAction()
         } else {
+            PassFlowManager.shared.addToStates(state: .INVALID_ACTION_LIST_EMPTY)
+            
             LogManager.shared.warn(message: "Checking next action has been cancelled due to empty action list", code: LogCodes.PASSFLOW_EMPTY_ACTION_LIST)
             DelegateManager.shared.onCancelled(dismiss: true)
         }
@@ -174,6 +181,7 @@ struct PassFlowView: View, PassFlowDelegate {
             var actionCurrent:  String      = ""
             
             if (viewModel.activeQRCodeContent!.qrCode?.t == nil) {
+                PassFlowManager.shared.addToStates(state: .INVALID_QRCODE_TRIGGER_TYPE, data: code)
                 LogManager.shared.warn(message: "Process qr code has been cancelled due to empty trigger type", code: LogCodes.PASSFLOW_PROCESS_QRCODE_TRIGGERTYPE)
             } else {
                 switch viewModel.activeQRCodeContent!.qrCode!.t! {
@@ -210,17 +218,21 @@ struct PassFlowView: View, PassFlowDelegate {
                 if (actionCurrent.isEmpty) {
                     LogManager.shared.warn(message: "Process qr code has been cancelled due to empty action type", code: LogCodes.PASSFLOW_PROCESS_QRCODE_EMPTY_ACTION)
                 } else {
+                    PassFlowManager.shared.addToStates(state: .PROCESS_ACTION_STARTED)
+                    
                     viewModel.setAction(list: actionList, current: actionCurrent)
                     processAction()
                 }
             }
         } else {
+            PassFlowManager.shared.addToStates(state: .INVALID_QRCODE_MISSING_CONTENT, data: code)
             LogManager.shared.warn(message: "Process QR Code message received with empty or invalid content", code: LogCodes.PASSFLOW_EMPTY_QRCODE_CONTENT)
         }
     }
     
     private func processAction() {
         if (viewModel.actionCurrent.count == 0) {
+            PassFlowManager.shared.addToStates(state: .INVALID_ACTION_TYPE)
             return;
         }
         
@@ -228,6 +240,7 @@ struct PassFlowView: View, PassFlowDelegate {
         LogManager.shared.debug(message: "Action list: \(viewModel.actionList)");
         
         if (viewModel.actionCurrent == PassFlowView.ACTION_LOCATION) {
+            PassFlowManager.shared.addToStates(state: .PROCESS_ACTION_LOCATION)
             viewModel.setView(viewType: FlowViewType.map)
         } else {
             viewModel.setView(viewType: FlowViewType.action)

@@ -114,14 +114,19 @@ public class QRCodeReaderCoordinator: NSObject, AVCaptureMetadataOutputObjectsDe
                 let activeQRCodeContent = ConfigurationManager.shared.getQRCodeContent(qrCodeData: qrCodeContent)
                 
                 if (activeQRCodeContent == nil) {
+                    PassFlowManager.shared.addToStates(state: .SCAN_QRCODE_NO_MATCH, data: qrCodeContent)
+                    
                     LogManager.shared.warn(message: "QR code reader could not find matching content for \(qrCodeContent)", code: LogCodes.PASSFLOW_QRCODE_READER_NO_MATCHING)
                     
                     isFound = false
                     parent.completion(QRCodeScanResult(code: stringValue, result: .noMatching))
                 } else {
                     if (activeQRCodeContent!.valid) {
+                        PassFlowManager.shared.addToStates(state: .SCAN_QRCODE_FOUND, data: qrCodeContent)
+                        
                         parent.completion(QRCodeScanResult(code: qrCodeContent, result: .success))
                     } else {
+                        PassFlowManager.shared.addToStates(state: .SCAN_QRCODE_INVALID_CONTENT, data: qrCodeContent)
                         LogManager.shared.warn(message: "QR code reader found content for \(qrCodeContent) but it is invalid", code: LogCodes.PASSFLOW_QRCODE_READER_INVALID_CONTENT)
                         
                         isFound = false
@@ -129,6 +134,7 @@ public class QRCodeReaderCoordinator: NSObject, AVCaptureMetadataOutputObjectsDe
                     }
                 }
             } else {
+                PassFlowManager.shared.addToStates(state: .SCAN_QRCODE_INVALID_FORMAT, data: stringValue)
                 LogManager.shared.warn(message: "QR code reader found unknown format > \(stringValue)", code: LogCodes.PASSFLOW_QRCODE_READER_INVALID_FORMAT)
                 
                 isFound = false
@@ -138,6 +144,7 @@ public class QRCodeReaderCoordinator: NSObject, AVCaptureMetadataOutputObjectsDe
     }
 
     func didFail(result: ScanResult) {
+        PassFlowManager.shared.addToStates(state: .SCAN_QRCODE_ERROR, data: result.rawValue.description)
         parent.completion(QRCodeScanResult(code: "", result: result))
     }
 }

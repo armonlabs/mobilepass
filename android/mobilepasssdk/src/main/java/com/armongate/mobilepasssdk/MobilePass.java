@@ -12,6 +12,7 @@ import com.armongate.mobilepasssdk.manager.BluetoothManager;
 import com.armongate.mobilepasssdk.manager.ConfigurationManager;
 import com.armongate.mobilepasssdk.manager.DelegateManager;
 import com.armongate.mobilepasssdk.manager.LogManager;
+import com.armongate.mobilepasssdk.manager.PassFlowManager;
 import com.armongate.mobilepasssdk.model.Configuration;
 import com.armongate.mobilepasssdk.service.BaseService;
 
@@ -67,6 +68,8 @@ public class MobilePass {
      * Starts qr code reading session and related flow
      */
     public void triggerQRCodeRead() {
+        PassFlowManager.getInstance().clearStates();
+
         DelegateManager.getInstance().clearFlowFlags();
         BluetoothManager.getInstance().setReady();
 

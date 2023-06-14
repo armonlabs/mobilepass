@@ -18,6 +18,7 @@ struct MapView: View {
     
     init(checkPoint: ResponseAccessPointListGeoLocation?) {
         self.checkPoint = checkPoint
+        PassFlowManager.shared.addToStates(state: .RUN_ACTION_LOCATION_WAITING)
     }
     
     var body: some View {
@@ -188,6 +189,8 @@ class MapViewCoordinator: NSObject, MKMapViewDelegate, CLLocationManagerDelegate
                 let distance = MKMapPoint(userLoc).distance(to: MKMapPoint(pinLoc))
                 
                 if (distance < CLLocationDistance(self.parent.checkPoint!.r!)) {
+                    PassFlowManager.shared.addToStates(state: .RUN_ACTION_LOCATION_VALIDATED)
+                    
                     LogManager.shared.info(message: "User is in validation area now, distance to center point: \(distance)m")
                     isLocationFound = true
                     parent.completion(.success(distance))
@@ -213,6 +216,7 @@ class MapViewCoordinator: NSObject, MKMapViewDelegate, CLLocationManagerDelegate
     
     private func checkLocationServices() {
         guard CLLocationManager.locationServicesEnabled() else {
+            PassFlowManager.shared.addToStates(state: .PROCESS_ACTION_LOCATION_NEED_ENABLED)
             LogManager.shared.info(message: "Location services disabled, needs to be changed in settings to continue")
             DelegateManager.shared.needPermission(type: NeedPermissionType.NEED_ENABLE_LOCATION_SERVICES, showMessage: true)
             return
@@ -227,6 +231,10 @@ class MapViewCoordinator: NSObject, MKMapViewDelegate, CLLocationManagerDelegate
     }
     
     private func processAuthorizationStatus(status: CLAuthorizationStatus) {
+        if (status != .authorizedAlways && status != .authorizedWhenInUse) {
+            PassFlowManager.shared.addToStates(state: .PROCESS_ACTION_LOCATION_NEED_PERMISSION)
+        }
+        
         switch status {
         case .authorizedAlways, .authorizedWhenInUse:
             LogManager.shared.info(message: "Location Permission Status: Authorized")

@@ -158,6 +158,8 @@ class ConfigurationManager: NSObject {
         mQRCodes        = (storageQRCodes != nil && storageQRCodes!.count > 0 ? try? JSONUtil.shared.decodeJSONData(jsonString: storageQRCodes!) : [:]) ?? [:]
         mAccessPoints   = (storageAccessPoints != nil && storageAccessPoints!.count > 0 ? try? JSONUtil.shared.decodeJSONData(jsonString: storageAccessPoints!) : [:]) ?? [:]
         
+        DelegateManager.shared.onQRCodesDataLoaded(count: mQRCodes.count)
+        
         LogManager.shared.info(message: "Stored QR Code list is ready to use, total: \(mQRCodes.count)")
         LogManager.shared.info(message: "Stored Access Point list is ready to use, total: \(mAccessPoints.count)")
     }
@@ -220,6 +222,7 @@ class ConfigurationManager: NSObject {
         
         let storedMemberId: String? = try? StorageManager.shared.getValue(key: StorageKeys.MEMBERID, secure: false)
         if (storedMemberId == nil || storedMemberId!.count == 0 || storedMemberId! != getMemberId()) {
+            DelegateManager.shared.onMemberIdChanged()
             needUpdate = true
         }
         
@@ -228,13 +231,20 @@ class ConfigurationManager: NSObject {
                 if case .success(_) = result {
                     do {
                         _ = try StorageManager.shared.setValue(key: StorageKeys.MEMBERID, value: self.getMemberId(), secure: false)
+                        
                         LogManager.shared.info(message: "User info has been shared with server successfully and member id is ready now")
                     } catch {
                         LogManager.shared.warn(message: "Error occurred while storing member id after sharing with server", code: LogCodes.CONFIGURATION_SERVER_SYNC_INFO)
                     }
+                    
+                    DelegateManager.shared.onMemberIdSyncCompleted(success: true, statusCode: nil)
                     self.getAccessPoints(clear: false)
-                } else {
+                } else if case .failure(let error) = result {
+                    DelegateManager.shared.onMemberIdSyncCompleted(success: false,
+                                                                   statusCode: error.code)
+                    
                     LogManager.shared.error(message: "Sending user info to server has failed", code: LogCodes.CONFIGURATION_SERVER_SYNC_INFO)
+                    
                     self.getAccessPoints(clear: false)
                 }
             })
@@ -343,9 +353,14 @@ class ConfigurationManager: NSObject {
                     LogManager.shared.error(message: "Storing received access and qr codes list failed!", code: LogCodes.CONFIGURATION_SERVER_SYNC_LIST)
                 }
                 
-                DelegateManager.shared.qrCodeListChanged(state: self.mQRCodes.count > 0 ? QRCodeListState.USING_SYNCED_DATA : QRCodeListState.EMPTY)
+                DelegateManager.shared.qrCodeListChanged(state: .USING_SYNCED_DATA,
+                                                         count: mQRCodes.count)
+
+                self.clearConfigActiveDate()
             }
         } else if case .failure(let error) = result {
+            self.clearConfigActiveDate()
+
             if (error.code == 409) {
                 LogManager.shared.warn(message: "Sync error received for qr codes and access points, definition list will be retrieved again", code: LogCodes.CONFIGURATION_SERVER_SYNC_LIST)
                 getAccessPoints(clear: true)
@@ -353,9 +368,32 @@ class ConfigurationManager: NSObject {
                 LogManager.shared.error(message: "Getting definition list of qr codes and access points has failed", code: LogCodes.CONFIGURATION_SERVER_SYNC_LIST)
                 LogManager.shared.warn(message: mQRCodes.count > 0 ? "Stored qr code list will be used for passing flow" : "There is no qr code that stored before to continue passing flow", code: LogCodes.CONFIGURATION_SERVER_SYNC_LIST)
                 
-                DelegateManager.shared.qrCodeListChanged(state: self.mQRCodes.count > 0 ? QRCodeListState.USING_STORED_DATA : QRCodeListState.EMPTY)
+                DelegateManager.shared.qrCodeListChanged(state: .USING_STORED_DATA,
+                                                         count: mQRCodes.count)
             }
         }
+    }
+
+    private func clearConfigActiveDate() -> Void {
+        do {
+            _ = try StorageManager.shared.deleteValue(key: StorageKeys.FLAG_CONFIGURATION_ACTIVE, secure: false)
+        } catch {}
+    }
+    
+    private func isGetAccessPointsAvailable() -> Bool {
+        var lastActiveDate: Int64?
+        
+        do {
+            let storedConfigActiveDate: String? = try StorageManager.shared.getValue(key: StorageKeys.FLAG_CONFIGURATION_ACTIVE, secure: false)
+            
+            if (storedConfigActiveDate != nil && storedConfigActiveDate!.count > 0) {
+                lastActiveDate = Int64(storedConfigActiveDate!)
+            }
+        } catch {
+            LogManager.shared.debug(message: "Found invalid configuration activation date at storage")
+        }
+        
+        return lastActiveDate == nil || abs(Int64((Date().timeIntervalSince1970 * 1000)) - lastActiveDate!) > 3000;
     }
     
     private func fetchAccessPoints() -> Void {
@@ -364,39 +402,45 @@ class ConfigurationManager: NSObject {
         })
     }
     
-    private var time: Int64 = 0
-    
     private func getAccessPoints(clear: Bool) -> Void {
-        LogManager.shared.info(message: "Syncing definition list with server has been started")
-        DelegateManager.shared.qrCodeListChanged(state: .SYNCING)
-        
-        var force: Bool = false
-        
-        let storedListVersion: String? = try? StorageManager.shared.getValue(key: StorageKeys.LIST_VERSION, secure: false)
+        if (self.isGetAccessPointsAvailable()) {
+            do {
+                _ = try StorageManager.shared.setValue(key: StorageKeys.FLAG_CONFIGURATION_ACTIVE, value: (Int64(Date().timeIntervalSince1970 * 1000)).description, secure: false)
+            } catch {}
             
-        if (storedListVersion == nil || storedListVersion!.count == 0 || storedListVersion! != ConfigurationDefaults.CurrentListVersion) {
-            LogManager.shared.info(message: "Force to clear definition list before fetch because of difference on version")
-            force = true
-        }
-        
-        mListClearFlag = clear || force
-        
-        if (mListClearFlag) {
-            mListSyncDate = nil
-        } else {
-            let storedSyncDate: String? = try? StorageManager.shared.getValue(key: StorageKeys.LIST_SYNC_DATE, secure: false)
+            LogManager.shared.info(message: "Syncing definition list with server has been started")
+            DelegateManager.shared.qrCodeListChanged(state: .SYNCING, count: mQRCodes.count)
             
-            if (storedSyncDate != nil) {
-                self.mListSyncDate = Int64(storedSyncDate!)
+            var force: Bool = false
+            
+            let storedListVersion: String? = try? StorageManager.shared.getValue(key: StorageKeys.LIST_VERSION, secure: false)
+            
+            if (storedListVersion == nil || storedListVersion!.count == 0 || storedListVersion! != ConfigurationDefaults.CurrentListVersion) {
+                LogManager.shared.info(message: "Force to clear definition list before fetch because of difference on version")
+                force = true
             }
+            
+            mListClearFlag = clear || force
+            
+            if (mListClearFlag) {
+                mListSyncDate = nil
+            } else {
+                let storedSyncDate: String? = try? StorageManager.shared.getValue(key: StorageKeys.LIST_SYNC_DATE, secure: false)
+                
+                if (storedSyncDate != nil) {
+                    self.mListSyncDate = Int64(storedSyncDate!)
+                }
+            }
+            
+            self.mPagination = RequestPagination(t: 100, s: 0)
+            
+            self.mTempList = []
+            self.mReceivedItemCount = 0
+            
+            self.fetchAccessPoints()
+        } else {
+            LogManager.shared.info(message: "Get access list from server is cancelled because of another active progress")
         }
-        
-        self.mPagination = RequestPagination(t: 100, s: 0)
-        
-        self.mTempList = []
-        self.mReceivedItemCount = 0
-        
-        self.fetchAccessPoints()
     }
     
 }

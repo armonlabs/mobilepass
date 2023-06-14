@@ -13,6 +13,8 @@ import com.armongate.mobilepasssdk.constant.LogLevel;
 import com.armongate.mobilepasssdk.delegate.MobilePassDelegate;
 import com.armongate.mobilepasssdk.model.Configuration;
 import com.armongate.mobilepasssdk.model.LogItem;
+import com.armongate.mobilepasssdk.model.PassFlowResult;
+import com.armongate.mobilepasssdk.model.PassFlowState;
 import com.armongate.mobilepasssdk.model.PassResult;
 
 
@@ -35,7 +37,7 @@ public class MainActivity extends AppCompatActivity implements MobilePassDelegat
             config.serverUrl = "https://dev3.armon.com.tr:4334"; // "https://qr.marsathletic.com";
             config.language = "tr";
             config.waitBLEEnabled = true;
-            config.closeWhenInvalidQRCode = false;
+            config.closeWhenInvalidQRCode = true;
             config.connectionTimeout = 10;
             config.autoCloseTimeout = 5;
             config.listener = this;
@@ -48,6 +50,7 @@ public class MainActivity extends AppCompatActivity implements MobilePassDelegat
         }
     }
 
+    /*
     @Override
     public void onPassCancelled(int reason) {
         Log.i("MobilePass", "Main - Pass Cancelled, Reason: " + reason);
@@ -62,6 +65,7 @@ public class MainActivity extends AppCompatActivity implements MobilePassDelegat
     public void onQRCodeListStateChanged(int state) {
         Log.i("MobilePass", "Main - QR Code List Changed, State: " + state);
     }
+     */
 
     @Override
     public void onLogReceived(LogItem log) {
@@ -70,6 +74,56 @@ public class MainActivity extends AppCompatActivity implements MobilePassDelegat
 
     @Override
     public void onInvalidQRCode(String content) {
-        Log.i("MobilePass", "Main - Invalid QR Code received: " + content);
+        Log.i("MobilePass", "MAIN - Invalid QR Code received: " + content);
+    }
+
+    @Override
+    public void onMemberIdChanged() {
+        Log.i("MobilePass", "MAIN - Member Id Changed");
+    }
+
+    @Override
+    public void onSyncMemberIdCompleted() {
+        Log.i("MobilePass", "MAIN - Sync MemberId Completed");
+    }
+
+    @Override
+    public void onSyncMemberIdFailed(int statusCode) {
+        Log.i("MobilePass", "MAIN - Sync MemberId Failed: " + statusCode);
+    }
+
+    @Override
+    public void onQRCodesDataLoaded(int count) {
+        Log.i("MobilePass", "MAIN - Stored QR Code list is loaded: " + count);
+    }
+
+    @Override
+    public void onQRCodesSyncStarted() {
+        Log.i("MobilePass", "MAIN - Sync QR Code list started");
+    }
+
+    @Override
+    public void onQRCodesSyncFailed(int statusCode) {
+        Log.i("MobilePass", "MAIN - Sync QR Code list failed: " + statusCode);
+    }
+
+    @Override
+    public void onQRCodesReady(boolean synced, int count) {
+        Log.i("MobilePass", "MAIN - QR Code is ready! Synced: " + synced + ", Count: " + count);
+    }
+
+    @Override
+    public void onQRCodesEmpty() {
+        Log.i("MobilePass", "MAIN - QR Code list is empty!");
+    }
+
+    @Override
+    public void onScanFlowCompleted(PassFlowResult result) {
+        Log.i("MobilePass", "MAIN - Scan Flow Completed! Status: " + result.result + ", ClubId: " + result.clubId + ", ClubName: " + result.clubName + ", Direction: " + result.direction);
+
+        for (PassFlowState state :
+                result.states) {
+            Log.i("MobilePass", "MAIN - State: " + state.state + ", Data: " + state.data);
+        }
     }
 }

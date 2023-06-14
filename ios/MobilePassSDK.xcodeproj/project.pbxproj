@@ -38,7 +38,6 @@
 		DE45B1A726C97E5800FB8712 /* ResponseAccessPointListTerminal.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE45B1A626C97E5800FB8712 /* ResponseAccessPointListTerminal.swift */; };
 		DE45B1A926C97E6800FB8712 /* ResponseAccessPointListQRCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE45B1A826C97E6800FB8712 /* ResponseAccessPointListQRCode.swift */; };
 		DE45B1AB26C985A500FB8712 /* QRCodeListStateDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE45B1AA26C985A500FB8712 /* QRCodeListStateDelegate.swift */; };
-		DE46BB7F25E2A8F6006A727A /* CancelReason.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE46BB7E25E2A8F6006A727A /* CancelReason.swift */; };
 		DE46BB8225E2A971006A727A /* QRCodeListState.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE46BB8125E2A971006A727A /* QRCodeListState.swift */; };
 		DE4B4CDF27AA81FF004CA0AF /* QRCodeScannerDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE4B4CDE27AA81FF004CA0AF /* QRCodeScannerDelegate.swift */; };
 		DE57D5AF25DCDE700099D8AB /* LogManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE57D5AE25DCDE700099D8AB /* LogManager.swift */; };
@@ -57,7 +56,6 @@
 		DECEC29326CFF35E00280603 /* LogCodes.swift in Sources */ = {isa = PBXBuildFile; fileRef = DECEC29226CFF35E00280603 /* LogCodes.swift */; };
 		DED2AE1C289016E600CDF0FB /* PassResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = DED2AE1B289016E600CDF0FB /* PassResult.swift */; };
 		DED2AE1E2890355000CDF0FB /* ResponseAccessPointListClubInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = DED2AE1D2890355000CDF0FB /* ResponseAccessPointListClubInfo.swift */; };
-		DED3447B290AA5BF0055C58E /* PassFailCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = DED3447A290AA5BF0055C58E /* PassFailCode.swift */; };
 		DEEF5AC9263172B5006004DD /* DeviceConnectionInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEF5AC8263172B5006004DD /* DeviceConnectionInfo.swift */; };
 		DEEFD88126CDACDA00E2E4F9 /* LogLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEFD88026CDACDA00E2E4F9 /* LogLevel.swift */; };
 		DEEFD88326CDAD1E00E2E4F9 /* LogItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEFD88226CDAD1E00E2E4F9 /* LogItem.swift */; };
@@ -80,6 +78,11 @@
 		DEF0BFC025D2CD1400397D18 /* RequestError.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEF0BFBF25D2CD1400397D18 /* RequestError.swift */; };
 		DEF0BFC425D2D10D00397D18 /* AccessPointService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEF0BFC325D2D10D00397D18 /* AccessPointService.swift */; };
 		DEFAD85225E8E8E500E63283 /* Int+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFAD85125E8E8E500E63283 /* Int+Extensions.swift */; };
+		DEFEC1A52A28C0F5002899F3 /* PassFlowResultCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFEC1A42A28C0F5002899F3 /* PassFlowResultCode.swift */; };
+		DEFEC1A72A28C175002899F3 /* PassFlowStateCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFEC1A62A28C175002899F3 /* PassFlowStateCode.swift */; };
+		DEFEC1A92A28C223002899F3 /* PassFlowState.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFEC1A82A28C223002899F3 /* PassFlowState.swift */; };
+		DEFEC1AB2A28C2DA002899F3 /* PassFlowResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFEC1AA2A28C2DA002899F3 /* PassFlowResult.swift */; };
+		DEFEC1AD2A28C37B002899F3 /* PassFlowManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFEC1AC2A28C37B002899F3 /* PassFlowManager.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -117,7 +120,6 @@
 		DE45B1A626C97E5800FB8712 /* ResponseAccessPointListTerminal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResponseAccessPointListTerminal.swift; sourceTree = "<group>"; };
 		DE45B1A826C97E6800FB8712 /* ResponseAccessPointListQRCode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResponseAccessPointListQRCode.swift; sourceTree = "<group>"; };
 		DE45B1AA26C985A500FB8712 /* QRCodeListStateDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRCodeListStateDelegate.swift; sourceTree = "<group>"; };
-		DE46BB7E25E2A8F6006A727A /* CancelReason.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CancelReason.swift; sourceTree = "<group>"; };
 		DE46BB8125E2A971006A727A /* QRCodeListState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRCodeListState.swift; sourceTree = "<group>"; };
 		DE4B4CDE27AA81FF004CA0AF /* QRCodeScannerDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRCodeScannerDelegate.swift; sourceTree = "<group>"; };
 		DE57D5AE25DCDE700099D8AB /* LogManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogManager.swift; sourceTree = "<group>"; };
@@ -136,7 +138,6 @@
 		DECEC29226CFF35E00280603 /* LogCodes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogCodes.swift; sourceTree = "<group>"; };
 		DED2AE1B289016E600CDF0FB /* PassResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PassResult.swift; sourceTree = "<group>"; };
 		DED2AE1D2890355000CDF0FB /* ResponseAccessPointListClubInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResponseAccessPointListClubInfo.swift; sourceTree = "<group>"; };
-		DED3447A290AA5BF0055C58E /* PassFailCode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PassFailCode.swift; sourceTree = "<group>"; };
 		DEEF5AC8263172B5006004DD /* DeviceConnectionInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceConnectionInfo.swift; sourceTree = "<group>"; };
 		DEEFD88026CDACDA00E2E4F9 /* LogLevel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogLevel.swift; sourceTree = "<group>"; };
 		DEEFD88226CDAD1E00E2E4F9 /* LogItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogItem.swift; sourceTree = "<group>"; };
@@ -159,6 +160,11 @@
 		DEF0BFBF25D2CD1400397D18 /* RequestError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestError.swift; sourceTree = "<group>"; };
 		DEF0BFC325D2D10D00397D18 /* AccessPointService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessPointService.swift; sourceTree = "<group>"; };
 		DEFAD85125E8E8E500E63283 /* Int+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Int+Extensions.swift"; sourceTree = "<group>"; };
+		DEFEC1A42A28C0F5002899F3 /* PassFlowResultCode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PassFlowResultCode.swift; sourceTree = "<group>"; };
+		DEFEC1A62A28C175002899F3 /* PassFlowStateCode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PassFlowStateCode.swift; sourceTree = "<group>"; };
+		DEFEC1A82A28C223002899F3 /* PassFlowState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PassFlowState.swift; sourceTree = "<group>"; };
+		DEFEC1AA2A28C2DA002899F3 /* PassFlowResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PassFlowResult.swift; sourceTree = "<group>"; };
+		DEFEC1AC2A28C37B002899F3 /* PassFlowManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PassFlowManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -227,6 +233,7 @@
 				DE19DF2C25DA3EB700AB250C /* DelegateManager.swift */,
 				DE57D5AE25DCDE700099D8AB /* LogManager.swift */,
 				DE30E52A25DD182F004CAED2 /* ConfigurationManager.swift */,
+				DEFEC1AC2A28C37B002899F3 /* PassFlowManager.swift */,
 			);
 			path = Manager;
 			sourceTree = "<group>";
@@ -253,6 +260,8 @@
 				DE30AAEF26CCF42700F015C5 /* QRCodeMatch.swift */,
 				DEEFD88226CDAD1E00E2E4F9 /* LogItem.swift */,
 				DED2AE1B289016E600CDF0FB /* PassResult.swift */,
+				DEFEC1A82A28C223002899F3 /* PassFlowState.swift */,
+				DEFEC1AA2A28C2DA002899F3 /* PassFlowResult.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -316,12 +325,12 @@
 			children = (
 				DE30E53D25DD39F6004CAED2 /* Direction.swift */,
 				DE30E55325DD3C26004CAED2 /* QRTriggerType.swift */,
-				DE46BB7E25E2A8F6006A727A /* CancelReason.swift */,
 				DE46BB8125E2A971006A727A /* QRCodeListState.swift */,
 				DE90899E26B2BA5B00C33845 /* NeedPermissionType.swift */,
 				DEEFD88026CDACDA00E2E4F9 /* LogLevel.swift */,
 				DECEC29226CFF35E00280603 /* LogCodes.swift */,
-				DED3447A290AA5BF0055C58E /* PassFailCode.swift */,
+				DEFEC1A42A28C0F5002899F3 /* PassFlowResultCode.swift */,
+				DEFEC1A62A28C175002899F3 /* PassFlowStateCode.swift */,
 			);
 			path = Enum;
 			sourceTree = "<group>";
@@ -495,13 +504,15 @@
 				DEEF5AC9263172B5006004DD /* DeviceConnectionInfo.swift in Sources */,
 				DEF0BFB325D2AACA00397D18 /* StorageDataDevice.swift in Sources */,
 				DEF0BF9025D28C7E00397D18 /* PacketHeaders.swift in Sources */,
+				DEFEC1A72A28C175002899F3 /* PassFlowStateCode.swift in Sources */,
 				DE07C72325D181E100BD7021 /* BluetoothManager.swift in Sources */,
 				DEF0BFBB25D2CB7E00397D18 /* BaseService.swift in Sources */,
 				DE45B1A126C97E0400FB8712 /* ResponseAccessPointList.swift in Sources */,
+				DEFEC1AB2A28C2DA002899F3 /* PassFlowResult.swift in Sources */,
+				DEFEC1AD2A28C37B002899F3 /* PassFlowManager.swift in Sources */,
 				DE14A0A325D11F7400F8B8B3 /* CryptoKeyPair.swift in Sources */,
 				DEB3115F25EC2F0500DD91AF /* BLEScanConfiguration.swift in Sources */,
 				DEEFD88126CDACDA00E2E4F9 /* LogLevel.swift in Sources */,
-				DED3447B290AA5BF0055C58E /* PassFailCode.swift in Sources */,
 				DEF0BF8725D286A600397D18 /* String+Extensions.swift in Sources */,
 				DE30E52725DD15CD004CAED2 /* Configuration.swift in Sources */,
 				DE30E53725DD393D004CAED2 /* RequestSetUserData.swift in Sources */,
@@ -514,9 +525,9 @@
 				DEF0BF9425D28CA100397D18 /* StorageKeys.swift in Sources */,
 				DEF0BFB625D2AAF600397D18 /* StorageDataUserDetails.swift in Sources */,
 				DE4B4CDF27AA81FF004CA0AF /* QRCodeScannerDelegate.swift in Sources */,
+				DEFEC1A52A28C0F5002899F3 /* PassFlowResultCode.swift in Sources */,
 				DE45B1A526C97E4600FB8712 /* ResponseAccessPointListGeoLocation.swift in Sources */,
 				DE30E52B25DD182F004CAED2 /* ConfigurationManager.swift in Sources */,
-				DE46BB7F25E2A8F6006A727A /* CancelReason.swift in Sources */,
 				DEF0BFC025D2CD1400397D18 /* RequestError.swift in Sources */,
 				DEB3116925EC2FB600DD91AF /* DeviceInRange.swift in Sources */,
 				DE27229D25D86E8900E1F8F7 /* QRCodeReaderView.swift in Sources */,
@@ -524,6 +535,7 @@
 				DEF0BF9725D28D3000397D18 /* DataTypes.swift in Sources */,
 				DEF0BF8425D2868500397D18 /* Data+Extensions.swift in Sources */,
 				DEFAD85225E8E8E500E63283 /* Int+Extensions.swift in Sources */,
+				DEFEC1A92A28C223002899F3 /* PassFlowState.swift in Sources */,
 				DE147D7225D41109000B77C8 /* MapView.swift in Sources */,
 				DEF0BFA625D29E7600397D18 /* StorageManager.swift in Sources */,
 				DE30E56225DD4565004CAED2 /* ResponseDefault.swift in Sources */,
