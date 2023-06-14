@@ -16,9 +16,11 @@ import android.view.ViewGroup;
 
 import com.armongate.mobilepasssdk.R;
 import com.armongate.mobilepasssdk.constant.LogCodes;
+import com.armongate.mobilepasssdk.constant.PassFlowStateCode;
 import com.armongate.mobilepasssdk.manager.ConfigurationManager;
 import com.armongate.mobilepasssdk.manager.DelegateManager;
 import com.armongate.mobilepasssdk.manager.LogManager;
+import com.armongate.mobilepasssdk.manager.PassFlowManager;
 import com.armongate.mobilepasssdk.manager.SettingsManager;
 import com.huawei.hmf.tasks.OnCompleteListener;
 import com.huawei.hmf.tasks.Task;
@@ -48,6 +50,8 @@ public class HuaweiMapFragment extends Fragment implements OnMapReadyCallback, H
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        PassFlowManager.getInstance().addToStates(PassFlowStateCode.RUN_ACTION_LOCATION_WAITING);
+
         MapsInitializer.initialize(getContext());
         mUpdatesCancelled = false;
 
@@ -67,6 +71,7 @@ public class HuaweiMapFragment extends Fragment implements OnMapReadyCallback, H
                 supportMapFragment.getMapAsync(this);
             }
         } catch (Exception ex) {
+            PassFlowManager.getInstance().addToStates(PassFlowStateCode.RUN_ACTION_LOCATION_FAILED, ex.getLocalizedMessage());
             LogManager.getInstance().error("Error occurred while initializing map for location validation, error: " + ex.getLocalizedMessage(), LogCodes.PASSFLOW_MAP_ERROR, getActivity());
         }
 
@@ -163,6 +168,8 @@ public class HuaweiMapFragment extends Fragment implements OnMapReadyCallback, H
                     float distance = location.distanceTo(dest);
 
                     if (distance < mPointRadius) {
+                        PassFlowManager.getInstance().addToStates(PassFlowStateCode.RUN_ACTION_LOCATION_VALIDATED);
+
                         cancelUpdates();
                         LogManager.getInstance().info("User is in validation area now, distance to center point: " + distance);
                         DelegateManager.getInstance().flowLocationValidated();

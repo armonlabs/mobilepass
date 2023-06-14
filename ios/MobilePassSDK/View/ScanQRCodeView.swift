@@ -19,6 +19,7 @@ class CurrentListStateModel: ObservableObject {
     
     init(state: Int) {
         self.update(state: state)
+        PassFlowManager.shared.addToStates(state: .SCAN_QRCODE_STARTED)
     }
     
     func update(state: Int) {

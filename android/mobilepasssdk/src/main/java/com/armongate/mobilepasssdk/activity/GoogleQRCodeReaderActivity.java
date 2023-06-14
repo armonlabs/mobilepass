@@ -24,11 +24,13 @@ import androidx.core.content.ContextCompat;
 
 import com.armongate.mobilepasssdk.R;
 import com.armongate.mobilepasssdk.constant.LogCodes;
+import com.armongate.mobilepasssdk.constant.PassFlowStateCode;
 import com.armongate.mobilepasssdk.constant.QRCodeListState;
 import com.armongate.mobilepasssdk.delegate.QRCodeListStateDelegate;
 import com.armongate.mobilepasssdk.manager.ConfigurationManager;
 import com.armongate.mobilepasssdk.manager.DelegateManager;
 import com.armongate.mobilepasssdk.manager.LogManager;
+import com.armongate.mobilepasssdk.manager.PassFlowManager;
 import com.armongate.mobilepasssdk.model.QRCodeContent;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.mlkit.vision.barcode.BarcodeScanner;
@@ -71,6 +73,7 @@ public class GoogleQRCodeReaderActivity extends AppCompatActivity implements QRC
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        PassFlowManager.getInstance().addToStates(PassFlowStateCode.SCAN_QRCODE_STARTED);
 
         isQRFound = false;
         validQRCode = null;
@@ -116,6 +119,7 @@ public class GoogleQRCodeReaderActivity extends AppCompatActivity implements QRC
                 lensFacing = lensFacing == CameraSelector.LENS_FACING_BACK ? CameraSelector.LENS_FACING_FRONT : CameraSelector.LENS_FACING_BACK;
                 setupCamera();
             } catch (Exception ex){
+                PassFlowManager.getInstance().addToStates(PassFlowStateCode.SCAN_QRCODE_ERROR, ex.getLocalizedMessage());
                 LogManager.getInstance().error("Switch camera failed! Exception: " + ex.getLocalizedMessage(), LogCodes.UI_SWITCH_CAMERA_FAILED, getApplicationContext());
                 DelegateManager.getInstance().onErrorOccurred(ex);
             }
@@ -161,6 +165,7 @@ public class GoogleQRCodeReaderActivity extends AppCompatActivity implements QRC
                 cameraProvider = cameraProviderFuture.get();
                 bindAllCameraUseCases();
             } catch (ExecutionException | InterruptedException e) {
+                PassFlowManager.getInstance().addToStates(PassFlowStateCode.SCAN_QRCODE_ERROR, e.getLocalizedMessage());
                 LogManager.getInstance().error("QRCodeReader | Add listener to camera provider failed! > " + e.getLocalizedMessage(), LogCodes.PASSFLOW_QRCODE_READER_SETUP_EXCEPTION, this);
             }
         }, ContextCompat.getMainExecutor(this));
@@ -192,6 +197,7 @@ public class GoogleQRCodeReaderActivity extends AppCompatActivity implements QRC
 
             cameraProvider.bindToLifecycle(this, cameraSelector, previewUseCase);
         } catch (Exception ex) {
+            PassFlowManager.getInstance().addToStates(PassFlowStateCode.SCAN_QRCODE_ERROR, ex.getLocalizedMessage());
             LogManager.getInstance().error("QRCodeReader | Error while bind preview use case > " + ex.getLocalizedMessage(), LogCodes.PASSFLOW_QRCODE_READER_SETUP_EXCEPTION, this);
         }
     }
@@ -216,15 +222,10 @@ public class GoogleQRCodeReaderActivity extends AppCompatActivity implements QRC
 
             cameraProvider.bindToLifecycle(this, cameraSelector, analysisUseCase);
         } catch (Exception ex) {
+            PassFlowManager.getInstance().addToStates(PassFlowStateCode.SCAN_QRCODE_ERROR, ex.getLocalizedMessage());
             LogManager.getInstance().error("QRCodeReader | Error while bind analysis use case > " + ex.getLocalizedMessage(), LogCodes.PASSFLOW_QRCODE_READER_SETUP_EXCEPTION, this);
         }
     }
-
-    /*
-    protected int getRotation() throws NullPointerException {
-        return previewView.getDisplay().getRotation();
-    }
-     */
 
     @SuppressLint("UnsafeOptInUsageError")
     private void analyze(@NonNull ImageProxy image) {
@@ -240,9 +241,13 @@ public class GoogleQRCodeReaderActivity extends AppCompatActivity implements QRC
 
             barcodeScanner.process(inputImage)
                     .addOnSuccessListener(this::onSuccessListener)
-                    .addOnFailureListener(e -> LogManager.getInstance().error("QRCodeReader | Barcode process failure > " + e.getLocalizedMessage(), LogCodes.PASSFLOW_QRCODE_READER_PROCESS_EXCEPTION, this))
+                    .addOnFailureListener(e -> {
+                            PassFlowManager.getInstance().addToStates(PassFlowStateCode.SCAN_QRCODE_ERROR, e.getLocalizedMessage());
+                            LogManager.getInstance().error("QRCodeReader | Barcode process failure > " + e.getLocalizedMessage(), LogCodes.PASSFLOW_QRCODE_READER_PROCESS_EXCEPTION, this);
+                    })
                     .addOnCompleteListener(task -> image.close());
         } catch (Exception ex) {
+            PassFlowManager.getInstance().addToStates(PassFlowStateCode.SCAN_QRCODE_ERROR, ex.getLocalizedMessage());
             LogManager.getInstance().error("QRCodeReader | Barcode analyze failure > " + ex.getLocalizedMessage(), LogCodes.PASSFLOW_QRCODE_READER_ANALYZE_EXCEPTION, this);
         }
     }
@@ -284,16 +289,19 @@ public class GoogleQRCodeReaderActivity extends AppCompatActivity implements QRC
                             QRCodeContent activeQRCodeContent = ConfigurationManager.getInstance().getQRCodeContent(parsedContent);
 
                             if (activeQRCodeContent == null) {
+                                PassFlowManager.getInstance().addToStates(PassFlowStateCode.SCAN_QRCODE_NO_MATCH, qrcodeContent);
                                 LogManager.getInstance().warn("QR code reader could not find matching content for " + parsedContent, LogCodes.PASSFLOW_QRCODE_READER_NO_MATCHING);
 
                                 isQRFound = false;
                                 setInvalid(parsedContent, false, false);
                             } else {
                                 if (activeQRCodeContent.valid) {
+                                    PassFlowManager.getInstance().addToStates(PassFlowStateCode.SCAN_QRCODE_FOUND, qrcodeContent);
+
                                     GoogleQRCodeReaderActivity.this.finish();
                                     validQRCode = parsedContent;
-                                    // DelegateManager.getInstance().flowQRCodeFound(parsedContent);
                                 } else {
+                                    PassFlowManager.getInstance().addToStates(PassFlowStateCode.SCAN_QRCODE_INVALID_CONTENT, qrcodeContent);
                                     LogManager.getInstance().warn("QR code reader found content for " + parsedContent + " but it is invalid", LogCodes.PASSFLOW_QRCODE_READER_INVALID_CONTENT);
 
                                     isQRFound = false;
@@ -301,6 +309,7 @@ public class GoogleQRCodeReaderActivity extends AppCompatActivity implements QRC
                                 }
                             }
                         } else {
+                            PassFlowManager.getInstance().addToStates(PassFlowStateCode.SCAN_QRCODE_INVALID_FORMAT, qrcodeContent);
                             LogManager.getInstance().warn("QR code reader found unknown format > " + qrcodeContent, LogCodes.PASSFLOW_QRCODE_READER_INVALID_FORMAT);
 
                             isQRFound = false;
@@ -308,9 +317,11 @@ public class GoogleQRCodeReaderActivity extends AppCompatActivity implements QRC
                         }
                     }
                 } else {
+                    PassFlowManager.getInstance().addToStates(PassFlowStateCode.SCAN_QRCODE_ERROR, "Received QR Code display value is empty");
                     LogManager.getInstance().error("Barcode display value is empty", LogCodes.PASSFLOW_QRCODE_READER_EMPTY_RESULT, this);
                 }
             } else {
+                PassFlowManager.getInstance().addToStates(PassFlowStateCode.SCAN_QRCODE_ERROR, "Received QR Code result object is empty");
                 LogManager.getInstance().error("Received barcode result object is empty", LogCodes.PASSFLOW_QRCODE_READER_EMPTY_RESULT, this);
             }
         }
@@ -330,7 +341,6 @@ public class GoogleQRCodeReaderActivity extends AppCompatActivity implements QRC
                 return R.string.text_qrcode_list_state_initializing;
         }
     }
-
 
     private void setInvalid(String code, boolean isInvalidContent, boolean isInvalidFormat) {
         if (ConfigurationManager.getInstance().closeWhenInvalidQRCode() && isInvalidFormat) {
@@ -379,9 +389,9 @@ public class GoogleQRCodeReaderActivity extends AppCompatActivity implements QRC
                 maskBottom.setBackgroundResource(colorId);
             }
         } catch (Exception ex) {
+            PassFlowManager.getInstance().addToStates(PassFlowStateCode.SCAN_QRCODE_ERROR, "Set mask color failed! Error: " + ex.getLocalizedMessage());
             LogManager.getInstance().error("Set mask color for invalid qr code has been failed!, error: " + ex.getLocalizedMessage(), LogCodes.PASSFLOW_QRCODE_READER_CHANGE_MASK_FAILED, this);
         }
     }
-
 
 }

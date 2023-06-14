@@ -195,6 +195,8 @@ public class ConfigurationManager {
             mAccessPoints = new HashMap<>();
         }
 
+        DelegateManager.getInstance().onQRCodesDataLoaded(mQRCodes.size());
+
         LogManager.getInstance().info("Stored QR Code list is ready to use, total: " + mQRCodes.size());
         LogManager.getInstance().info("Stored Access Point list is ready to use, total: " + mAccessPoints.size());
     }
@@ -261,6 +263,7 @@ public class ConfigurationManager {
             String storedMemberId = StorageManager.getInstance().getValue(mCurrentContext, StorageKeys.MEMBERID);
 
             if (storedMemberId == null || storedMemberId.isEmpty() || !storedMemberId.equals(getMemberId())) {
+                DelegateManager.getInstance().onMemberIdChanged();
                 needUpdate = true;
             }
 
@@ -273,13 +276,18 @@ public class ConfigurationManager {
                     @Override
                     public void onCompleted(Object response) {
                         StorageManager.getInstance().setValue(mCurrentContext, StorageKeys.MEMBERID, getMemberId());
+
+                        DelegateManager.getInstance().onMemberIdSyncCompleted(true, null);
                         LogManager.getInstance().info("User info has been shared with server successfully and member id is ready now");
+
                         getAccessPoints(false);
                     }
 
                     @Override
                     public void onError(int statusCode, String message) {
+                        DelegateManager.getInstance().onMemberIdSyncCompleted(false, statusCode);
                         LogManager.getInstance().error("Sending user info to server has failed with status code " + statusCode, LogCodes.CONFIGURATION_SERVER_SYNC_INFO);
+
                         getAccessPoints(false);
                     }
                 });
@@ -376,7 +384,9 @@ public class ConfigurationManager {
                 LogManager.getInstance().warn("There is no qr code that retrieved from server to continue passing flow", LogCodes.CONFIGURATION_SERVER_SYNC_LIST);
             }
 
-            DelegateManager.getInstance().onQRCodeListStateChanged(mQRCodes.size() > 0 ? QRCodeListState.USING_SYNCED_DATA : QRCodeListState.EMPTY);
+            DelegateManager.getInstance().onQRCodeListStateChanged(QRCodeListState.USING_SYNCED_DATA, mQRCodes.size());
+
+            clearConfigActiveDate();
         }
     }
 
@@ -389,54 +399,83 @@ public class ConfigurationManager {
 
             @Override
             public void onError(int statusCode, String message) {
+                clearConfigActiveDate();
+
                 if (statusCode == 409) {
                     LogManager.getInstance().warn("Sync error received for qr codes and access points, definition list will be retrieved again", LogCodes.CONFIGURATION_SERVER_SYNC_LIST);
                     getAccessPoints(true);
                 } else {
+                    DelegateManager.getInstance().onQRCodesSyncFailed(statusCode);
+
                     LogManager.getInstance().error("Getting definition list of qr codes and access points has failed with status code " + statusCode, LogCodes.CONFIGURATION_SERVER_SYNC_LIST);
                     LogManager.getInstance().warn(mQRCodes.size() > 0 ? "Stored qr code list will be used for passing flow" : "There is no qr code that stored before to continue passing flow", LogCodes.CONFIGURATION_SERVER_SYNC_LIST);
-                    DelegateManager.getInstance().onQRCodeListStateChanged(mQRCodes.size() > 0 ? QRCodeListState.USING_STORED_DATA : QRCodeListState.EMPTY);
+                    DelegateManager.getInstance().onQRCodeListStateChanged(QRCodeListState.USING_STORED_DATA, mQRCodes.size());
                 }
             }
         });
     }
 
-    private void getAccessPoints(boolean clear) {
-        LogManager.getInstance().info("Syncing definition list with server has been started");
-        DelegateManager.getInstance().onQRCodeListStateChanged(QRCodeListState.SYNCING);
+    private void clearConfigActiveDate() {
+        StorageManager.getInstance().deleteValue(mCurrentContext, StorageKeys.FLAG_CONFIGURATION_ACTIVE);
+    }
 
-        boolean force = false;
+    private boolean isGetAccessPointsAvailable() {
+        String storedConfigActiveDate = StorageManager.getInstance().getValue(mCurrentContext, StorageKeys.FLAG_CONFIGURATION_ACTIVE);
+        Long lastActiveDate = null;
 
-        String storedListVersion = StorageManager.getInstance().getValue(mCurrentContext, StorageKeys.LIST_VERSION);
-
-        if (storedListVersion == null || storedListVersion.isEmpty() || !storedListVersion.equals(ConfigurationDefaults.CurrentListVersion)) {
-            LogManager.getInstance().info("Force to clear definition list before fetch because of difference on version");
-            force = true;
-        }
-
-        mListClearFlag = clear || force;
-
-        if (mListClearFlag) {
-            mListSyncDate = null;
-        } else {
-            String storedSyncDate = StorageManager.getInstance().getValue(mCurrentContext, StorageKeys.LIST_SYNC_DATE);
-
-            if (storedSyncDate != null && !storedSyncDate.isEmpty()) {
-                try {
-                    mListSyncDate = Long.parseLong(storedSyncDate);
-                } catch (Exception ex) {
-                    LogManager.getInstance().debug("Found invalid sync date at storage: " + storedSyncDate);
-                }
+        if (storedConfigActiveDate != null && !storedConfigActiveDate.isEmpty()) {
+            try {
+                lastActiveDate = Long.parseLong(storedConfigActiveDate);
+            } catch (Exception ex) {
+                LogManager.getInstance().debug("Found invalid configuration activation date at storage: " + storedConfigActiveDate);
             }
         }
 
-        mPagination = new RequestPagination();
-        mPagination.t = 100;
-        mPagination.s = 0;
+        return lastActiveDate == null || (Math.abs(new Date().getTime() - lastActiveDate) > 3000);
+    }
 
-        mReceivedItemCount = 0;
-        mTempList = new ArrayList<>();
+    private void getAccessPoints(boolean clear) {
+        if (isGetAccessPointsAvailable()) {
+            StorageManager.getInstance().setValue(mCurrentContext, StorageKeys.FLAG_CONFIGURATION_ACTIVE, new Date().getTime() + "");
 
-        this.fetchAccessPoints();
+            LogManager.getInstance().info("Syncing definition list with server has been started");
+            DelegateManager.getInstance().onQRCodeListStateChanged(QRCodeListState.SYNCING, mQRCodes.size());
+
+            boolean force = false;
+
+            String storedListVersion = StorageManager.getInstance().getValue(mCurrentContext, StorageKeys.LIST_VERSION);
+
+            if (storedListVersion == null || !storedListVersion.equals(ConfigurationDefaults.CurrentListVersion)) {
+                LogManager.getInstance().info("Force to clear definition list before fetch because of difference on version");
+                force = true;
+            }
+
+            mListClearFlag = clear || force;
+
+            if (mListClearFlag) {
+                mListSyncDate = null;
+            } else {
+                String storedSyncDate = StorageManager.getInstance().getValue(mCurrentContext, StorageKeys.LIST_SYNC_DATE);
+
+                if (storedSyncDate != null && !storedSyncDate.isEmpty()) {
+                    try {
+                        mListSyncDate = Long.parseLong(storedSyncDate);
+                    } catch (Exception ex) {
+                        LogManager.getInstance().debug("Found invalid sync date at storage: " + storedSyncDate);
+                    }
+                }
+            }
+
+            mPagination = new RequestPagination();
+            mPagination.t = 100;
+            mPagination.s = 0;
+
+            mReceivedItemCount = 0;
+            mTempList = new ArrayList<>();
+
+            this.fetchAccessPoints();
+        } else {
+            LogManager.getInstance().info("Get access list from server is cancelled because of another active progress");
+        }
     }
 }

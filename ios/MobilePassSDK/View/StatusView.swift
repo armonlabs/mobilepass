@@ -85,15 +85,21 @@ struct StatusView: View {
     private func startAction() {
         if (currentConfig != nil) {
             if (currentConfig!.currentAction == PassFlowView.ACTION_REMOTEACCESS) {
+                PassFlowManager.shared.addToStates(state: PassFlowStateCode.PROCESS_ACTION_REMOTE_ACCESS)
                 runRemoteAccess()
             } else if (currentConfig!.currentAction == PassFlowView.ACTION_BLUETOOTH) {
+                PassFlowManager.shared.addToStates(state: PassFlowStateCode.PROCESS_ACTION_BLUETOOTH)
                 runBluetooth()
             } else {
+                PassFlowManager.shared.addToStates(state: PassFlowStateCode.INVALID_ACTION_TYPE)
                 LogManager.shared.error(message: "Starting pass action has been cancelled due to invalid type", code: LogCodes.PASSFLOW_ACTION_INVALID_TYPE)
+                
                 viewModel.update(message: "text_status_message_error_invalid_action", icon: "error")
             }
         } else {
+            PassFlowManager.shared.addToStates(state: PassFlowStateCode.INVALID_ACTION_TYPE)
             LogManager.shared.error(message: "Starting pass action has been cancelled due to empty config", code: LogCodes.PASSFLOW_ACTION_EMPTY_CONFIG)
+            
             viewModel.update(message: "text_status_message_error_empty_config", icon: "error")
         }
     }
@@ -104,29 +110,41 @@ struct StatusView: View {
             return
         }
         
+        PassFlowManager.shared.addToStates(state: PassFlowStateCode.RUN_ACTION_REMOTE_ACCESS_STARTED)
+        
         if (currentConfig?.qrCode == nil) {
+            PassFlowManager.shared.addToStates(state: PassFlowStateCode.INVALID_REMOTE_ACCESS_QRCODE_DATA)
             LogManager.shared.warn(message: "Run remote access action has been terminated due to invalid qr code content", code: LogCodes.PASSFLOW_ACTION_EMPTY_QRCODE_CONTENT)
-            onRemoteAccessFailed(errorCode: nil, message: "text_status_message_error_invalid_qrcode_content", failCode: .REMOTE_ACCESS_INVALID_QR_CONTENT)
+            
+            onRemoteAccessFailed(errorCode: nil, message: "text_status_message_error_invalid_qrcode_content")
+            
             return
         }
         
         if (currentConfig!.qrCode!.i == nil || currentConfig!.qrCode!.i!.isEmpty) {
+            PassFlowManager.shared.addToStates(state: PassFlowStateCode.INVALID_REMOTE_ACCESS_QRCODE_ID)
             LogManager.shared.warn(message: "Run remote access action has been terminated due to invalid qr code id", code: LogCodes.PASSFLOW_ACTION_EMPTY_QRCODE_ID)
-            onRemoteAccessFailed(errorCode: nil, message: "text_status_message_error_invalid_qrcode_id", failCode: .REMOTE_ACCESS_INVALID_QR_CODE_ID)
+            
+            onRemoteAccessFailed(errorCode: nil, message: "text_status_message_error_invalid_qrcode_id")
+            
             return
         }
         
         DelegateManager.shared.flowConnectionStateChanged(isActive: true)
+        
+        PassFlowManager.shared.addToStates(state: PassFlowStateCode.RUN_ACTION_REMOTE_ACCESS_REQUEST)
            
         AccessPointService().remoteOpen(request: RequestAccess(q: currentConfig!.qrCode!.i!), completion: { (result) in
             DispatchQueue.main.async {
                 if case .success(_) = result {
+                    PassFlowManager.shared.addToStates(state: PassFlowStateCode.RUN_ACTION_REMOTE_ACCESS_REQUEST_SUCCEED)
+                    
                     self.viewModel.update(message: "text_status_message_succeed", icon: "success")
-                    onPassCompleted(success: true)
+                    onPassCompleted(success: true, isRemoteAccess: true)
                     
                     DelegateManager.shared.flowConnectionStateChanged(isActive: false)
                 } else if case .failure(let error) = result {
-                    onRemoteAccessFailed(errorCode: error.code, message: error.message, failCode: nil)
+                    onRemoteAccessFailed(errorCode: error.code, message: error.message)
                     DelegateManager.shared.flowConnectionStateChanged(isActive: false)
                 }
             }
@@ -140,33 +158,50 @@ struct StatusView: View {
             return
         }
         
+        PassFlowManager.shared.addToStates(state: PassFlowStateCode.RUN_ACTION_BLUETOOTH_STARTED)
+        
         if (currentConfig == nil) {
+            PassFlowManager.shared.addToStates(state: PassFlowStateCode.INVALID_BLUETOOTH_QRCODE_DATA)
             LogManager.shared.error(message: "Run bluetooth action has been cancelled due to empty config", code: LogCodes.PASSFLOW_ACTION_EMPTY_CONFIG)
-            onBluetoothConnectionFailed(message: "text_status_message_error_empty_config", failCode: .BLUETOOTH_EMPTY_CONFIG)
+            
+            onBluetoothConnectionFailed(message: "text_status_message_error_empty_config")
+            
             return
         }
         
         if (currentConfig!.qrCode == nil) {
+            PassFlowManager.shared.addToStates(state: PassFlowStateCode.INVALID_BLUETOOTH_QRCODE_DATA)
             LogManager.shared.warn(message: "Run bluetooth action has been terminated due to invalid qr code content", code: LogCodes.PASSFLOW_ACTION_EMPTY_QRCODE_CONTENT)
-            onBluetoothConnectionFailed(message: "text_status_message_error_invalid_qrcode_content", failCode: .BLUETOOTH_INVALID_QR_CONTENT)
+            
+            onBluetoothConnectionFailed(message: "text_status_message_error_invalid_qrcode_content")
+            
             return
         }
         
         if (currentConfig!.qrCode!.d == nil) {
+            PassFlowManager.shared.addToStates(state: PassFlowStateCode.INVALID_BLUETOOTH_DIRECTION)
             LogManager.shared.warn(message: "Run bluetooth action has been terminated due to invalid direction", code: LogCodes.PASSFLOW_ACTION_EMPTY_DIRECTION)
-            onBluetoothConnectionFailed(message: "text_status_message_error_invalid_direction", failCode: .BLUETOOTH_INVALID_DIRECTION)
+            
+            onBluetoothConnectionFailed(message: "text_status_message_error_invalid_direction")
+            
             return
         }
         
         if (currentConfig!.qrCode!.h == nil || currentConfig!.qrCode!.h!.isEmpty) {
+            PassFlowManager.shared.addToStates(state: PassFlowStateCode.INVALID_BLUETOOTH_HARDWARE_ID)
             LogManager.shared.warn(message: "Run bluetooth action has been terminated due to invalid hardware id", code: LogCodes.PASSFLOW_ACTION_EMPTY_HARDWAREID)
-            onBluetoothConnectionFailed(message: "text_status_message_error_invalid_hardware_id", failCode: .BLUETOOTH_INVALID_HARDWARE_ID)
+            
+            onBluetoothConnectionFailed(message: "text_status_message_error_invalid_hardware_id")
+            
             return
         }
         
         if (currentConfig!.qrCode!.r == nil) {
+            PassFlowManager.shared.addToStates(state: PassFlowStateCode.INVALID_BLUETOOTH_RELAY_NUMBER)
             LogManager.shared.warn(message: "Run bluetooth action has been terminated due to invalid relay number", code: LogCodes.PASSFLOW_ACTION_EMPTY_RELAYNUMBER)
-            onBluetoothConnectionFailed(message: "text_status_message_error_invalid_relay_number", failCode: .BLUETOOTH_INVALID_RELAY_NUMBER)
+            
+            onBluetoothConnectionFailed(message: "text_status_message_error_invalid_relay_number")
+            
             return
         }
         
@@ -185,18 +220,24 @@ struct StatusView: View {
                                                                     hardwareId: currentConfig!.qrCode!.h!,
                                                                     relayNumber: currentConfig!.qrCode!.r!)
                 
+            PassFlowManager.shared.addToStates(state: PassFlowStateCode.RUN_ACTION_BLUETOOTH_START_SCAN)
             BluetoothManager.shared.startScan(configuration: config)
         } else {
+            PassFlowManager.shared.addToStates(state: PassFlowStateCode.PROCESS_ACTION_BLUETOOTH_NEED_ENABLED)
+            
             if (ConfigurationManager.shared.waitForBLEEnabled() || currentConfig?.nextAction == nil) {
                 if (BluetoothManager.shared.getCurrentState().needAuthorize) {
+                    PassFlowManager.shared.addToStates(state: PassFlowStateCode.PROCESS_ACTION_BLUETOOTH_NEED_PERMISSION)
                     DelegateManager.shared.needPermission(type: NeedPermissionType.NEED_PERMISSION_BLUETOOTH, showMessage: true)
                 } else {
+                    PassFlowManager.shared.addToStates(state: PassFlowStateCode.RUN_ACTION_BLUETOOTH_OFF_WAITING)
                     DelegateManager.shared.needPermission(type: NeedPermissionType.NEED_ENABLE_BLE, showMessage: false)
                     self.viewModel.update(message: "text_status_message_need_ble_enabled", icon: "warning")
                 }
             } else {
+                PassFlowManager.shared.addToStates(state: PassFlowStateCode.RUN_ACTION_BLUETOOTH_OFF_NO_WAIT)
                 LogManager.shared.info(message: "Bluetooth disabled now and SDK configuration says no need to wait for it. Ignore Bluetooth scanning and continue to next action.")
-                self.onBluetoothConnectionFailed(message: nil, failCode: .BLUETOOTH_DISABLED)
+                self.onBluetoothConnectionFailed(message: nil)
             }
         }
     }
@@ -217,17 +258,22 @@ struct StatusView: View {
     
     private func onConnectionStateChanged(state: DeviceConnectionStatus) {
         if (state.state != .connecting) {
+            PassFlowManager.shared.addToStates(state: .RUN_ACTION_BLUETOOTH_CONNECTING)
             self.endConnectionTimer()
         }
         
         if (state.state == .connected) {
+            PassFlowManager.shared.addToStates(state: .RUN_ACTION_BLUETOOTH_CONNECTED)
+            
             self.viewModel.update(message: "text_status_message_succeed", icon: "success")
-            onPassCompleted(success: true)
+            onPassCompleted(success: true, isRemoteAccess: false)
+            
             self.onBluetoothConnectionSucceed()
         } else if (state.state == .failed
                     || state.state == .notFound
                     || (self.stateModel.lastConnectionState == DeviceConnectionStatus.ConnectionState.connecting && state.state == .disconnected)) {
-            self.onBluetoothConnectionFailed(message: nil, failCode: .BLUETOOTH_CONNECTION_FAILED)
+            PassFlowManager.shared.addToStates(state: .RUN_ACTION_BLUETOOTH_CONNECTION_FAILED)
+            self.onBluetoothConnectionFailed(message: nil)
         }
         
         self.stateModel.setConnectionState(state: state.state)
@@ -238,7 +284,8 @@ struct StatusView: View {
             LogManager.shared.info(message: "Bluetooth connection timer elapsed");
             DelegateManager.shared.flowConnectionStateChanged(isActive: false)
             
-            onBluetoothConnectionFailed(message: nil, failCode: .BLUETOOTH_CONNECTION_TIMEOUT)
+            PassFlowManager.shared.addToStates(state: .RUN_ACTION_BLUETOOTH_TIMEOUT)
+            onBluetoothConnectionFailed(message: nil)
         })
         
         self.stateModel.setTimerConnection(timer: timerConnection)
@@ -255,7 +302,7 @@ struct StatusView: View {
         endBluetoothFlow(disconnect: true)
     }
     
-    private func onBluetoothConnectionFailed(message: String?, failCode: PassFailCode?) {
+    private func onBluetoothConnectionFailed(message: String?) {
         endBluetoothFlow(disconnect: true)
         
         if (currentConfig?.nextAction != nil) {
@@ -263,17 +310,20 @@ struct StatusView: View {
                 LogManager.shared.info(message: "Bluetooth connection failed and now validate user location to continue remote access")
                 DelegateManager.shared.flowNextActionRequired()
             } else if (currentConfig!.nextAction! == PassFlowView.ACTION_REMOTEACCESS) {
+                PassFlowManager.shared.addToStates(state: PassFlowStateCode.PROCESS_ACTION_REMOTE_ACCESS)
                 LogManager.shared.info(message: "Bluetooth connection failed and now continue for remote access request")
+                
                 self.viewModel.update(message: "text_status_message_waiting", icon: "waiting")
                 runRemoteAccess()
             } else {
+                PassFlowManager.shared.addToStates(state: .INVALID_ACTION_TYPE)
                 LogManager.shared.warn(message: "Bluetooth connection failed and next action has invalid value", code: LogCodes.PASSFLOW_ACTION_INVALID_NEXT_ACTION)
                 self.viewModel.update(message: "text_status_message_failed", icon: "error")
-                onPassCompleted(success: false, failCode: .BLUETOOTH_INVALID_NEXT_ACTION)
+                onPassCompleted(success: false, isRemoteAccess: false)
             }
         } else {
             self.viewModel.update(message: message != nil ? message! : "text_status_message_failed", icon: "error")
-            onPassCompleted(success: false, failCode: failCode ?? PassFailCode.BLUETOOTH_CONNECTION_FAILED)
+            onPassCompleted(success: false, isRemoteAccess: false)
         }
     }
     
@@ -288,41 +338,61 @@ struct StatusView: View {
         BluetoothManager.shared.onBleStateChanged = nil
     }
     
-    private func onRemoteAccessFailed(errorCode: Int?, message: String?, failCode: PassFailCode?) {
+    private func onRemoteAccessFailed(errorCode: Int?, message: String?) {
+        if (errorCode != nil) {
+            if (errorCode == 401) {
+                PassFlowManager.shared.addToStates(state: .RUN_ACTION_REMOTE_ACCESS_UNAUTHORIZED);
+            } else if (errorCode == 404) {
+                PassFlowManager.shared.addToStates(state: .RUN_ACTION_REMOTE_ACCESS_DEVICE_NOT_CONNECTED);
+            } else if (errorCode == 408) {
+                PassFlowManager.shared.addToStates(state: .RUN_ACTION_REMOTE_ACCESS_DEVICE_TIMEOUT);
+            } else if (errorCode == 0) {
+                PassFlowManager.shared.addToStates(state: .RUN_ACTION_REMOTE_ACCESS_NO_NETWORK);
+            } else {
+                PassFlowManager.shared.addToStates(state: .RUN_ACTION_REMOTE_ACCESS_REQUEST_FAILED);
+            }
+        }
+        
         if ((errorCode == nil || errorCode! != 401) && currentConfig?.nextAction != nil && currentConfig?.nextAction! == PassFlowView.ACTION_BLUETOOTH) {
+            PassFlowManager.shared.addToStates(state: PassFlowStateCode.PROCESS_ACTION_BLUETOOTH)
             LogManager.shared.info(message: "Remote access request failed and now continue to Bluetooth scanning")
+            
             self.viewModel.update(message: "text_status_message_scanning", icon: "waiting")
             runBluetooth()
         } else if (errorCode != nil) {
             var failMessage = "text_status_message_failed"
-            var failCode: PassFailCode = errorCode == 0 ? .REMOTE_ACCESS_COULD_NOT_BE_SENT
-                                                        : .REMOTE_ACCESS_REQUEST_ERROR
             
             if (errorCode == 401) {
                 failMessage = "text_status_message_unauthorized"
-                failCode = .REMOTE_ACCESS_UNAUTHORIZED
             } else if (errorCode == 404) {
                 failMessage = "text_status_message_not_connected"
-                failCode = .REMOTE_ACCESS_NOT_CONNECTED
             } else if (errorCode == 408) {
                 failMessage = "test_status_message_remoteaccess_timeout"
-                failCode = .REMOTE_ACCESS_TIMEOUT
             }
             
             self.viewModel.update(message: (message == nil || message!.isEmpty) ? failMessage : message!, icon: "error")
-            onPassCompleted(success: false, failCode: failCode)
+            onPassCompleted(success: false, isRemoteAccess: true)
         } else {
             self.viewModel.update(message: (message == nil || message!.isEmpty) ? "text_status_message_failed" : message!, icon: "error")
-            onPassCompleted(success: false, failCode: failCode ?? .REMOTE_ACCESS_FAILED)
+            onPassCompleted(success: false, isRemoteAccess: true)
         }
     }
     
-    private func onPassCompleted(success: Bool, failCode: PassFailCode? = nil) {
+    private func onPassCompleted(success: Bool, isRemoteAccess: Bool) {
+        if (isRemoteAccess) {
+            PassFlowManager.shared.addToStates(state: success
+                                               ? .RUN_ACTION_REMOTE_ACCESS_PASS_SUCCEED
+                                               : .RUN_ACTION_REMOTE_ACCESS_PASS_FAILED)
+        } else {
+            PassFlowManager.shared.addToStates(state: success
+                                               ? .RUN_ACTION_BLUETOOTH_PASS_SUCCEED
+                                               : .RUN_ACTION_BLUETOOTH_PASS_FAILED)
+        }
+        
         DelegateManager.shared.onCompleted(success: success,
                                            direction: currentConfig?.qrCode?.d,
                                            clubId: currentConfig?.clubInfo?.i,
-                                           clubName: currentConfig?.clubInfo?.n,
-                                           failCode: failCode)
+                                           clubName: currentConfig?.clubInfo?.n)
     }
 }
 

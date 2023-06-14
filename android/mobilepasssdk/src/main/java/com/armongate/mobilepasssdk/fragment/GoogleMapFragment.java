@@ -16,9 +16,11 @@ import android.view.ViewGroup;
 
 import com.armongate.mobilepasssdk.R;
 import com.armongate.mobilepasssdk.constant.LogCodes;
+import com.armongate.mobilepasssdk.constant.PassFlowStateCode;
 import com.armongate.mobilepasssdk.manager.ConfigurationManager;
 import com.armongate.mobilepasssdk.manager.DelegateManager;
 import com.armongate.mobilepasssdk.manager.LogManager;
+import com.armongate.mobilepasssdk.manager.PassFlowManager;
 import com.armongate.mobilepasssdk.manager.SettingsManager;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -46,6 +48,7 @@ public class GoogleMapFragment extends Fragment implements OnMapReadyCallback, G
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        PassFlowManager.getInstance().addToStates(PassFlowStateCode.RUN_ACTION_LOCATION_WAITING);
 
         mPointLatitude = getArguments() != null && getArguments().containsKey("latitude") ? getArguments().getDouble("latitude") : null;
         mPointLongitude = getArguments() != null && getArguments().containsKey("longitude") ? getArguments().getDouble("longitude") : null;
@@ -61,6 +64,7 @@ public class GoogleMapFragment extends Fragment implements OnMapReadyCallback, G
             assert supportMapFragment != null;
             supportMapFragment.getMapAsync(this);
         } catch (Exception ex) {
+            PassFlowManager.getInstance().addToStates(PassFlowStateCode.RUN_ACTION_LOCATION_FAILED, ex.getLocalizedMessage());
             LogManager.getInstance().error("Error occurred while initializing map for location validation, error: " + ex.getLocalizedMessage(), LogCodes.PASSFLOW_MAP_ERROR, getActivity());
         }
 
@@ -150,6 +154,8 @@ public class GoogleMapFragment extends Fragment implements OnMapReadyCallback, G
                     float distance = location.distanceTo(dest);
 
                     if (distance < mPointRadius) {
+                        PassFlowManager.getInstance().addToStates(PassFlowStateCode.RUN_ACTION_LOCATION_VALIDATED);
+
                         LogManager.getInstance().info("User is in validation area now, distance to center point: " + distance);
                         DelegateManager.getInstance().flowLocationValidated();
                     } else {

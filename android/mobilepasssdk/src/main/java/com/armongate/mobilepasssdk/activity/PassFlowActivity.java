@@ -14,6 +14,7 @@ import androidx.fragment.app.FragmentManager;
 import com.armongate.mobilepasssdk.R;
 import com.armongate.mobilepasssdk.constant.LogCodes;
 import com.armongate.mobilepasssdk.constant.NeedPermissionType;
+import com.armongate.mobilepasssdk.constant.PassFlowStateCode;
 import com.armongate.mobilepasssdk.constant.QRTriggerType;
 import com.armongate.mobilepasssdk.delegate.PassFlowDelegate;
 import com.armongate.mobilepasssdk.fragment.CheckFragment;
@@ -24,6 +25,7 @@ import com.armongate.mobilepasssdk.fragment.StatusFragment;
 import com.armongate.mobilepasssdk.manager.ConfigurationManager;
 import com.armongate.mobilepasssdk.manager.DelegateManager;
 import com.armongate.mobilepasssdk.manager.LogManager;
+import com.armongate.mobilepasssdk.manager.PassFlowManager;
 import com.armongate.mobilepasssdk.manager.SettingsManager;
 import com.armongate.mobilepasssdk.model.QRCodeContent;
 import com.google.gson.Gson;
@@ -57,6 +59,9 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
         // Set flow delegate listener for activities
         DelegateManager.getInstance().setCurrentPassFlowDelegate(this);
 
+        // Set current language for UI
+        setLocale(ConfigurationManager.getInstance().getLanguage());
+
         if (savedInstanceState == null) {
             if (SettingsManager.getInstance().checkCameraPermission(getApplicationContext(), this)) {
                 if (ConfigurationManager.getInstance().usingHMS()) {
@@ -65,14 +70,13 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
                     scanQRCodesForGMS();
                 }
             } else {
+                PassFlowManager.getInstance().addToStates(PassFlowStateCode.SCAN_QRCODE_NEED_PERMISSION);
                 getSupportFragmentManager().beginTransaction()
                         .setReorderingAllowed(true)
                         .add(R.id.armon_mp_fragment_container, CheckFragment.class, null)
                         .commit();
             }
         }
-
-        setLocale(ConfigurationManager.getInstance().getLanguage());
     }
 
     @Override
@@ -91,24 +95,31 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
         if (activePermissionCode > 0) {
             if (activePermissionCode == SettingsManager.REQUEST_CODE_CAMERA) {
                 if (activePermissionGranted) {
+                    PassFlowManager.getInstance().addToStates(PassFlowStateCode.SCAN_QRCODE_PERMISSION_GRANTED);
+
                     if (ConfigurationManager.getInstance().usingHMS()) {
                         scanQRCodesForHMS();
                     } else {
                         scanQRCodesForGMS();
                     }
                 } else {
+                    PassFlowManager.getInstance().addToStates(PassFlowStateCode.SCAN_QRCODE_PERMISSION_REJECTED);
                     showPermissionMessage(NeedPermissionType.NEED_PERMISSION_CAMERA);
                 }
             } else if (activePermissionCode == SettingsManager.REQUEST_CODE_LOCATION) {
                 if (activePermissionGranted) {
+                    PassFlowManager.getInstance().addToStates(PassFlowStateCode.PROCESS_ACTION_LOCATION_PERMISSION_GRANTED);
                     processAction();
                 } else {
+                    PassFlowManager.getInstance().addToStates(PassFlowStateCode.PROCESS_ACTION_LOCATION_PERMISSION_REJECTED);
                     showPermissionMessage(NeedPermissionType.NEED_PERMISSION_LOCATION);
                 }
             } else if (activePermissionCode == SettingsManager.REQUEST_CODE_BLE_SCAN) {
                 if (activePermissionGranted) {
+                    PassFlowManager.getInstance().addToStates(PassFlowStateCode.PROCESS_ACTION_BLUETOOTH_PERMISSION_GRANTED);
                     processAction();
                 } else {
+                    PassFlowManager.getInstance().addToStates(PassFlowStateCode.PROCESS_ACTION_BLUETOOTH_PERMISSION_REJECTED);
                     showPermissionMessage(NeedPermissionType.NEED_PERMISSION_BLUETOOTH);
                 }
             }
@@ -192,6 +203,7 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
                 processAction();
             } else {
                 LogManager.getInstance().error("Checking next action has been cancelled due to empty action list", LogCodes.PASSFLOW_EMPTY_ACTION_LIST, this);
+                PassFlowManager.getInstance().addToStates(PassFlowStateCode.INVALID_ACTION_LIST_EMPTY);
                 finish();
             }
         }
@@ -239,6 +251,7 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
             actionCurrent   = "";
 
             if (activeQRCodeContent.qrCode == null || activeQRCodeContent.qrCode.t == null) {
+                PassFlowManager.getInstance().addToStates(PassFlowStateCode.INVALID_QRCODE_TRIGGER_TYPE, code);
                 LogManager.getInstance().error("Process qr code has been cancelled due to empty trigger type", LogCodes.PASSFLOW_PROCESS_QRCODE_TRIGGERTYPE, this);
             } else {
                 switch (activeQRCodeContent.qrCode.t) {
@@ -276,9 +289,11 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
                         LogManager.getInstance().error("Process qr code has been cancelled due to empty action type", LogCodes.PASSFLOW_PROCESS_QRCODE_EMPTY_ACTION, this);
                 }
 
+                PassFlowManager.getInstance().addToStates(PassFlowStateCode.PROCESS_ACTION_STARTED);
                 processAction();
             }
         } else {
+            PassFlowManager.getInstance().addToStates(PassFlowStateCode.INVALID_QRCODE_MISSING_CONTENT, code);
             LogManager.getInstance().error("Process QR Code message received with empty or invalid content", LogCodes.PASSFLOW_EMPTY_QRCODE_CONTENT, this);
         }
 
@@ -286,6 +301,7 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
 
     private void processAction() {
         if (actionCurrent.isEmpty()) {
+            PassFlowManager.getInstance().addToStates(PassFlowStateCode.INVALID_ACTION_TYPE);
             LogManager.getInstance().error("Process qr code has been cancelled due to empty action type", LogCodes.PASSFLOW_PROCESS_QRCODE_EMPTY_ACTION, this);
             return;
         }
@@ -296,23 +312,27 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
         boolean needLocationPermission = actionCurrent.equals(ACTION_BLUETOOTH) || actionCurrent.equals(ACTION_LOCATION) || actionList.contains(ACTION_BLUETOOTH) || actionList.contains(ACTION_LOCATION);
 
         if (needLocationPermission && !SettingsManager.getInstance().checkLocationEnabled(getApplicationContext())) {
+            PassFlowManager.getInstance().addToStates(PassFlowStateCode.PROCESS_ACTION_LOCATION_NEED_ENABLED);
             showPermissionMessage(NeedPermissionType.NEED_ENABLE_LOCATION_SERVICES);
             return;
         } else {
             if (!needLocationPermission || SettingsManager.getInstance().checkLocationPermission(getApplicationContext(), this)) {
                 if (actionCurrent.equals(ACTION_BLUETOOTH)) {
                     if (!SettingsManager.getInstance().checkBluetoothScanPermission(getApplicationContext(), this)) {
+                        PassFlowManager.getInstance().addToStates(PassFlowStateCode.PROCESS_ACTION_BLUETOOTH_NEED_PERMISSION);
                         replaceFragment(CheckFragment.class, null);
                         return;
                     }
                 }
             } else {
+                PassFlowManager.getInstance().addToStates(PassFlowStateCode.PROCESS_ACTION_LOCATION_NEED_PERMISSION);
                 replaceFragment(CheckFragment.class, null);
                 return;
             }
         }
 
         if (actionCurrent.equals(ACTION_LOCATION)) {
+            PassFlowManager.getInstance().addToStates(PassFlowStateCode.PROCESS_ACTION_LOCATION);
             Bundle bundle = new Bundle();
 
             if (activeQRCodeContent != null && activeQRCodeContent.geoLocation != null) {

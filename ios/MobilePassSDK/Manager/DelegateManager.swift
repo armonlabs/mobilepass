@@ -42,7 +42,6 @@ class DelegateManager: NSObject {
         passFlowDelegate = delegate
     }
 
-    
     func setMainDelegate(delegate: MobilePassDelegate?, viewController: UIViewController? = nil) {
         mobilePassDelegate = delegate
         mobilePassController = viewController
@@ -64,18 +63,51 @@ class DelegateManager: NSObject {
         return qrCodeListState != QRCodeListState.INITIALIZING && qrCodeListState != QRCodeListState.SYNCING
     }
     
-    func onCompleted(success: Bool, direction: Direction?, clubId: String?, clubName: String?, failCode: PassFailCode? = nil) {
+    func onMemberIdChanged() {
+        DispatchQueue.main.async {
+            self.mobilePassDelegate?.onMemberIdChanged()
+        }
+    }
+    
+    func onMemberIdSyncCompleted(success: Bool, statusCode: Int?) {
+        DispatchQueue.main.async {
+            if (success) {
+                self.mobilePassDelegate?.onSyncMemberIdCompleted()
+            } else {
+                self.mobilePassDelegate?.onSyncMemberIdFailed(statusCode: (statusCode ?? -1))
+            }
+        }
+    }
+    
+    func onQRCodesDataLoaded(count: Int) {
+        DispatchQueue.main.async {
+            self.mobilePassDelegate?.onQRCodesDataLoaded(count: count)
+        }
+    }
+    
+    func onQRCodesSyncFailed(statusCode: Int) {
+        DispatchQueue.main.async {
+            self.mobilePassDelegate?.onQRCodesSyncFailed(statusCode: statusCode)
+        }
+    }
+    
+    func onCompleted(success: Bool, direction: Direction?, clubId: String?, clubName: String?) {
         isPassFlowCompleted = true
         
         DispatchQueue.main.async {
-            self.mobilePassDelegate?.onPassCompleted(result: PassResult(success: success, direction: direction, clubId: clubId, clubName: clubName, failCode: failCode?.rawValue))
+            self.mobilePassDelegate?.onScanFlowCompleted(result: PassFlowResult(
+                result: success ? PassFlowResultCode.SUCCESS : PassFlowResultCode.FAIL,
+                states: PassFlowManager.shared.getStates(),
+                direction: direction,
+                clubId: clubId,
+                clubName: clubName))
         }
         
         startAutoCloseTimer()
     }
     
     func onCancelled(dismiss: Bool) {
-        endFlow(dismiss: dismiss, cancelReason: CancelReason.USER_CLOSED)
+        endFlow(dismiss: dismiss, reason: PassFlowStateCode.CANCELLED_BY_USER)
     }
     
     func flowLocationValidated() {
@@ -93,7 +125,9 @@ class DelegateManager: NSObject {
             self.mobilePassDelegate?.onInvalidQRCode(content: code)
         }
         
-        endFlow(dismiss: true, cancelReason: CancelReason.INVALID_QR_CODE)
+        endFlow(dismiss: true,
+                reason: PassFlowStateCode.CANCELLED_WITH_INVALID_QRCODE,
+                data: code)
     }
 
     func flowNextActionRequired() {
@@ -135,18 +169,29 @@ class DelegateManager: NSObject {
     }
     
     func goToSettings() {
-        self.endFlow(dismiss: true, cancelReason: nil)
+        self.endFlow(dismiss: true, reason: PassFlowStateCode.CANCELLED_TO_GO_SETTINGS)
     }
     
-    func errorOccurred() {
-        endFlow(dismiss: true, cancelReason: CancelReason.ERROR)
+    func errorOccurred(message: String? = nil) {
+        endFlow(dismiss: true, reason: PassFlowStateCode.CANCELLED_WITH_ERROR, data: message)
     }
     
-    func qrCodeListChanged(state: QRCodeListState) {
+    func qrCodeListChanged(state: QRCodeListState, count: Int) {
         qrCodeListState = state
         
         DispatchQueue.main.async {
-            self.mobilePassDelegate?.onQRCodeListStateChanged(state: state.rawValue)
+            if (state == .SYNCING) {
+                self.mobilePassDelegate?.onQRCodesSyncStarted()
+            } else {
+                if (count == 0) {
+                    self.mobilePassDelegate?.onQRCodesEmpty()
+                } else {
+                    self.mobilePassDelegate?.onQRCodesReady(
+                        synced: state == .USING_SYNCED_DATA,
+                        count: count)
+                }
+            }
+            
             self.qrCodeListStateDelegate?.onStateChanged(state: state.rawValue)
         }
     }
@@ -156,10 +201,10 @@ class DelegateManager: NSObject {
     }
     
     func onMockLocationDetected() {
-        endFlow(dismiss: true, cancelReason: CancelReason.USING_MOCK_LOCATION_DATA)
+        endFlow(dismiss: true, reason: PassFlowStateCode.CANCELLED_WITH_MOCK_LOCATION)
     }
     
-    private func endFlow(dismiss: Bool, cancelReason: CancelReason?) {
+    private func endFlow(dismiss: Bool, reason: PassFlowStateCode?, data: String? = nil) {
         endAutoCloseTimer()
         
         if (dismiss) {
@@ -167,26 +212,35 @@ class DelegateManager: NSObject {
             DispatchQueue.main.async {
                 self.mobilePassController?.dismiss(animated: true, completion: {
                     if (!self.isPassFlowCompleted) {
-                        if (cancelReason != nil) {
-                            self.mobilePassDelegate?.onPassCancelled(reason: cancelReason!.rawValue)
+                        if (reason != nil) {
+                            self.cancelFlow(reason: reason!, data: data)
                         }
                         self.isPassFlowCompleted = true;
                     }
                 })
             }
         } else if (!isPassFlowCompleted && !isDismissedManual) {
-            if (cancelReason != nil) {
-                mobilePassDelegate?.onPassCancelled(reason: cancelReason!.rawValue)
+            if (reason != nil) {
+                self.cancelFlow(reason: reason!, data: data)
             }
             self.isPassFlowCompleted = true;
         }
+    }
+    
+    private func cancelFlow(reason: PassFlowStateCode, data: String? = nil) {
+        PassFlowManager.shared.addToStates(state: reason, data: data)
+        
+        self.mobilePassDelegate?.onScanFlowCompleted(result: PassFlowResult(
+            result: PassFlowResultCode.CANCEL,
+            states: PassFlowManager.shared.getStates(),
+            direction: nil, clubId: nil, clubName: nil))
     }
     
     private func startAutoCloseTimer() {
         if (ConfigurationManager.shared.autoCloseTimeout() != nil) {
             DispatchQueue.main.async {
                 self.timerAutoClose = Timer.scheduledTimer(withTimeInterval: Double(ConfigurationManager.shared.autoCloseTimeout()!) , repeats: false, block: { timer in
-                    self.endFlow(dismiss: true, cancelReason: nil)
+                    self.endFlow(dismiss: true, reason: nil)
                 })
             }
         }
