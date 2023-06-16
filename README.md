@@ -113,28 +113,64 @@ public class MainActivity extends AppCompatActivity implements MobilePassDelegat
 	// Call next line where you initialized manager or give delegate instance in configuration
 	// passManager.setDelegate(this);
 
-
-	@Override
-	public void onPassCancelled(int reason) {
-		// See API reference for CancelReason types
-	}
-
-	@Override
-	public void onPassCompleted(boolean succeed) {
-		// Returns when library-server or library-device communication ended
-		// 'true' means user passed successfully
-	}
-
-	@Override
-	public void onQRCodeListStateChanged(int state) {
-		// Available QR code definitions will be fetched from server.
-		// Change on state of definitions triggers this event
-		// See API reference for QRCodeState types
-	}
-
     @Override
     public void onLogReceived(LogItem log) {
       // To follow SDK logs according to given configuration about logging
+    }
+
+    @Override
+    public void onInvalidQRCode(String content) {
+      // Informs about invalid qr code found while scanning
+      // to process this content outside of SDK
+    }
+
+    @Override
+    public void onMemberIdChanged() {
+      // Stored member id changed or new member id received to SDK
+    }
+
+    @Override
+    public void onSyncMemberIdCompleted() {
+      // Share member id and related data to server has been completed successfully
+    }
+
+    @Override
+    public void onSyncMemberIdFailed(int statusCode) {
+      // Share member id and related data to server has been failed!
+      // This may cause the pass flow to fail
+    }
+
+    @Override
+    public void onQRCodesDataLoaded(int count) {
+      // Stored QR Code data is ready but not synced yet
+    }
+
+    @Override
+    public void onQRCodesSyncStarted() {
+      // Started to sync with server for up-to-date QR Code list
+    }
+
+    @Override
+    public void onQRCodesSyncFailed(int statusCode) {
+      // Sync of up-to-date QR Code list failed
+    }
+
+    @Override
+    public void onQRCodesReady(boolean synced, int count) {
+      // Returns when sync of QR Code list completed
+      // If "synced" value is true, up-to-date list will be used.
+      // Otherwise stored list is active for pass flow
+    }
+
+    @Override
+    public void onQRCodesEmpty() {
+      // Sync QR Code list with server has been failed and there is no stored QR Code list yet
+    }
+
+    @Override
+    public void onScanFlowCompleted(PassFlowResult result) {
+      // Returns when each pass flow completed after QR Code scanning started
+      // See API reference for PassFlowResult types
     }
 
 	...
@@ -251,23 +287,53 @@ struct MobilePassManager : UIViewControllerRepresentable, MobilePassDelegate {
 
 	...
 
-    func onPassCancelled(reason: Int) {
-        // See API reference for CancelReason types
-    }
-
-    func onPassCompleted(succeed: Bool) {
-        // Returns when library-server or library-device communication ended
-		// 'true' means user passed successfully
-    }
-
-    func onQRCodeListStateChanged(state: Int) {
-        // Available QR code definitions will be fetched from server.
-		// Change on state of definitions triggers this event
-		// See API reference for QRCodeState types
-    }
-
     func onLogReceived(log: LogItem) {
         // To follow SDK logs according to given configuration about logging
+    }
+
+    func onInvalidQRCode(content: String) {
+        // Informs about invalid qr code found while scanning
+        // to process this content outside of SDK
+    }
+
+    func onMemberIdChanged() {
+        // Stored member id changed or new member id received to SDK
+    }
+
+    func onSyncMemberIdCompleted() {
+        // Share member id and related data to server has been completed successfully
+    }
+
+    func onSyncMemberIdFailed(statusCode: Int) {
+        // Share member id and related data to server has been failed!
+        // This may cause the pass flow to fail
+    }
+
+    func onQRCodesDataLoaded(count: Int) {
+        // Stored QR Code data is ready but not synced yet
+    }
+
+    func onQRCodesSyncStarted() {
+        // Started to sync with server for up-to-date QR Code list
+    }
+
+    func onQRCodesSyncFailed(statusCode: Int) {
+        // Sync of up-to-date QR Code list failed
+    }
+
+    func onQRCodesReady(synced: Bool, count: Int) {
+        // Returns when sync of QR Code list completed
+        // If "synced" value is true, up-to-date list will be used.
+        // Otherwise stored list is active for pass flow
+    }
+
+    func onQRCodesEmpty() {
+        // Sync QR Code list with server has been failed and there is no stored QR Code list yet
+    }
+
+    func onScanFlowCompleted(result: MobilePassSDK.PassFlowResult) {
+        // Returns when each pass flow completed after QR Code scanning started
+        // See API reference for PassFlowResult types
     }
 
 	...
@@ -348,54 +414,48 @@ Details of received log item
 
 <br />
 
-### `PassResult`
+### `PassFlowResult`
 
-Details of received pass result event
+| Parameter | Description          | Type                                      | Required |
+| --------- | -------------------- | ----------------------------------------- | -------- |
+| result    | Result of flow       | [PassFlowResultCode](#PassFlowResultCode) | Yes      |
+| direction | Pass direction       | [Direction](#Direction)                   | No       |
+| clubId    | Id of matched club   | String                                    | No       |
+| clubName  | Name of matched club | String                                    | No       |
+| states    | Trail codes of flow  | \[[PassFlowState](#PassFlowState)\]       | Yes      |
 
-| Parameter | Description          | Type                          | Required |
-| --------- | -------------------- | ----------------------------- | -------- |
-| success   | Result of pass       | Bool                          | Yes      |
-| direction | Pass direction       | [Direction](#Direction)       | No       |
-| clubId    | Id of matched club   | String                        | No       |
-| clubName  | Name of matched club | String                        | No       |
-| failCode  | Fail reason          | [PassFailCode](#PassFailCode) | No       |
+<br />
 
+### `PassFlowState` 
+
+| Parameter | Description        | Type                                    | Required |
+| --------- | ------------------ | --------------------------------------- | -------- |
+| state     | Trail code         | [PassFlowStateCode](#PassFlowStateCode) | Yes      |
+| data      | Additional content | String                                  | No       |
+
+<br />
 <br />
 
 ### **Events**
 
-| Name                      | Description                                         | Type                          |
-| ------------------------- | --------------------------------------------------- | ----------------------------- |
-| onPassCompleted           | Passing operation completed                         | [PassResult](#PassResult)     |
-| onPassCancelled           | Operation has been cancelled with given reason code | [CancelReason](#CancelReason) |
-| onQRCodeListStateChanged  | QR code definition list updated                     | [QRCodeState](#QRCodeState)   |
-| onLogReceived             | Receive log items                                   | [LogItem](#LogItem)           |
-| onInvalidQRCode           | QR code content when invalid format found           | String                        |
+| Name                     | Description                                                                                                                           | Type                              |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------- |
+| onLogReceived            | Receive log items                                                                                                                     | [LogItem](#LogItem)               |
+| onInvalidQRCode          | QR code content when invalid format found                                                                                             | String                            |
+| onMemberIdChanged        | Stored member id changed or new member id received                                                                                    |                                   |
+|  onSyncMemberIdCompleted | Sync of member id with server completed                                                                                               |                                   |
+|  onSyncMemberIdFailed    |  Sync of member id with server failed! Returns HTTPS status code or 0 (zero) for network error                                        |  Integer                          |
+| onQRCodesDataLoaded      |  Stored QR Code list is ready to use, returns counts                                                                                  |  Integer                          |
+|  onQRCodesSyncStarted    | Sync of QR Code list with server started                                                                                              |                                   |
+| onQRCodesSyncFailed      |  QR Code list synchronization failed! Returns HTTPS status code or 0 (zero) for network error                                         |  Integer                          |
+|  onQRCodesReady          | QR Code list is ready to use after synchronization. "synced" flag says list is up-to-date if true, otherwise stored list will be used |  Boolean, Integer                 |
+| onQRCodesEmpty           |  QR Code list is empty means there is no record to use in pass flow                                                                   |                                   |
+| onScanFlowCompleted      |  Returns for each pass flow that started with QR Code scan                                                                            | [PassFlowResult](#PassFlowResult) |
 
 <br />
 <br />
 
 ### **Constants**
-
-<br />
-
-### `CancelReason`
-
-| Name                | Value |
-| ------------------- | ----- |
-| User Closed         | 1     |
-| Using Mock Location | 2     |
-| Error               | 3     |
-
-<br />
-
-### `QRCodeState`
-
-| Name              | Value |
-| ----------------- | ----- |
-| Empty             | 1     |
-| Using Stored Data | 2     |
-| Using Synced Data | 3     |
 
 <br />
 
@@ -417,6 +477,82 @@ Details of received pass result event
 | All      | 0     |
 | Entrance | 1     |
 | Exit     | 2     |
+
+<br />
+
+### `PassFlowResultCode`
+
+| Name    | Value |
+| ------- | ----- |
+| Cancel  | 1     |
+| Fail    | 2     |
+| Success | 3     |
+
+<br />
+
+### `PassFlowStateCode`
+
+| Value | Name                                           | Description                                                                                                            |
+| ----- | ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| 1001  |  SCAN_QRCODE_NEED_PERMISSION                   | Needs camera permission                                                                                                |
+| 1002  |  SCAN_QRCODE_PERMISSION_GRANTED                | Camera permission is granted                                                                                           |
+| 1003  |  SCAN_QRCODE_PERMISSION_REJECTED               | SDK has not been authorized to use camera                                                                              |
+| 1004  |  SCAN_QRCODE_STARTED                           | QR Code scanning is started                                                                                            |
+| 1005  |  SCAN_QRCODE_INVALID_CONTENT                   | Scanner has found valid QR Code but has invalid content                                                                |
+| 1006  |  SCAN_QRCODE_INVALID_FORMAT                    | Scanner has found QR Code but has invalid format                                                                       |
+| 1007  |  SCAN_QRCODE_NO_MATCH                          | Found QR Code is valid but has no matching definition in SDK                                                           |
+| 1008  |  SCAN_QRCODE_FOUND                             | Valid QR Code has been found                                                                                           |
+| 1009  |  SCAN_QRCODE_ERROR                             | An error occurred during QR Code scanning or opening Camera                                                            |
+| 2001  |  CANCELLED_BY_USER                             | Pass flow has been cancelled by user                                                                                   |
+| 2002  |  CANCELLED_WITH_INVALID_QRCODE                 | Pass flow has been cancelled beacuse of invalid QR Code data                                                           |
+| 2003  |  CANCELLED_WITH_ERROR                          | Pass flow has been cancelled with error, check data for details                                                        |
+| 2004  |  CANCELLED_WITH_MOCK_LOCATION                  | Pass flow has been cancelled beacuse of mock location data                                                             |
+| 2005  |  CANCELLED_TO_GO_SETTINGS                      | Pass flow has been cancelled, user opened settings of device                                                           |
+| 3101  |  INVALID_QRCODE_TRIGGER_TYPE                   | QR Code has invalid trigger type, definition need to be checked                                                        |
+| 3102  |  INVALID_QRCODE_MISSING_CONTENT                | QR Code content is missing, definition need to be checked                                                              |
+| 3201  |  INVALID_ACTION_LIST_EMPTY                     | QR Code available action list to trigger is empty, definition need to be checked                                       |
+| 3202  |  INVALID_ACTION_TYPE                           | QR Code action type is invalid for this SDK version, definition need to be checked                                     |
+| 3301  |  INVALID_BLUETOOTH_QRCODE_DATA                 | QR Code data is invalid to run Bluetooth action                                                                        |
+| 3302  |  INVALID_BLUETOOTH_DIRECTION                   | QR Code direction value is invalid, definition need to be checked                                                      |
+| 3303  |  INVALID_BLUETOOTH_HARDWARE_ID                 | QR Code hardware id value is invalid, definition need to be checked                                                    |
+| 3304  |  INVALID_BLUETOOTH_RELAY_NUMBER                | QR Code relay number value is invalid, definition need to be checked                                                   |
+| 3401  |  INVALID_REMOTE_ACCESS_QRCODE_DATA             | QR Code data is invalid to run Remote Access action                                                                    |
+| 3402  |  INVALID_REMOTE_ACCESS_QRCODE_ID               | QR Code id is invalid, definition need to be checked                                                                   |
+| 4101  |  PROCESS_ACTION_STARTED                        | Process QR Code action is started                                                                                      |
+| 4102  |  PROCESS_ACTION_BLUETOOTH                      | Process QR Code for pass via Bluetooth                                                                                 |
+| 4103  |  PROCESS_ACTION_LOCATION                       | Process QR Code for validation of user's location                                                                      |
+| 4104  |  PROCESS_ACTION_REMOTE_ACCESS                  | Process QR Code for pass via Remote Access                                                                             |
+| 4105  |  PROCESS_ACTION_LOCATION_NEED_PERMISSION       | Needs location permission                                                                                              |
+| 4106  |  PROCESS_ACTION_LOCATION_NEED_ENABLED          | Needs location services be enabled                                                                                     |
+| 4107  |  PROCESS_ACTION_LOCATION_PERMISSION_GRANTED    | Location permission is granted                                                                                         |
+| 4108  |  PROCESS_ACTION_LOCATION_PERMISSION_REJECTED   | SDK has not been authorized to use location                                                                            |
+| 4109  |  PROCESS_ACTION_BLUETOOTH_NEED_PERMISSION      | Needs Bluetooth scan permission                                                                                        |
+| 4110  |  PROCESS_ACTION_BLUETOOTH_NEED_ENABLED         | Needs Bluetooth be enabled                                                                                             |
+| 4111  |  PROCESS_ACTION_BLUETOOTH_PERMISSION_GRANTED   | Bluetooth scan permission is granted                                                                                   |
+| 4112  |  PROCESS_ACTION_BLUETOOTH_PERMISSION_REJECTED  | SDK has not been authorized to use Bluetooth                                                                           |
+| 4201  |  RUN_ACTION_BLUETOOTH_STARTED                  | Pass via Bluetooth is started                                                                                          |
+| 4202  |  RUN_ACTION_BLUETOOTH_OFF_WAITING              | Waiting for Bluetooth to be activated                                                                                  |
+| 4203  |  RUN_ACTION_BLUETOOTH_OFF_NO_WAIT              | Bluetooth is not enabled and configuration says no need to wait for Bluetooth to be activated                          |
+| 4204  |  RUN_ACTION_BLUETOOTH_START_SCAN               | Started to scan nearby devices                                                                                         |
+| 4205  |  RUN_ACTION_BLUETOOTH_TIMEOUT                  | Scanning has been cancelled because of timeout                                                                         |
+| 4206  |  RUN_ACTION_BLUETOOTH_CONNECTING               | Connecting to found device                                                                                             |
+| 4207  |  RUN_ACTION_BLUETOOTH_CONNECTED                | Bluetooth connection with device has been completed successfully                                                       |
+| 4208  |  RUN_ACTION_BLUETOOTH_CONNECTION_FAILED        | Bluetooth connection could not be established. User authentication problem or PerfectGym access error can be the cause |
+| 4209  |  RUN_ACTION_BLUETOOTH_PASS_SUCCEED             | Pass via Bluetooth completed successfully and user can pass now                                                        |
+| 4210  |  RUN_ACTION_BLUETOOTH_PASS_FAILED              | Pass via Bluetooth failed, so user can not pass now or remote access action will be tried if exists                    |
+| 4301  |  RUN_ACTION_LOCATION_WAITING                   | Validation of user's location with GPS is started                                                                      |
+| 4302  |  RUN_ACTION_LOCATION_VALIDATED                 | User's location has been validated                                                                                     |
+| 4303  |  RUN_ACTION_LOCATION_FAILED                    | Location validation has been failed, check data for details                                                            |
+| 4401  |  RUN_ACTION_REMOTE_ACCESS_STARTED              | Pass via Remote Access is started                                                                                      |
+| 4402  |  RUN_ACTION_REMOTE_ACCESS_REQUEST              | Remote access request is sending to server to communicate with device over Network                                     |
+| 4403  |  RUN_ACTION_REMOTE_ACCESS_UNAUTHORIZED         | User is unauthorized to pass from this point                                                                           |
+| 4404  |  RUN_ACTION_REMOTE_ACCESS_DEVICE_NOT_CONNECTED | Device is not connected to server now, so request could not be sent                                                    |
+| 4405  |  RUN_ACTION_REMOTE_ACCESS_DEVICE_TIMEOUT       | Device connection has failed with timeout                                                                              |
+| 4406  |  RUN_ACTION_REMOTE_ACCESS_NO_NETWORK           | User has network problem, so request could not be sent to server                                                       |
+| 4407  |  RUN_ACTION_REMOTE_ACCESS_REQUEST_FAILED       | An error occurred on server while processing remote access request                                                     |
+| 4408  |  RUN_ACTION_REMOTE_ACCESS_REQUEST_SUCCEED      | Remote access request has completed successfully                                                                       |
+| 4409  |  RUN_ACTION_REMOTE_ACCESS_PASS_SUCCEED         | Pass via Remote Access completed successfully and user can pass now                                                    |
+| 4410  |  RUN_ACTION_REMOTE_ACCESS_PASS_FAILED          | Pass via Remote Access failed, so user can not pass now if no more action exists                                       |
 
 <br />
 
@@ -469,27 +605,3 @@ Details of received pass result event
 | Switch camera for qr code scanner is failed                  | 5101  |
 
 <br />
-
-### `PassFailCode`
-
-| Value | Name                             |
-| ----- | -------------------------------- |
-| 1001  | REMOTE_ACCESS_FAILED             |
-| 1002  | REMOTE_ACCESS_UNAUTHORIZED       |
-| 1003  | REMOTE_ACCESS_NOT_CONNECTED      |
-| 1004  | REMOTE_ACCESS_TIMEOUT            |
-| 1005  | REMOTE_ACCESS_COULD_NOT_BE_SENT  |
-| 1006  | REMOTE_ACCESS_REQUEST_ERROR      |
-| 1007  | REMOTE_ACCESS_INVALID_QR_CONTENT |
-| 1008  | REMOTE_ACCESS_INVALID_QR_CODE_ID |
-| 2001  | BLUETOOTH_CONNECTION_FAILED      |
-| 2002  | BLUETOOTH_CONNECTION_TIMEOUT     |
-| 2003  | BLUETOOTH_EMPTY_CONFIG           |
-| 2004  | BLUETOOTH_INVALID_QR_CONTENT     |
-| 2005  | BLUETOOTH_INVALID_DIRECTION      |
-| 2006  | BLUETOOTH_INVALID_HARDWARE_ID    |
-| 2007  | BLUETOOTH_INVALID_RELAY_NUMBER   |
-| 2008  | BLUETOOTH_DISABLED               |
-| 2009  | BLUETOOTH_INVALID_NEXT_ACTION    |
-
-<br  />
