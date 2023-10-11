@@ -9,5 +9,13 @@ public class PassFlowState {
         this.state = state;
         this.data = data;
     }
+
+    public Integer getState() {
+        return state;
+    }
+
+    public String getData() {
+        return data;
+    }
 }
 

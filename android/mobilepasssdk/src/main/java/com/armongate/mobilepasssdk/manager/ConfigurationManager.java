@@ -1,6 +1,7 @@
 package com.armongate.mobilepasssdk.manager;
 
 import android.content.Context;
+import android.os.Build;
 
 import com.armongate.mobilepasssdk.constant.ConfigurationDefaults;
 import com.armongate.mobilepasssdk.constant.LogCodes;
@@ -169,7 +170,7 @@ public class ConfigurationManager {
     public void refreshList() {
         if (DelegateManager.getInstance().isQRCodeListRefreshable()) {
             LogManager.getInstance().info("QR Code definition list will be retrieved again with user request");
-            this.getAccessPoints(true);
+            this.getAccessPoints(true, false);
         }
     }
 
@@ -280,7 +281,7 @@ public class ConfigurationManager {
                         DelegateManager.getInstance().onMemberIdSyncCompleted(true, null);
                         LogManager.getInstance().info("User info has been shared with server successfully and member id is ready now");
 
-                        getAccessPoints(false);
+                        getAccessPoints(false, false);
                     }
 
                     @Override
@@ -288,12 +289,12 @@ public class ConfigurationManager {
                         DelegateManager.getInstance().onMemberIdSyncCompleted(false, statusCode);
                         LogManager.getInstance().error("Sending user info to server has failed with status code " + statusCode, LogCodes.CONFIGURATION_SERVER_SYNC_INFO);
 
-                        getAccessPoints(false);
+                        getAccessPoints(false, false);
                     }
                 });
             } else {
                 LogManager.getInstance().info("User info has already been sent to server for member id: " + getMemberId());
-                getAccessPoints(false);
+                getAccessPoints(false, false);
             }
         }
     }
@@ -403,7 +404,7 @@ public class ConfigurationManager {
 
                 if (statusCode == 409) {
                     LogManager.getInstance().warn("Sync error received for qr codes and access points, definition list will be retrieved again", LogCodes.CONFIGURATION_SERVER_SYNC_LIST);
-                    getAccessPoints(true);
+                    getAccessPoints(true, true);
                 } else {
                     DelegateManager.getInstance().onQRCodesSyncFailed(statusCode);
 
@@ -434,23 +435,23 @@ public class ConfigurationManager {
         return lastActiveDate == null || (Math.abs(new Date().getTime() - lastActiveDate) > 3000);
     }
 
-    private void getAccessPoints(boolean clear) {
-        if (isGetAccessPointsAvailable()) {
+    private void getAccessPoints(boolean clear, boolean force) {
+        if (isGetAccessPointsAvailable() || force) {
             StorageManager.getInstance().setValue(mCurrentContext, StorageKeys.FLAG_CONFIGURATION_ACTIVE, new Date().getTime() + "");
 
             LogManager.getInstance().info("Syncing definition list with server has been started");
             DelegateManager.getInstance().onQRCodeListStateChanged(QRCodeListState.SYNCING, mQRCodes.size());
 
-            boolean force = false;
+            boolean forceFlag = force;
 
             String storedListVersion = StorageManager.getInstance().getValue(mCurrentContext, StorageKeys.LIST_VERSION);
 
             if (storedListVersion == null || !storedListVersion.equals(ConfigurationDefaults.CurrentListVersion)) {
                 LogManager.getInstance().info("Force to clear definition list before fetch because of difference on version");
-                force = true;
+                forceFlag = true;
             }
 
-            mListClearFlag = clear || force;
+            mListClearFlag = clear || forceFlag;
 
             if (mListClearFlag) {
                 mListSyncDate = null;

@@ -109,7 +109,7 @@ class BaseService: NSObject {
             
             if (state == nil) {
                 LogManager.shared.debug(message: "Response data is empty")
-                completion(.success(nil))
+                completion(.failure(RequestError(message: "", reason: .other, code: -1)))
             } else {
                 LogManager.shared.debug(message: "Response data is valid")
                 completion(.success(state!))

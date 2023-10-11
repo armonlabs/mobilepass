@@ -41,7 +41,8 @@ class CurrentListStateModel: ObservableObject {
             message = "text_qrcode_not_found"
         }
         
-        qrCode = "\(qrCodeContent) [\(ConfigurationManager.shared.getQRCodesCount())]"
+        // qrCode = "\(qrCodeContent) [\(ConfigurationManager.shared.getQRCodesCount())]"
+        qrCode = "[\(ConfigurationManager.shared.getQRCodesCount())] / \(ConfigurationManager.shared.getMemberId())"
         backgroundColor = isInvalidContent ? Color.orange : Color.red
         
         self.timerInstance = Timer.scheduledTimer(withTimeInterval: Double(4), repeats: false, block: {_ in

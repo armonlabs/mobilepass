@@ -143,7 +143,7 @@ class ConfigurationManager: NSObject {
     public func refreshList() -> Void {
         if (DelegateManager.shared.isQRCodeListRefreshable()) {
             LogManager.shared.info(message: "QR Code definition list will be retrieved again with user request")
-            getAccessPoints(clear: true)
+            getAccessPoints(clear: true, force: false)
         }
     }
  
@@ -238,19 +238,19 @@ class ConfigurationManager: NSObject {
                     }
                     
                     DelegateManager.shared.onMemberIdSyncCompleted(success: true, statusCode: nil)
-                    self.getAccessPoints(clear: false)
+                    self.getAccessPoints(clear: false, force: false)
                 } else if case .failure(let error) = result {
                     DelegateManager.shared.onMemberIdSyncCompleted(success: false,
                                                                    statusCode: error.code)
                     
                     LogManager.shared.error(message: "Sending user info to server has failed", code: LogCodes.CONFIGURATION_SERVER_SYNC_INFO)
                     
-                    self.getAccessPoints(clear: false)
+                    self.getAccessPoints(clear: false, force: false)
                 }
             })
         } else {
             LogManager.shared.info(message: "User info has already been sent to server for member id: \(getMemberId())")
-            self.getAccessPoints(clear: false)
+            self.getAccessPoints(clear: false, force: false)
         }
     }
     
@@ -363,7 +363,7 @@ class ConfigurationManager: NSObject {
 
             if (error.code == 409) {
                 LogManager.shared.warn(message: "Sync error received for qr codes and access points, definition list will be retrieved again", code: LogCodes.CONFIGURATION_SERVER_SYNC_LIST)
-                getAccessPoints(clear: true)
+                getAccessPoints(clear: true, force: true)
             } else {
                 LogManager.shared.error(message: "Getting definition list of qr codes and access points has failed", code: LogCodes.CONFIGURATION_SERVER_SYNC_LIST)
                 LogManager.shared.warn(message: mQRCodes.count > 0 ? "Stored qr code list will be used for passing flow" : "There is no qr code that stored before to continue passing flow", code: LogCodes.CONFIGURATION_SERVER_SYNC_LIST)
@@ -402,8 +402,8 @@ class ConfigurationManager: NSObject {
         })
     }
     
-    private func getAccessPoints(clear: Bool) -> Void {
-        if (self.isGetAccessPointsAvailable()) {
+    private func getAccessPoints(clear: Bool, force: Bool) -> Void {
+        if (self.isGetAccessPointsAvailable() || force) {
             do {
                 _ = try StorageManager.shared.setValue(key: StorageKeys.FLAG_CONFIGURATION_ACTIVE, value: (Int64(Date().timeIntervalSince1970 * 1000)).description, secure: false)
             } catch {}
@@ -411,16 +411,16 @@ class ConfigurationManager: NSObject {
             LogManager.shared.info(message: "Syncing definition list with server has been started")
             DelegateManager.shared.qrCodeListChanged(state: .SYNCING, count: mQRCodes.count)
             
-            var force: Bool = false
+            var forceFlag: Bool = force
             
             let storedListVersion: String? = try? StorageManager.shared.getValue(key: StorageKeys.LIST_VERSION, secure: false)
             
             if (storedListVersion == nil || storedListVersion!.count == 0 || storedListVersion! != ConfigurationDefaults.CurrentListVersion) {
                 LogManager.shared.info(message: "Force to clear definition list before fetch because of difference on version")
-                force = true
+                forceFlag = true
             }
             
-            mListClearFlag = clear || force
+            mListClearFlag = clear || forceFlag
             
             if (mListClearFlag) {
                 mListSyncDate = nil

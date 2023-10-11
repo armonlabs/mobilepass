@@ -282,7 +282,8 @@ public class QRCodeReaderFragment extends Fragment implements SurfaceHolder.Call
                         txtListStateMessage.setText(R.string.text_qrcode_not_found);
                     }
 
-                    String qrCodeContent = code + " [" + ConfigurationManager.getInstance().getQRCodesCount() + "]";
+                    // String qrCodeContent = code + " [" + ConfigurationManager.getInstance().getQRCodesCount() + "]";
+                    String qrCodeContent = "[" + ConfigurationManager.getInstance().getQRCodesCount() + "] / " + ConfigurationManager.getInstance().getMemberId();
 
                     txtQRCodeContent.setText(qrCodeContent);
                     txtQRCodeContent.setVisibility(View.VISIBLE);
