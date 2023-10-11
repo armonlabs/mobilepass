@@ -38,7 +38,7 @@ public class MobilePass {
 
         ConfigurationManager.getInstance().setConfig(context, config);
 
-        LogManager.getInstance().info("SDK Version: 1.5.0");
+        LogManager.getInstance().info("SDK Version: 1.5.1");
         LogManager.getInstance().info("Service Provider: " + ConfigurationManager.getInstance().getServiceProvider());
         LogManager.getInstance().info("Configuration: " + config.getLog());
 
