@@ -21,7 +21,10 @@
 	<string name="text_status_message_error_invalid_direction">Geçiş sırasında bir hata oluştu. Kod: 4505</string>
 	<string name="text_status_message_error_invalid_hardware_id">Geçiş sırasında bir hata oluştu. Kod: 4506</string>
 	<string name="text_status_message_error_invalid_relay_number">Geçiş sırasında bir hata oluştu. Kod: 4507</string>
-	<string name="img_content_powered_by_armon">Powered by armon</string>
+	<string name="text_status_message_suggestion">Bluetooth ile ağ sorunları yaşamadan geçiş yapabilirsiniz</string>
+	<string name="text_status_message_suggestion_enable">Telefonunuzda Bluetooth etkinleştirilmiş olmalıdır</string>
+	<string name="text_status_message_suggestion_authorize">Uygulamaya Bluetooth izni vermeniz gerekmektedir</string>
+	<string name="img_content_powered_by_armon">Powered by armongate</string>
 	<string name="img_content_status_icon">status icon</string>
 	<string name="btn_label_settings">Ayarlar</string>
 	<string name="text_permission_camera">Karekodu tarayabilmek için uygulamaya kamera erişim izni vermeniz gerekmektedir. \'Ayarlar\' butonuna dokunarak gerekli değişikliği gerçekleştirebilirsiniz.</string>

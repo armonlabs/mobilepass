@@ -142,11 +142,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="24dp"
-        android:src="@drawable/poweredby_white"
+        android:src="@drawable/logo_white"
         android:contentDescription="@string/img_content_powered_by_armon"
         app:layout_constraintBottom_toBottomOf="@id/armon_mp_gms_qrMaskBottom"
         app:layout_constraintLeft_toLeftOf="@id/armon_mp_gms_qrMaskBottom"
         app:layout_constraintRight_toRightOf="@id/armon_mp_gms_qrMaskBottom"
-        app:srcCompat="@drawable/poweredby_white" />
+        app:srcCompat="@drawable/logo_white" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
