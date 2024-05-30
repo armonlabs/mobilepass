@@ -1,6 +1,6 @@
 # Armon MobilePass Library
 
-This library has been developed to allow Android and iOS apps to be used for passing from compatible **armon** access points. Users can pass from these points securely by using application that installed on their phones
+This library has been developed to allow Android and iOS apps to be used for passing from compatible **armon** access points. Users can pass from these points securely by using application that installed on their phones.
 
 When the user arrives at the point, the flow will be as follows;
 
