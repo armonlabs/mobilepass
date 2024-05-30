@@ -7,11 +7,11 @@ group = 'com.github.armonlabs'
 version = '1.5.1'
 
 android {
-    compileSdkVersion 31
+    compileSdkVersion 32
 
     defaultConfig {
         minSdkVersion 21
-        targetSdkVersion 31
+        targetSdkVersion 32
         versionCode 1
         versionName "1.5.1"
 
@@ -50,8 +50,8 @@ dependencies {
 
     implementation "androidx.camera:camera-view:1.0.0-alpha32"
 
-    implementation 'com.google.android.gms:play-services-maps:17.0.0'
-    implementation 'com.google.android.gms:play-services-location:17.1.0'
+    implementation 'com.google.android.gms:play-services-maps:18.2.0'
+    implementation 'com.google.android.gms:play-services-location:21.3.0'
     implementation 'com.huawei.hms:scan:2.6.0.300'
     implementation 'com.huawei.hms:maps:6.6.1.301'
     implementation 'com.huawei.hms:location:6.7.0.300'

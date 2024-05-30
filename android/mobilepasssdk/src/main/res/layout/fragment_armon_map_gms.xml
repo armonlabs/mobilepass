@@ -47,7 +47,7 @@
 			android:id="@+id/armon_mp_imgMapPoweredBy"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
-			android:src="@drawable/poweredby_white"
+			android:src="@drawable/logo_white"
 			android:contentDescription="@string/img_content_powered_by_armon"
 			app:layout_constraintBottom_toBottomOf="parent"
 			app:layout_constraintLeft_toLeftOf="parent"

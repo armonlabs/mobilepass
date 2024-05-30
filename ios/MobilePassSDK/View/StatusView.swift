@@ -24,10 +24,18 @@ public struct ActionConfig: Codable {
 class CurrentStatusModel: ObservableObject {
     @Published var icon:        String  = "waiting"
     @Published var message:     String  = "text_status_message_waiting"
+    @Published var suggestion:  Bool    = false
     
     func update(message: String, icon: String) {
         self.message    = message
         self.icon       = icon
+        self.suggestion = false
+    }
+    
+    func update(message: String, icon: String, suggest: Bool) {
+        self.message    = message
+        self.icon       = icon
+        self.suggestion = suggest
     }
 }
 
@@ -73,10 +81,38 @@ struct StatusView: View {
     var body: some View {
         GeometryReader { (geometry) in
             VStack(alignment: .center) {
-                Image(self.viewModel.icon, bundle: Bundle(for: PassFlowController.self)).resizable().frame(width: geometry.size.width * 0.5, height: geometry.size.width * 0.5, alignment: .center)
-                Text(self.viewModel.message.localized(locale.identifier)).fontWeight(.medium).padding(.top, 48).padding(.bottom, geometry.size.height * 0.35).multilineTextAlignment(.center)
+                VStack {
+                    Image(self.viewModel.icon, bundle: Bundle(for: PassFlowController.self)).resizable().frame(width: geometry.size.width * 0.5, height: geometry.size.width * 0.5, alignment: .center)
+                }.frame(width: geometry.size.width * 0.9, height: geometry.size.height * 0.5, alignment: .bottom)
+                VStack {
+                    Text(self.viewModel.message.localized(locale.identifier)).fontWeight(.medium).multilineTextAlignment(.center)
+                    
+                    if (self.viewModel.suggestion) {
+                        VStack(alignment: .center) {
+                            // VStack(alignment: .center) {
+                                // Image(systemName: "exclamationmark.triangle").foregroundColor(.orange)
+                                Text("text_status_message_suggestion".localized(locale.identifier)).fontWeight(.bold).foregroundColor(.orange).multilineTextAlignment(.center).padding(.top, 4)
+                                
+                            if (BluetoothManager.shared.getCurrentState().needAuthorize) {
+                                Text("text_status_message_suggestion_authorize".localized(locale.identifier)).fontWeight(.medium).foregroundColor(.orange).multilineTextAlignment(.center).padding(.top, 2)
+                                } else {
+                                    Text("text_status_message_suggestion_enable".localized(locale.identifier)).fontWeight(.medium).foregroundColor(.orange).multilineTextAlignment(.center).padding(.top, 2)
+                                    
+                                }
+                            // }
+                            if (BluetoothManager.shared.getCurrentState().needAuthorize) {
+                                Button(action: {
+                                    DelegateManager.shared.goToSettings()
+                                    UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!)
+                                }) {
+                                    Text("text_button_app_permissions".localized(locale.identifier)).bold()
+                                }.padding(.top, 16)
+                            }
+                        }.padding(.top, 12)
+                    }
+                }.frame(width: geometry.size.width * 0.9, height: geometry.size.height * 0.3, alignment: .top).padding(.top, 48)
             }.padding(.horizontal, 14)
-            .frame(width: geometry.size.width, height: geometry.size.height, alignment: .bottom)
+                .frame(width: geometry.size.width, height: geometry.size.height, alignment: .center)
         }.edgesIgnoringSafeArea(.all).onDisappear() {
             self.endBluetoothFlow(disconnect: true)
         }
@@ -370,10 +406,18 @@ struct StatusView: View {
                 failMessage = "test_status_message_remoteaccess_timeout"
             }
             
-            self.viewModel.update(message: (message == nil || message!.isEmpty) ? failMessage : message!, icon: "error")
+            self.viewModel.update(
+                message: (message == nil || message!.isEmpty) ? failMessage : message!,
+                icon: "error",
+                suggest: errorCode != 401 && (!BluetoothManager.shared.getCurrentState().enabled || BluetoothManager.shared.getCurrentState().needAuthorize))
+            
             onPassCompleted(success: false, isRemoteAccess: true)
         } else {
-            self.viewModel.update(message: (message == nil || message!.isEmpty) ? "text_status_message_failed" : message!, icon: "error")
+            self.viewModel.update(
+                message: (message == nil || message!.isEmpty) ? "text_status_message_failed" : message!,
+                icon: "error",
+                suggest: !BluetoothManager.shared.getCurrentState().enabled || BluetoothManager.shared.getCurrentState().needAuthorize)
+            
             onPassCompleted(success: false, isRemoteAccess: true)
         }
     }

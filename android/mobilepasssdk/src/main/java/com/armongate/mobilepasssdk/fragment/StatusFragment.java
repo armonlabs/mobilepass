@@ -1,11 +1,15 @@
 package com.armongate.mobilepasssdk.fragment;
 
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.Settings;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -99,6 +103,23 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
         updateStatus(mActionType.equals(PassFlowActivity.ACTION_BLUETOOTH) ? R.string.text_status_message_scanning : R.string.text_status_message_waiting,
                 "",
                 R.drawable.waiting);
+
+
+        Button button = mCurrentView.findViewById(R.id.armon_mp_btnBLESuggestionSettings);
+        button.setOnClickListener(v -> {
+            DelegateManager.getInstance().goToSettings();
+
+            Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+
+            try {
+                Uri uri = Uri.fromParts("package", requireContext().getPackageName(), null);
+                intent.setData(uri);
+            } catch (Exception ex) {
+                LogManager.getInstance().error("Exception occurred while adding intent data for package name, error: " + ex.getLocalizedMessage(), LogCodes.NEED_PERMISSION_DEFAULT + NeedPermissionType.NEED_PERMISSION_BLUETOOTH);
+            }
+
+            startActivity(intent);
+        });
 
         startAction();
 
@@ -350,17 +371,17 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
                     failMessage = R.string.text_status_message_no_connection;
                 }
 
-                updateStatus(failMessage, "", R.drawable.error);
+                updateStatus(failMessage, "", R.drawable.error, errorCode != 401 && (!BluetoothManager.getInstance().getCurrentState().enabled || BluetoothManager.getInstance().getCurrentState().needAuthorize));
             } else {
-                updateStatus(-1, message, R.drawable.error);
+                updateStatus(-1, message, R.drawable.error, errorCode != 401 && (!BluetoothManager.getInstance().getCurrentState().enabled || BluetoothManager.getInstance().getCurrentState().needAuthorize));
             }
 
             onPassCompleted(false);
         } else {
             if (message == null || message.isEmpty()) {
-                updateStatus(messageId != -1 ? messageId : R.string.text_status_message_failed, "", R.drawable.error);
+                updateStatus(messageId != -1 ? messageId : R.string.text_status_message_failed, "", R.drawable.error, !BluetoothManager.getInstance().getCurrentState().enabled || BluetoothManager.getInstance().getCurrentState().needAuthorize);
             } else {
-                updateStatus(-1, message, R.drawable.error);
+                updateStatus(-1, message, R.drawable.error, !BluetoothManager.getInstance().getCurrentState().enabled || BluetoothManager.getInstance().getCurrentState().needAuthorize);
             }
 
             onPassCompleted(false);
@@ -382,6 +403,10 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
     }
 
     private void updateStatus(final int messageId, final String messageText, final @Nullable Integer icon) {
+        this.updateStatus(messageId, messageText, icon, false);
+    }
+
+    private void updateStatus(final int messageId, final String messageText, final @Nullable Integer icon, final boolean suggest) {
         if (mActivity != null) {
             mWaitingUpdate = null;
             mActivity.runOnUiThread(() -> {
@@ -397,6 +422,21 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
                 } else {
                     statusMessage.setText(messageText);
                 }
+
+                TextView bleSuggestion = mCurrentView.findViewById(R.id.armon_mp_txtBLESuggestionMessage);
+                TextView bleSuggestionAction = mCurrentView.findViewById(R.id.armon_mp_txtBLESuggestionActionMessage);
+
+                Button bleSettings = mCurrentView.findViewById(R.id.armon_mp_btnBLESuggestionSettings);
+
+                if (BluetoothManager.getInstance().getCurrentState().needAuthorize) {
+                    bleSuggestionAction.setText(R.string.text_status_message_suggestion_authorize);
+                } else {
+                    bleSuggestionAction.setText(R.string.text_status_message_suggestion_enable);
+                }
+
+                bleSuggestion.setVisibility(suggest ? View.VISIBLE : View.GONE);
+                bleSuggestionAction.setVisibility(suggest ? View.VISIBLE : View.GONE);
+                bleSettings.setVisibility(suggest && BluetoothManager.getInstance().getCurrentState().needAuthorize ? View.VISIBLE : View.GONE);
             });
         } else {
             mWaitingUpdate = new WaitingStatusUpdate(messageId, messageText, icon);

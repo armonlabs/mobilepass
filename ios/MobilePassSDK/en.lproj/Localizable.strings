@@ -27,11 +27,14 @@
 "text_status_message_error_invalid_direction" = "An error occurred during pass. Code: 4505";
 "text_status_message_error_invalid_hardware_id" = "An error occurred during pass. Code: 4506";
 "text_status_message_error_invalid_relay_number" = "An error occurred during pass. Code: 4507";
+"text_status_message_suggestion" = "You can pass with Bluetooth without experiencing network issues";
+"text_status_message_suggestion_enable" = "Bluetooth must be enabled on your phone";
+"text_status_message_suggestion_authorize" = "You need to grant Bluetooth permission to the application";
 "text_location_message" = "You must be in a defined location to continue";
 "text_location_message_reduced" = "You must be in a defined location to continue\n\nEnabling 'Precise Location' in app permissions will speed up your location validation";
 "text_button_close" = "Close";
 "text_button_app_permissions" = "App Permissions";
-"text_qrcode_message" = "Please read the QR code of access point";
+"text_qrcode_message" = "Please scan the QR code of access point";
 "text_qrcode_list_state_initializing" = "QR code list is being prepared";
 "text_qrcode_list_state_syncing" = "Updating QR code list";
 "text_qrcode_list_state_empty" = "There is no QR code definition";

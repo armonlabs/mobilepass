@@ -27,6 +27,9 @@
 "text_status_message_error_invalid_direction" = "Geçiş sırasında bir hata oluştu. Kod: 4505";
 "text_status_message_error_invalid_hardware_id" = "Geçiş sırasında bir hata oluştu. Kod: 4506";
 "text_status_message_error_invalid_relay_number" = "Geçiş sırasında bir hata oluştu. Kod: 4507";
+"text_status_message_suggestion" = "Bluetooth ile ağ sorunları yaşamadan geçiş yapabilirsiniz";
+"text_status_message_suggestion_enable" = "Telefonunuzda Bluetooth etkinleştirilmiş olmalıdır";
+"text_status_message_suggestion_authorize" = "Uygulamaya Bluetooth izni vermeniz gerekmektedir";
 "text_location_message" = "Devam edebilmek için tanımlı konumda olmanız gerekmektedir";
 "text_location_message_reduced" = "Devam edebilmek için tanımlı konumda olmanız gerekmektedir\n\Uygulama izinlerinde 'Tam Konum'u etkinleştirmek, konum doğrulamanızı hızlandıracaktır";
 "text_button_close" = "Kapat";
