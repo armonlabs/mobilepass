@@ -34,7 +34,7 @@ android/app/release/
 buck-out/
 \.buckd/
 *.keystore
-!debug.keystore
+!mobilepass-sdk-test-debug.keystore
 
 # fastlane
 #
