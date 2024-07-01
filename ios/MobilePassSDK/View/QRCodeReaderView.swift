@@ -237,7 +237,9 @@ public class QRCodeReaderViewController: UIViewController, QRCodeScannerDelegate
             LogManager.shared.debug(message: "Starting QR Code capture session")
             
             if (captureSession!.inputs.count > 0) {
-                captureSession!.startRunning()
+                DispatchQueue.global(qos: .userInitiated).async {
+                    self.captureSession!.startRunning()
+                }
             } else {
                 delegate?.didFail(result: .missingInput)
             }
