@@ -1,7 +1,9 @@
 jdk:
   - openjdk17
 before_install:
+  - set -x
   - echo "🚀 JitPack Build Başladı 🚀"
+  - exit 1
   - java -version
   - javac -version
   - echo "🔍 Mevcut JAVA_HOME: $JAVA_HOME"
