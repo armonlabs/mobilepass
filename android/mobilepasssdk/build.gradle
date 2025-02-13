@@ -4,7 +4,7 @@ plugins {
 }
 
 group = 'com.github.armonlabs'
-version = '1.6.2'
+version = '1.6.4'
 
 android {
     namespace "com.armongate.mobilepasssdk"
@@ -15,7 +15,7 @@ android {
         minSdkVersion 21
         targetSdkVersion 34
         versionCode 1
-        versionName "1.6.2"
+        versionName "1.6.4"
 
         consumerProguardFiles 'consumer-rules.pro'
     }
@@ -75,7 +75,7 @@ afterEvaluate {
             release(MavenPublication) {
                 from components.findByName("release") ?: components["release"]
                 groupId = 'com.github.armonlabs'
-                version = '1.6.2'
+                version = '1.6.4'
             }
         }
     }
