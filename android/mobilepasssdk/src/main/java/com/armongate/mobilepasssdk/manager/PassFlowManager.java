@@ -94,7 +94,7 @@ public class PassFlowManager {
                 }
 
                 if (alreadyAdded) {
-                    LogManager.getInstance().debug("No match QR Code state has been added before");
+                    LogManager.getInstance().info("No match QR Code state has been added before");
                 } else {
                     this.states.add(new PassFlowState(state, data));
                 }
