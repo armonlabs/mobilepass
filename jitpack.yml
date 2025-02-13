@@ -1,16 +1,17 @@
 jdk:
   - openjdk17
+
 before_install:
   - set -x
-  - echo "🚀 JitPack Build Başladı 🚀"
+  - echo "--- JitPack Build Başladı ---"
   - exit 1
   - java -version
   - javac -version
-  - echo "🔍 Mevcut JAVA_HOME: $JAVA_HOME"
+  - echo "Mevcut JAVA_HOME: $JAVA_HOME"
   - sdk install java 17.0.7-open
   - sdk use java 17.0.7-open
   - export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
   - export PATH=$JAVA_HOME/bin:$PATH
-  - echo "✅ JAVA_HOME Güncellendi: $JAVA_HOME"
+  - echo "JAVA_HOME Güncellendi: $JAVA_HOME"
   - java -version
   - javac -version
