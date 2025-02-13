@@ -1,12 +1,12 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 31
-    buildToolsVersion "31.0.0"
+    namespace "com.armongate.mobilepassapp"
+    compileSdkVersion 34
     defaultConfig {
         applicationId "com.armongate.mobilepassapp"
         minSdkVersion 23
-        targetSdkVersion 31
+        targetSdkVersion 34
         versionCode 1
         versionName "1.0"
     }

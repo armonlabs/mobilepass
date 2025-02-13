@@ -1,5 +1,6 @@
 package com.armongate.mobilepasssdk.manager;
 
+import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
@@ -17,8 +18,11 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.ParcelUuid;
+
+import androidx.core.app.ActivityCompat;
 
 import com.armongate.mobilepasssdk.constant.DataTypes;
 import com.armongate.mobilepasssdk.constant.LogCodes;
@@ -130,6 +134,10 @@ public class BluetoothManager {
 
     public void startScan(BLEScanConfiguration configuration) {
         LogManager.getInstance().info("Bluetooth scanner is starting...");
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && ActivityCompat.checkSelfPermission(this.activeContext, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+            LogManager.getInstance().info("Missing BluetoothScan permission!");
+            return;
+        }
 
         // Check current Bluetooth Adapter instance
         setReady();
@@ -180,6 +188,11 @@ public class BluetoothManager {
     public void stopScan(boolean disconnect) {
         LogManager.getInstance().info("Bluetooth scanner is stopping...");
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && ActivityCompat.checkSelfPermission(this.activeContext, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+            LogManager.getInstance().info("Missing BluetoothScan permission!");
+            return;
+        }
+
         if(currentBluetoothAdapter == null || currentBluetoothScanner == null) {
             LogManager.getInstance().info("Bluetooth scanner has not been initialized yet, so stop request has been ignored");
             return;
@@ -204,6 +217,11 @@ public class BluetoothManager {
 
     public void connectToDevice(String deviceIdentifier) {
         LogManager.getInstance().debug("Connect to device is requested for identifier: " + deviceIdentifier);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && ActivityCompat.checkSelfPermission(this.activeContext, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+            LogManager.getInstance().info("Missing BluetoothScan permission!");
+            return;
+        }
 
         if(isConnectionActive) {
             LogManager.getInstance().warn("Another Bluetooth connection is active, so new one has been ignored", LogCodes.BLUETOOTH_CONNECTION_DUPLICATE);
@@ -300,8 +318,17 @@ public class BluetoothManager {
         for (String uuid :
                 currentConfiguration.deviceList.keySet()) {
             LogManager.getInstance().debug("Filter services with uuid: " + uuid);
-            filterServiceUUIDs.add(UUID.fromString(uuid));
-            filterCharacteristicUUIDs.add(UUID.fromString(UUIDs.CHARACTERISTIC));
+            try {
+                filterServiceUUIDs.add(UUID.fromString(uuid));
+            }  catch (IllegalArgumentException e) {
+                LogManager.getInstance().error("Invalid UUID format for service: " + uuid, LogCodes.BLUETOOTH_SCANNING_FLOW);
+            }
+
+            try {
+                filterCharacteristicUUIDs.add(UUID.fromString(UUIDs.CHARACTERISTIC));
+            }  catch (IllegalArgumentException e) {
+                LogManager.getInstance().error("Invalid UUID format for characteristic: " + UUIDs.CHARACTERISTIC, LogCodes.BLUETOOTH_SCANNING_FLOW);
+            }
         }
 
         // Dynamic filtering is active for SDK, so ScanFilter builder has not been used
@@ -310,6 +337,12 @@ public class BluetoothManager {
 
     private void disconnect() {
         LogManager.getInstance().info("Disconnect from connected device is requested");
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && ActivityCompat.checkSelfPermission(this.activeContext, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+            LogManager.getInstance().info("Missing BluetoothScan permission!");
+            return;
+        }
+
         boolean waitingDisconnect = false;
 
         if (currentConnectedDevices != null && currentConnectedDevices.size() > 0) {
@@ -344,6 +377,11 @@ public class BluetoothManager {
 
     private void onConnectionStateChanged(String identifier, DeviceConnectionStatus.ConnectionState connectionState, Integer failReason) {
         LogManager.getInstance().info("Bluetooth connection state changed for " + (identifier != null ? identifier : "-") + " > " + connectionState.toString());
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && ActivityCompat.checkSelfPermission(this.activeContext, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+            LogManager.getInstance().info("Missing BluetoothScan permission!");
+            return;
+        }
 
         if (delegate != null) {
             if (identifier != null) {
@@ -442,6 +480,11 @@ public class BluetoothManager {
 
     private void checkWriteQueue() {
         LogManager.getInstance().debug("Checking write queue for Bluetooth communication. Queue Size: " + mWriteQueue.size() + ", IsWriteActive: " + mWriteActive);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && ActivityCompat.checkSelfPermission(this.activeContext, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+            LogManager.getInstance().info("Missing BluetoothScan permission!");
+            return;
+        }
 
         if (this.mWriteQueue.size() > 0 && !this.mWriteActive) {
             // Get next item from queue to send
@@ -658,6 +701,12 @@ public class BluetoothManager {
     {
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && ActivityCompat.checkSelfPermission(activeContext, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+                LogManager.getInstance().info("Missing BluetoothScan permission!");
+                super.onConnectionStateChange(gatt, status, newState);
+                return;
+            }
+
             String state;
 
             switch (newState) {
@@ -707,6 +756,11 @@ public class BluetoothManager {
         @Override
         public void onMtuChanged(BluetoothGatt gatt, int mtu, int status) {
             super.onMtuChanged(gatt, mtu, status);
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && ActivityCompat.checkSelfPermission(activeContext, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+                LogManager.getInstance().info("Missing BluetoothScan permission!");
+                return;
+            }
 
             if(status == BluetoothGatt.GATT_SUCCESS) {
                 LogManager.getInstance().debug("MTU size changed successfully: " + mtu);

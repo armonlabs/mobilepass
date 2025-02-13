@@ -69,6 +69,26 @@
 -keep class org.spongycastle.* {*;}
 -keepclassmembers class org.spongycastle.*
 
+# Google Play Services Location koruma
+-keep class kotlin.Metadata { *; }
+-keep class com.google.android.gms.internal.location.** { *; }
+
+# Huawei HMS kütüphaneleri koruma
+-keep class com.huawei.hms.** { *; }
+-dontwarn com.huawei.hms.**
+-dontwarn com.huawei.android.telephony.**
+
+# Apache Compress ve Brotli koruma
+-keep class org.apache.commons.compress.** { *; }
+-keep class org.brotli.** { *; }
+
+# Bouncy Castle koruma
+-keep class org.bouncycastle.** { *; }
+-dontwarn org.bouncycastle.**
+
+-dontwarn java.lang.management.**
+-dontwarn javax.naming.**
+
 # Your library may contain more items that need to be preserved;
 # typically classes that are dynamically created using Class.forName:
 # -keep public class mypackage.MyClass

@@ -112,13 +112,13 @@ public class BaseService {
 
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        LogManager.getInstance().debug("Error received " + (error.networkResponse != null ? error.networkResponse.statusCode : "NoNetwork"));
+                        LogManager.getInstance().info("Error received " + (error.networkResponse != null ? error.networkResponse.statusCode : "NoNetwork"));
 
                         String message = "";
 
                         if (error.networkResponse != null && error.networkResponse.data != null) {
                             try {
-                                LogManager.getInstance().debug(new String(error.networkResponse.data));
+                                LogManager.getInstance().info(new String(error.networkResponse.data));
 
                                 Gson gson = new Gson();
                                 ResponseMessage responseMsg = gson.fromJson(new String(error.networkResponse.data), ResponseMessage.class);

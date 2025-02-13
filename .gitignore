@@ -49,3 +49,4 @@ buck-out/
 
 # CocoaPods
 /ios/Pods/
+android/mobilepasssdk/out.map
