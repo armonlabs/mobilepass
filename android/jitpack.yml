@@ -1,6 +1,6 @@
 jdk:
   - openjdk17
-before_install:
+install:
   - java -version
   - javac -version
   - sdk install java 17.0.7-open
