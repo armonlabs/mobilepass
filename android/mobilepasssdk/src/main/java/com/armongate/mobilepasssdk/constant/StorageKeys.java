@@ -9,4 +9,5 @@ public class StorageKeys {
     public static final String LIST_SYNC_DATE               = "armon_mobilepass_sdk_list_sync_date";
     public static final String LIST_VERSION                 = "armon_mobilepass_sdk_list_version";
     public static final String FLAG_CONFIGURATION_ACTIVE    = "armon_mobilepass_sdk_config_active";
+    public static final String ANALYTICS_QUEUE              = "armon_mobilepass_sdk_analytics_queue";
 }

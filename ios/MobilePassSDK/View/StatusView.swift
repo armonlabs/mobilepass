@@ -377,15 +377,15 @@ struct StatusView: View {
     private func onRemoteAccessFailed(errorCode: Int?, message: String?) {
         if (errorCode != nil) {
             if (errorCode == 401) {
-                PassFlowManager.shared.addToStates(state: .RUN_ACTION_REMOTE_ACCESS_UNAUTHORIZED);
+                PassFlowManager.shared.addToStates(state: .RUN_ACTION_REMOTE_ACCESS_UNAUTHORIZED, data: message);
             } else if (errorCode == 404) {
-                PassFlowManager.shared.addToStates(state: .RUN_ACTION_REMOTE_ACCESS_DEVICE_NOT_CONNECTED);
+                PassFlowManager.shared.addToStates(state: .RUN_ACTION_REMOTE_ACCESS_DEVICE_NOT_CONNECTED, data: message);
             } else if (errorCode == 408) {
-                PassFlowManager.shared.addToStates(state: .RUN_ACTION_REMOTE_ACCESS_DEVICE_TIMEOUT);
+                PassFlowManager.shared.addToStates(state: .RUN_ACTION_REMOTE_ACCESS_DEVICE_TIMEOUT, data: message);
             } else if (errorCode == 0) {
-                PassFlowManager.shared.addToStates(state: .RUN_ACTION_REMOTE_ACCESS_NO_NETWORK);
+                PassFlowManager.shared.addToStates(state: .RUN_ACTION_REMOTE_ACCESS_NO_NETWORK, data: message);
             } else {
-                PassFlowManager.shared.addToStates(state: .RUN_ACTION_REMOTE_ACCESS_REQUEST_FAILED);
+                PassFlowManager.shared.addToStates(state: .RUN_ACTION_REMOTE_ACCESS_REQUEST_FAILED, data: message);
             }
         }
         
@@ -434,6 +434,7 @@ struct StatusView: View {
         }
         
         DelegateManager.shared.onCompleted(success: success,
+                                           isRemoteAccess: isRemoteAccess,
                                            direction: currentConfig?.qrCode?.d,
                                            clubId: currentConfig?.clubInfo?.i,
                                            clubName: currentConfig?.clubInfo?.n)

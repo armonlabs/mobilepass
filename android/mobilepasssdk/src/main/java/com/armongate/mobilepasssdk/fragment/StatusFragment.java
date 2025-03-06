@@ -337,15 +337,15 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
     private void onRemoteAccessFailed(Integer errorCode, int messageId, String message) {
         if (errorCode != null) {
             if (errorCode == 401) {
-                PassFlowManager.getInstance().addToStates(PassFlowStateCode.RUN_ACTION_REMOTE_ACCESS_UNAUTHORIZED);
+                PassFlowManager.getInstance().addToStates(PassFlowStateCode.RUN_ACTION_REMOTE_ACCESS_UNAUTHORIZED, message);
             } else if (errorCode == 404) {
-                PassFlowManager.getInstance().addToStates(PassFlowStateCode.RUN_ACTION_REMOTE_ACCESS_DEVICE_NOT_CONNECTED);
+                PassFlowManager.getInstance().addToStates(PassFlowStateCode.RUN_ACTION_REMOTE_ACCESS_DEVICE_NOT_CONNECTED, message);
             } else if (errorCode == 408) {
-                PassFlowManager.getInstance().addToStates(PassFlowStateCode.RUN_ACTION_REMOTE_ACCESS_DEVICE_TIMEOUT);
+                PassFlowManager.getInstance().addToStates(PassFlowStateCode.RUN_ACTION_REMOTE_ACCESS_DEVICE_TIMEOUT, message);
             } else if (errorCode == 0) {
-                PassFlowManager.getInstance().addToStates(PassFlowStateCode.RUN_ACTION_REMOTE_ACCESS_NO_NETWORK);
+                PassFlowManager.getInstance().addToStates(PassFlowStateCode.RUN_ACTION_REMOTE_ACCESS_NO_NETWORK, message);
             } else {
-                PassFlowManager.getInstance().addToStates(PassFlowStateCode.RUN_ACTION_REMOTE_ACCESS_REQUEST_FAILED);
+                PassFlowManager.getInstance().addToStates(PassFlowStateCode.RUN_ACTION_REMOTE_ACCESS_REQUEST_FAILED, message);
             }
         }
 
@@ -396,9 +396,9 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
         }
 
         if (mQRCode != null && mClubInfo != null) {
-            DelegateManager.getInstance().onCompleted(success, mQRCode.d, mClubInfo.i, mClubInfo.n);
+            DelegateManager.getInstance().onCompleted(success, !mActionType.equals(PassFlowActivity.ACTION_BLUETOOTH), mQRCode.d, mClubInfo.i, mClubInfo.n);
         } else {
-            DelegateManager.getInstance().onCompleted(success);
+            DelegateManager.getInstance().onCompleted(success, !mActionType.equals(PassFlowActivity.ACTION_BLUETOOTH));
         }
     }
 

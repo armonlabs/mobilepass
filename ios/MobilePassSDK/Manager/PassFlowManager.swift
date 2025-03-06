@@ -19,6 +19,9 @@ class PassFlowManager: NSObject {
     // MARK: Fields
     
     private var states: [PassFlowState] = [];
+    private var logStates: [PassFlowState] = [];
+    private var lastQRCodeId: String? = nil;
+    private var lastClubId: String? = nil;
     
     private var ignore: [PassFlowStateCode] = [
         PassFlowStateCode.SCAN_QRCODE_NEED_PERMISSION,
@@ -62,10 +65,26 @@ class PassFlowManager: NSObject {
     
     func clearStates() {
         self.states.removeAll()
+        self.logStates.removeAll()
+        
+        self.lastClubId = nil;
+        self.lastQRCodeId = nil;
     }
     
     func getStates() -> [PassFlowState] {
         return self.states
+    }
+
+    func getLogStates() -> [PassFlowState] {
+        return self.logStates
+    }
+    
+    func getClubId() -> String? {
+        return self.lastClubId
+    }
+    
+    func getQRCodeId() -> String? {
+        return self.lastQRCodeId
     }
     
     func addToStates(state: PassFlowStateCode, data: String? = nil) {
@@ -79,6 +98,13 @@ class PassFlowManager: NSObject {
                 self.states.append(PassFlowState(state: state, data: data))
             }
         }
+        
+        self.logStates.append(PassFlowState(state: state, data: data, datetime: Date()))
+    }
+    
+    func setQRData(qrId: String?, clubId: String?) {
+        self.lastQRCodeId = qrId
+        self.lastClubId = clubId
     }
     
 }

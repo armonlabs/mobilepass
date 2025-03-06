@@ -4,6 +4,7 @@ import com.armongate.mobilepasssdk.constant.PassFlowStateCode;
 import com.armongate.mobilepasssdk.model.PassFlowState;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class PassFlowManager {
@@ -62,17 +63,35 @@ public class PassFlowManager {
     // Fields
 
     private List<PassFlowState> states = new ArrayList<>();
-
+    private List<PassFlowState> logStates = new ArrayList<>();
+    private String lastQRCodeId = null;
+    private String lastClubId = null;
     private List<Integer> ignore = new ArrayList<>();
 
     // Public Functions
 
     public void clearStates() {
         states.clear();
+        logStates.clear();
+
+        this.lastClubId = null;
+        this.lastQRCodeId = null;
     }
 
     public List<PassFlowState> getStates() {
         return this.states;
+    }
+    
+    public List<PassFlowState> getLogStates() {
+        return this.logStates;
+    }
+
+    public String getLastClubId() {
+        return lastClubId;
+    }
+
+    public String getLastQRCodeId() {
+        return lastQRCodeId;
     }
 
     public void addToStates(Integer state) {
@@ -102,5 +121,12 @@ public class PassFlowManager {
                 this.states.add(new PassFlowState(state, data));
             }
         }
+
+        this.logStates.add(new PassFlowState(state, data, new Date()));
+    }
+
+    public void setQRData(String qrId, String clubId) {
+        this.lastQRCodeId = qrId;
+        this.lastClubId = clubId;
     }
 }

@@ -29,7 +29,7 @@ class StorageManager: NSObject {
         } else {
             let storage: UserDefaults = UserDefaults.standard
             storage.set(value, forKey: key)
-            
+                        
             return true
         }
     }

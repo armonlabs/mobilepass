@@ -3,14 +3,28 @@ package com.armongate.mobilepasssdk.manager;
 import android.os.Handler;
 import android.os.Looper;
 
+import com.armongate.mobilepasssdk.enums.AnalyticsResult;
+import com.armongate.mobilepasssdk.enums.PassMethod;
 import com.armongate.mobilepasssdk.constant.PassFlowResultCode;
 import com.armongate.mobilepasssdk.constant.PassFlowStateCode;
 import com.armongate.mobilepasssdk.constant.QRCodeListState;
 import com.armongate.mobilepasssdk.delegate.MobilePassDelegate;
 import com.armongate.mobilepasssdk.delegate.PassFlowDelegate;
 import com.armongate.mobilepasssdk.delegate.QRCodeListStateDelegate;
+import com.armongate.mobilepasssdk.model.AnalyticsStep;
 import com.armongate.mobilepasssdk.model.LogItem;
 import com.armongate.mobilepasssdk.model.PassFlowResult;
+import com.armongate.mobilepasssdk.model.PassFlowState;
+import com.armongate.mobilepasssdk.model.request.RequestAnalyticsData;
+import com.armongate.mobilepasssdk.service.AnalyticsService;
+import com.armongate.mobilepasssdk.service.BaseService;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+import java.util.TimeZone;
 
 public class DelegateManager {
 
@@ -92,11 +106,11 @@ public class DelegateManager {
         }
     }
 
-    public void onCompleted(boolean success) {
-        this.onCompleted(success, null, null, null);
+    public void onCompleted(boolean success, Boolean isRemoteAccess) {
+        this.onCompleted(success, isRemoteAccess, null, null, null);
     }
 
-    public void onCompleted(boolean success, Integer direction, String clubId, String clubName) {
+    public void onCompleted(boolean success, Boolean isRemoteAccess, Integer direction, String clubId, String clubName) {
         mFlowCompleted = true;
 
         if (mCurrentMobilePassDelegate != null) {
@@ -110,6 +124,12 @@ public class DelegateManager {
         }
 
         startAutoCloseTimer();
+        shareAnalytics(
+            success ? AnalyticsResult.SUCCESS : AnalyticsResult.FAIL,
+            isRemoteAccess,
+            direction,
+            clubId
+        );
     }
 
     public void onCancelled(boolean dismiss) {
@@ -217,6 +237,8 @@ public class DelegateManager {
                             null, null, null,
                             PassFlowManager.getInstance().getStates()));
         }
+
+        shareAnalytics(AnalyticsResult.CANCEL, null, null, null);
     }
 
     private void startAutoCloseTimer() {
@@ -237,4 +259,46 @@ public class DelegateManager {
         }
     }
 
+    private void shareAnalytics(AnalyticsResult result, Boolean isRemoteAccess, Integer direction, String clubId) {
+        List<PassFlowState> states = PassFlowManager.getInstance().getLogStates();
+        Date startTime = states.isEmpty() ? new Date() : states.get(0).datetime;
+        long duration = new Date().getTime() - startTime.getTime();
+        
+        List<AnalyticsStep> analyticsSteps = new ArrayList<>();
+        for (PassFlowState state : states) {
+            analyticsSteps.add(new AnalyticsStep(
+                state.getState(),
+                state.getData(),
+                state.getDatetime() != null ? state.getDatetime() : startTime
+            ));
+        }
+
+        PassMethod method = null;
+        if (isRemoteAccess != null) {
+            method = isRemoteAccess ? PassMethod.REMOTE : PassMethod.BLE;
+        }
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US);
+        sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+        String formattedDate = sdf.format(new Date());
+
+        RequestAnalyticsData request = new RequestAnalyticsData(
+            formattedDate,
+            duration,
+            result,
+            method,
+            clubId != null ? clubId : PassFlowManager.getInstance().getLastClubId(),
+            PassFlowManager.getInstance().getLastQRCodeId(),
+            direction,
+            analyticsSteps
+        );
+
+        new AnalyticsService().sendAnalytics(ConfigurationManager.getInstance().getCurrentContext(), request, new BaseService.ServiceResultListener() {
+            @Override
+            public void onCompleted(Object result) {}
+
+            @Override
+            public void onError(int statusCode, String message) {}
+        });
+    }
 }

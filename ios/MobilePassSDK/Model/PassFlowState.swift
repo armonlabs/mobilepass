@@ -8,11 +8,13 @@
 import Foundation
 
 public struct PassFlowState {
-    public var state:   Int
-    public var data:    String?
+    public var state:       Int
+    public var data:        String?
+    public var datetime:    Date?
     
-    init(state: PassFlowStateCode, data: String?) {
-        self.state  = state.rawValue
-        self.data   = data
+    init(state: PassFlowStateCode, data: String?, datetime: Date? = nil) {
+        self.state      = state.rawValue
+        self.data       = data
+        self.datetime   = datetime
     }
 }

@@ -298,6 +298,8 @@ public class GoogleQRCodeReaderActivity extends AppCompatActivity implements QRC
                             } else {
                                 if (activeQRCodeContent.valid) {
                                     PassFlowManager.getInstance().addToStates(PassFlowStateCode.SCAN_QRCODE_FOUND, qrcodeContent);
+                                    PassFlowManager.getInstance().setQRData(activeQRCodeContent.qrCode != null ? activeQRCodeContent.qrCode.i : null, activeQRCodeContent.clubInfo != null ? activeQRCodeContent.clubInfo.i : null);
+
                                     LogManager.getInstance().info("QR code reader found content: " + qrcodeContent);
 
                                     GoogleQRCodeReaderActivity.this.finish();

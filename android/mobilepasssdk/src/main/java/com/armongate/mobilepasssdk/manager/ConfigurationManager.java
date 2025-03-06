@@ -97,6 +97,10 @@ public class ConfigurationManager {
         return null;
     }
 
+    public Context getCurrentContext() {
+        return mCurrentContext;
+    }
+
     public String getMemberId() {
         return mCurrentConfig != null ? mCurrentConfig.memberId : "";
     }

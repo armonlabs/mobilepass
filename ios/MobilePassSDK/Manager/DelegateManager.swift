@@ -90,10 +90,38 @@ class DelegateManager: NSObject {
             self.mobilePassDelegate?.onQRCodesSyncFailed(statusCode: statusCode)
         }
     }
-    
-    func onCompleted(success: Bool, direction: Direction?, clubId: String?, clubName: String?) {
-        isPassFlowCompleted = true
+
+    func shareAnalytics(result: AnalyticsResult, isRemoteAccess: Bool? = nil, direction: Direction? = nil, clubId: String? = nil) {
+        let states = PassFlowManager.shared.getLogStates()
+        let startTime = states.first?.datetime ?? Date()
+        let duration = Int64(Date().timeIntervalSince(startTime) * 1000)
         
+        let analyticsSteps = states.map { state in
+            AnalyticsStep(
+                code: state.state,
+                message: state.data,
+                timestamp: state.datetime ?? startTime
+            )
+        }
+
+        let request = RequestAnalyticsData(
+            accessTime: ISO8601DateFormatter().string(from: Date()),
+            duration: duration,
+            result: result,
+            method: isRemoteAccess == nil ? nil : (isRemoteAccess! ? .remote : .ble),
+            clubId: clubId ?? PassFlowManager.shared.getClubId(),
+            qrCodeId: PassFlowManager.shared.getQRCodeId(),
+            direction: direction?.rawValue,
+            os: .ios,
+            steps: analyticsSteps
+        )
+        
+        AnalyticsService().sendAnalytics(request: request) { _ in }   
+    }
+    
+    func onCompleted(success: Bool, isRemoteAccess: Bool, direction: Direction?, clubId: String?, clubName: String?) {
+        isPassFlowCompleted = true
+
         DispatchQueue.main.async {
             self.mobilePassDelegate?.onScanFlowCompleted(result: PassFlowResult(
                 result: success ? PassFlowResultCode.SUCCESS : PassFlowResultCode.FAIL,
@@ -104,6 +132,7 @@ class DelegateManager: NSObject {
         }
         
         startAutoCloseTimer()
+        shareAnalytics(result: success ? .success : .fail, isRemoteAccess: isRemoteAccess, direction: direction, clubId: clubId)
     }
     
     func onCancelled(dismiss: Bool) {
@@ -234,6 +263,8 @@ class DelegateManager: NSObject {
             result: PassFlowResultCode.CANCEL,
             states: PassFlowManager.shared.getStates(),
             direction: nil, clubId: nil, clubName: nil))
+
+        shareAnalytics(result: .cancel)
     }
     
     private func startAutoCloseTimer() {
