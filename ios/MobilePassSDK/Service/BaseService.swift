@@ -65,7 +65,7 @@ class BaseService: NSObject {
             request.httpBody = jsonData
         }
         
-        request.timeoutInterval = Double(10)
+        request.timeoutInterval = Double(30)
         
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         request.addValue("application/json", forHTTPHeaderField: "Accept")

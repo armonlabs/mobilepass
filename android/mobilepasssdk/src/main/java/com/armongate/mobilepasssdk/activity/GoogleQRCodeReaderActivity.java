@@ -74,6 +74,7 @@ public class GoogleQRCodeReaderActivity extends AppCompatActivity implements QRC
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         PassFlowManager.getInstance().addToStates(PassFlowStateCode.SCAN_QRCODE_STARTED);
+        LogManager.getInstance().info("Scan QR Code started for GMS");
 
         isQRFound = false;
         validQRCode = null;
@@ -253,7 +254,7 @@ public class GoogleQRCodeReaderActivity extends AppCompatActivity implements QRC
     }
 
     private void onSuccessListener(List<Barcode> barcodes) {
-        //Check the result
+        // Check the result
         if (barcodes != null && barcodes.size() > 0) {
             Barcode barcodeObj = barcodes.get(0);
 
@@ -297,6 +298,9 @@ public class GoogleQRCodeReaderActivity extends AppCompatActivity implements QRC
                             } else {
                                 if (activeQRCodeContent.valid) {
                                     PassFlowManager.getInstance().addToStates(PassFlowStateCode.SCAN_QRCODE_FOUND, qrcodeContent);
+                                    PassFlowManager.getInstance().setQRData(activeQRCodeContent.qrCode != null ? activeQRCodeContent.qrCode.i : null, activeQRCodeContent.clubInfo != null ? activeQRCodeContent.clubInfo.i : null);
+
+                                    LogManager.getInstance().info("QR code reader found content: " + qrcodeContent);
 
                                     GoogleQRCodeReaderActivity.this.finish();
                                     validQRCode = parsedContent;
@@ -343,35 +347,40 @@ public class GoogleQRCodeReaderActivity extends AppCompatActivity implements QRC
     }
 
     private void setInvalid(String code, boolean isInvalidContent, boolean isInvalidFormat) {
-        if (ConfigurationManager.getInstance().closeWhenInvalidQRCode() && isInvalidFormat) {
-            GoogleQRCodeReaderActivity.this.finish();
-            DelegateManager.getInstance().flowCloseWithInvalidQRCode(code);
-        } else {
-            TextView txtListStateMessage = findViewById(R.id.armon_mp_gms_txtListStateInfo);
-            TextView txtQRCodeContent = findViewById(R.id.armon_mp_gms_txtQRCodeContent);
+        try {
+            if (ConfigurationManager.getInstance().closeWhenInvalidQRCode() && isInvalidFormat) {
+                GoogleQRCodeReaderActivity.this.finish();
+                DelegateManager.getInstance().flowCloseWithInvalidQRCode(code);
+            } else {
+                TextView txtListStateMessage = findViewById(R.id.armon_mp_gms_txtListStateInfo);
+                TextView txtQRCodeContent = findViewById(R.id.armon_mp_gms_txtQRCodeContent);
 
-            handler.post(() -> {
-                if (isInvalidContent) {
-                    txtListStateMessage.setText(R.string.text_qrcode_invalid);
-                } else if (isInvalidFormat) {
-                    txtListStateMessage.setText(R.string.text_qrcode_unknown);
-                } else {
-                    txtListStateMessage.setText(R.string.text_qrcode_not_found);
-                }
+                handler.post(() -> {
+                    if (isInvalidContent) {
+                        txtListStateMessage.setText(R.string.text_qrcode_invalid);
+                    } else if (isInvalidFormat) {
+                        txtListStateMessage.setText(R.string.text_qrcode_unknown);
+                    } else {
+                        txtListStateMessage.setText(R.string.text_qrcode_not_found);
+                    }
 
-                String qrCodeContent = "[" + ConfigurationManager.getInstance().getQRCodesCount() + "] / " + ConfigurationManager.getInstance().getMemberId();
+                    String qrCodeContent = "[" + ConfigurationManager.getInstance().getQRCodesCount() + "] / " + ConfigurationManager.getInstance().getMemberId();
 
-                txtQRCodeContent.setText(qrCodeContent);
-                txtQRCodeContent.setVisibility(View.VISIBLE);
-                setMaskColor(isInvalidContent ? R.color.qrcode_mask_content_failure : R.color.qrcode_mask_invalid);
-            });
+                    txtQRCodeContent.setText(qrCodeContent);
+                    txtQRCodeContent.setVisibility(View.VISIBLE);
+                    setMaskColor(isInvalidContent ? R.color.qrcode_mask_content_failure : R.color.qrcode_mask_invalid);
+                });
 
-            handler.postDelayed(() -> {
-                txtListStateMessage.setText(getQRCodeListStateMessage(DelegateManager.getInstance().getQRCodeListState()));
-                txtQRCodeContent.setText("");
-                txtQRCodeContent.setVisibility(View.GONE);
-                setMaskColor(R.color.qrcode_mask);
-            }, TimeUnit.SECONDS.toMillis(4));
+                handler.postDelayed(() -> {
+                    txtListStateMessage.setText(getQRCodeListStateMessage(DelegateManager.getInstance().getQRCodeListState()));
+                    txtQRCodeContent.setText("");
+                    txtQRCodeContent.setVisibility(View.GONE);
+                    setMaskColor(R.color.qrcode_mask);
+                }, TimeUnit.SECONDS.toMillis(4));
+            }
+        } catch (Exception ex) {
+            PassFlowManager.getInstance().addToStates(PassFlowStateCode.SCAN_QRCODE_ERROR, "Set invalid state failed! Error: " + ex.getLocalizedMessage());
+            LogManager.getInstance().error("Set invalid state has been failed!, error: " + ex.getLocalizedMessage(), LogCodes.PASSFLOW_QRCODE_READER_CHANGE_MASK_FAILED, this);
         }
     }
 

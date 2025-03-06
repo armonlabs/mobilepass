@@ -51,4 +51,5 @@ public class LogCodes {
     public static final int PASSFLOW_ACTION_INVALID_NEXT_ACTION         = 4508;
     public static final int UI_SWITCH_CAMERA_FAILED                     = 5101;
     public static final int UI_INVALID_STATE_TO_REPLACE_FRAGMENT        = 5102;
+    public static final int OTHER                                       = 9999;
 }

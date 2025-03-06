@@ -112,13 +112,13 @@ public class BaseService {
 
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        LogManager.getInstance().debug("Error received " + (error.networkResponse != null ? error.networkResponse.statusCode : "NoNetwork"));
+                        LogManager.getInstance().info("Error received " + (error.networkResponse != null ? error.networkResponse.statusCode : "NoNetwork"));
 
                         String message = "";
 
                         if (error.networkResponse != null && error.networkResponse.data != null) {
                             try {
-                                LogManager.getInstance().debug(new String(error.networkResponse.data));
+                                LogManager.getInstance().info(new String(error.networkResponse.data));
 
                                 Gson gson = new Gson();
                                 ResponseMessage responseMsg = gson.fromJson(new String(error.networkResponse.data), ResponseMessage.class);
@@ -150,7 +150,7 @@ public class BaseService {
                 params.put("Authorization", token);
                 params.put("If-Modified-Since", "Mon, 26 Jul 1997 05:00:00 GMT");
                 params.put("Cache-Control", "no-cache");
-                params.put("mobilepass-version", "1.6.2");
+                params.put("mobilepass-version", "1.6.5");
                 params.put("mobilepass-memberid", ConfigurationManager.getInstance().getMemberId());
                 params.put("mobilepass-config", ConfigurationManager.getInstance().getConfigurationLog());
                 params.put("mobilepass-provider", ConfigurationManager.getInstance().getServiceProvider());

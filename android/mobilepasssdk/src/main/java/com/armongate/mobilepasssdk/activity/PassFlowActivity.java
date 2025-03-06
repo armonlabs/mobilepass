@@ -130,11 +130,13 @@ public class PassFlowActivity extends AppCompatActivity implements PassFlowDeleg
     }
 
     private void scanQRCodesForGMS() {
+        LogManager.getInstance().info("Scan qr codes for GMS");
         Intent intent = new Intent(this, GoogleQRCodeReaderActivity.class);
         this.startActivity(intent);
     }
 
     private void scanQRCodesForHMS() {
+        LogManager.getInstance().info("Scan qr codes for HMS");
         Intent intent = new Intent(this, HuaweiQRCodeReaderActivity.class);
         this.startActivity(intent);
     }

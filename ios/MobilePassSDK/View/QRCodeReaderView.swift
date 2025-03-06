@@ -123,6 +123,7 @@ public class QRCodeReaderCoordinator: NSObject, AVCaptureMetadataOutputObjectsDe
                 } else {
                     if (activeQRCodeContent!.valid) {
                         PassFlowManager.shared.addToStates(state: .SCAN_QRCODE_FOUND, data: qrCodeContent)
+                        PassFlowManager.shared.setQRData(qrId: activeQRCodeContent?.qrCode?.i, clubId: activeQRCodeContent?.clubInfo?.i)
                         
                         parent.completion(QRCodeScanResult(code: qrCodeContent, result: .success))
                     } else {

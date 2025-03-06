@@ -97,6 +97,10 @@ public class ConfigurationManager {
         return null;
     }
 
+    public Context getCurrentContext() {
+        return mCurrentContext;
+    }
+
     public String getMemberId() {
         return mCurrentConfig != null ? mCurrentConfig.memberId : "";
     }
@@ -324,7 +328,7 @@ public class ConfigurationManager {
                 mQRCodes = new HashMap<>();
                 mAccessPoints = new HashMap<>();
 
-                LogManager.getInstance().debug("Stored qr code and access points lists are cleared");
+                LogManager.getInstance().info("Stored qr code and access points lists are cleared");
             }
 
             LogManager.getInstance().info("Total " + mTempList.size() + " item(s) received from server for definition list of access points");
@@ -428,7 +432,7 @@ public class ConfigurationManager {
             try {
                 lastActiveDate = Long.parseLong(storedConfigActiveDate);
             } catch (Exception ex) {
-                LogManager.getInstance().debug("Found invalid configuration activation date at storage: " + storedConfigActiveDate);
+                LogManager.getInstance().info("Found invalid configuration activation date at storage: " + storedConfigActiveDate);
             }
         }
 
@@ -462,7 +466,7 @@ public class ConfigurationManager {
                     try {
                         mListSyncDate = Long.parseLong(storedSyncDate);
                     } catch (Exception ex) {
-                        LogManager.getInstance().debug("Found invalid sync date at storage: " + storedSyncDate);
+                        LogManager.getInstance().info("Found invalid sync date at storage: " + storedSyncDate);
                     }
                 }
             }

@@ -19,6 +19,13 @@
 		DE27229D25D86E8900E1F8F7 /* QRCodeReaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE27229C25D86E8800E1F8F7 /* QRCodeReaderView.swift */; };
 		DE2722A025D871EC00E1F8F7 /* ScanQRCodeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE27229F25D871EC00E1F8F7 /* ScanQRCodeView.swift */; };
 		DE2B22EA25D3C9A0003F0451 /* StatusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE2B22E925D3C9A0003F0451 /* StatusView.swift */; };
+		DE2D2BDD2D76F6B1000A0975 /* AnalyticsResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE2D2BDC2D76F6B1000A0975 /* AnalyticsResult.swift */; };
+		DE2D2BDF2D76F6C1000A0975 /* AnalyticsOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE2D2BDE2D76F6C1000A0975 /* AnalyticsOS.swift */; };
+		DE2D2BE12D76F6CF000A0975 /* PassMethod.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE2D2BE02D76F6CF000A0975 /* PassMethod.swift */; };
+		DE2D2BE32D76F6EC000A0975 /* AnalyticsStep.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE2D2BE22D76F6EC000A0975 /* AnalyticsStep.swift */; };
+		DE2D2BE52D76F6FB000A0975 /* RequestAnalyticsData.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE2D2BE42D76F6FB000A0975 /* RequestAnalyticsData.swift */; };
+		DE2D2BE72D76F732000A0975 /* AnalyticsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE2D2BE62D76F732000A0975 /* AnalyticsService.swift */; };
+		DE2D2BE92D7718A3000A0975 /* AnalyticsQueueItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE2D2BE82D7718A3000A0975 /* AnalyticsQueueItem.swift */; };
 		DE30AAF026CCF42700F015C5 /* QRCodeMatch.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE30AAEF26CCF42700F015C5 /* QRCodeMatch.swift */; };
 		DE30E52725DD15CD004CAED2 /* Configuration.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE30E52625DD15CD004CAED2 /* Configuration.swift */; };
 		DE30E52B25DD182F004CAED2 /* ConfigurationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE30E52A25DD182F004CAED2 /* ConfigurationManager.swift */; };
@@ -100,6 +107,13 @@
 		DE27229C25D86E8800E1F8F7 /* QRCodeReaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRCodeReaderView.swift; sourceTree = "<group>"; };
 		DE27229F25D871EC00E1F8F7 /* ScanQRCodeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanQRCodeView.swift; sourceTree = "<group>"; };
 		DE2B22E925D3C9A0003F0451 /* StatusView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusView.swift; sourceTree = "<group>"; };
+		DE2D2BDC2D76F6B1000A0975 /* AnalyticsResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsResult.swift; sourceTree = "<group>"; };
+		DE2D2BDE2D76F6C1000A0975 /* AnalyticsOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsOS.swift; sourceTree = "<group>"; };
+		DE2D2BE02D76F6CF000A0975 /* PassMethod.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PassMethod.swift; sourceTree = "<group>"; };
+		DE2D2BE22D76F6EC000A0975 /* AnalyticsStep.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsStep.swift; sourceTree = "<group>"; };
+		DE2D2BE42D76F6FB000A0975 /* RequestAnalyticsData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestAnalyticsData.swift; sourceTree = "<group>"; };
+		DE2D2BE62D76F732000A0975 /* AnalyticsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsService.swift; sourceTree = "<group>"; };
+		DE2D2BE82D7718A3000A0975 /* AnalyticsQueueItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsQueueItem.swift; sourceTree = "<group>"; };
 		DE30AAEF26CCF42700F015C5 /* QRCodeMatch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRCodeMatch.swift; sourceTree = "<group>"; };
 		DE30E52625DD15CD004CAED2 /* Configuration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Configuration.swift; sourceTree = "<group>"; };
 		DE30E52A25DD182F004CAED2 /* ConfigurationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigurationManager.swift; sourceTree = "<group>"; };
@@ -245,6 +259,8 @@
 				DE30E53025DD38DC004CAED2 /* Request */,
 				DEF0BFBE25D2CD0300397D18 /* Error */,
 				DE14A0A225D11F7400F8B8B3 /* CryptoKeyPair.swift */,
+				DE2D2BE82D7718A3000A0975 /* AnalyticsQueueItem.swift */,
+				DE2D2BE22D76F6EC000A0975 /* AnalyticsStep.swift */,
 				DEF0BF9C25D28FB100397D18 /* BLEDataContent.swift */,
 				DEF0BF9F25D290E300397D18 /* BLEDataParseFormat.swift */,
 				DEB3115E25EC2F0500DD91AF /* BLEScanConfiguration.swift */,
@@ -297,6 +313,7 @@
 		DE30E53025DD38DC004CAED2 /* Request */ = {
 			isa = PBXGroup;
 			children = (
+				DE2D2BE42D76F6FB000A0975 /* RequestAnalyticsData.swift */,
 				DE30E53225DD38FD004CAED2 /* RequestPagination.swift */,
 				DE30E53625DD393D004CAED2 /* RequestSetUserData.swift */,
 				DE30E53925DD397F004CAED2 /* RequestAccess.swift */,
@@ -323,6 +340,9 @@
 		DE30E53C25DD39E5004CAED2 /* Enum */ = {
 			isa = PBXGroup;
 			children = (
+				DE2D2BE02D76F6CF000A0975 /* PassMethod.swift */,
+				DE2D2BDE2D76F6C1000A0975 /* AnalyticsOS.swift */,
+				DE2D2BDC2D76F6B1000A0975 /* AnalyticsResult.swift */,
 				DE30E53D25DD39F6004CAED2 /* Direction.swift */,
 				DE30E55325DD3C26004CAED2 /* QRTriggerType.swift */,
 				DE46BB8125E2A971006A727A /* QRCodeListState.swift */,
@@ -374,6 +394,7 @@
 		DEF0BFB925D2CB7000397D18 /* Service */ = {
 			isa = PBXGroup;
 			children = (
+				DE2D2BE62D76F732000A0975 /* AnalyticsService.swift */,
 				DEF0BFBA25D2CB7E00397D18 /* BaseService.swift */,
 				DEF0BFC325D2D10D00397D18 /* AccessPointService.swift */,
 				DE30E55E25DD43A4004CAED2 /* DataService.swift */,
@@ -490,6 +511,7 @@
 				DEB3116225EC2F6D00DD91AF /* DeviceConnection.swift in Sources */,
 				DEEFD88326CDAD1E00E2E4F9 /* LogItem.swift in Sources */,
 				DE30E55F25DD43A4004CAED2 /* DataService.swift in Sources */,
+				DE2D2BE92D7718A3000A0975 /* AnalyticsQueueItem.swift in Sources */,
 				DE90899D26B1FB4500C33845 /* PermissionView.swift in Sources */,
 				DE14A09E25D11DCB00F8B8B3 /* CryptoManager.swift in Sources */,
 				DE45B1A726C97E5800FB8712 /* ResponseAccessPointListTerminal.swift in Sources */,
@@ -502,25 +524,30 @@
 				DEB3116625EC2F9A00DD91AF /* DeviceConnectionStatus.swift in Sources */,
 				DE79EEAA25D9986100D8C072 /* PassFlowController.swift in Sources */,
 				DEEF5AC9263172B5006004DD /* DeviceConnectionInfo.swift in Sources */,
+				DE2D2BE12D76F6CF000A0975 /* PassMethod.swift in Sources */,
 				DEF0BFB325D2AACA00397D18 /* StorageDataDevice.swift in Sources */,
 				DEF0BF9025D28C7E00397D18 /* PacketHeaders.swift in Sources */,
 				DEFEC1A72A28C175002899F3 /* PassFlowStateCode.swift in Sources */,
 				DE07C72325D181E100BD7021 /* BluetoothManager.swift in Sources */,
 				DEF0BFBB25D2CB7E00397D18 /* BaseService.swift in Sources */,
 				DE45B1A126C97E0400FB8712 /* ResponseAccessPointList.swift in Sources */,
+				DE2D2BDF2D76F6C1000A0975 /* AnalyticsOS.swift in Sources */,
 				DEFEC1AB2A28C2DA002899F3 /* PassFlowResult.swift in Sources */,
 				DEFEC1AD2A28C37B002899F3 /* PassFlowManager.swift in Sources */,
 				DE14A0A325D11F7400F8B8B3 /* CryptoKeyPair.swift in Sources */,
 				DEB3115F25EC2F0500DD91AF /* BLEScanConfiguration.swift in Sources */,
 				DEEFD88126CDACDA00E2E4F9 /* LogLevel.swift in Sources */,
 				DEF0BF8725D286A600397D18 /* String+Extensions.swift in Sources */,
+				DE2D2BDD2D76F6B1000A0975 /* AnalyticsResult.swift in Sources */,
 				DE30E52725DD15CD004CAED2 /* Configuration.swift in Sources */,
 				DE30E53725DD393D004CAED2 /* RequestSetUserData.swift in Sources */,
 				DED2AE1C289016E600CDF0FB /* PassResult.swift in Sources */,
+				DE2D2BE32D76F6EC000A0975 /* AnalyticsStep.swift in Sources */,
 				DE45B1A926C97E6800FB8712 /* ResponseAccessPointListQRCode.swift in Sources */,
 				DE3BBF7725DE862E00963B80 /* QRCodeContent.swift in Sources */,
 				DE30E55425DD3C26004CAED2 /* QRTriggerType.swift in Sources */,
 				DE30E53325DD38FD004CAED2 /* RequestPagination.swift in Sources */,
+				DE2D2BE72D76F732000A0975 /* AnalyticsService.swift in Sources */,
 				DEF0BF9A25D28D8F00397D18 /* DataParserUtil.swift in Sources */,
 				DEF0BF9425D28CA100397D18 /* StorageKeys.swift in Sources */,
 				DEF0BFB625D2AAF600397D18 /* StorageDataUserDetails.swift in Sources */,
@@ -531,6 +558,7 @@
 				DEF0BFC025D2CD1400397D18 /* RequestError.swift in Sources */,
 				DEB3116925EC2FB600DD91AF /* DeviceInRange.swift in Sources */,
 				DE27229D25D86E8900E1F8F7 /* QRCodeReaderView.swift in Sources */,
+				DE2D2BE52D76F6FB000A0975 /* RequestAnalyticsData.swift in Sources */,
 				DE19DF2525DA345300AB250C /* MobilePassDelegate.swift in Sources */,
 				DEF0BF9725D28D3000397D18 /* DataTypes.swift in Sources */,
 				DEF0BF8425D2868500397D18 /* Data+Extensions.swift in Sources */,

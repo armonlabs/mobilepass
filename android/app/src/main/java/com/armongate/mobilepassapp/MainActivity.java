@@ -34,14 +34,14 @@ public class MainActivity extends AppCompatActivity implements MobilePassDelegat
         } else {
             Configuration config = new Configuration();
             config.memberId = txtMemberId.getText().toString(); // "00988791";
-            config.serverUrl = "https://dev3.armon.com.tr:4334"; // "https://qr.marsathletic.com";
+            config.serverUrl = "https://10.10.10.243:4334"; // "https://dev3.armon.com.tr:4334"; // "https://qr.marsathletic.com";
             config.language = "tr";
             config.waitBLEEnabled = false;
             config.closeWhenInvalidQRCode = true;
             config.connectionTimeout = 10;
             config.autoCloseTimeout = 5;
             config.listener = this;
-            config.logLevel = LogLevel.INFO;
+            config.logLevel = LogLevel.DEBUG;
 
             MobilePass passer = new MobilePass(this, config);
             passer.setDelegate(this);
@@ -69,7 +69,7 @@ public class MainActivity extends AppCompatActivity implements MobilePassDelegat
 
     @Override
     public void onLogReceived(LogItem log) {
-        // Log.i("MobilePass", "Log Received >> " + log.level + " | " + log.message);
+        Log.i("MobilePass", "Log Received >> " + log.level + " | " + log.message);
     }
 
     @Override

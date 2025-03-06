@@ -140,7 +140,7 @@ public class GoogleMapFragment extends Fragment implements OnMapReadyCallback, G
 
     private void processLocation(Location location) {
         if (location != null) {
-            LogManager.getInstance().debug("User location changed; Latitude: " + location.getLatitude() + ", Longitude: " + location.getLongitude());
+            LogManager.getInstance().info("User location changed; Latitude: " + location.getLatitude() + ", Longitude: " + location.getLongitude());
 
             if (location.isFromMockProvider() && !ConfigurationManager.getInstance().allowMockLocation()) {
                 LogManager.getInstance().info("Mock location detected, so pass flow will be cancelled");
@@ -159,7 +159,7 @@ public class GoogleMapFragment extends Fragment implements OnMapReadyCallback, G
                         LogManager.getInstance().info("User is in validation area now, distance to center point: " + distance);
                         DelegateManager.getInstance().flowLocationValidated();
                     } else {
-                        LogManager.getInstance().debug("User is " + distance + "m away from validation point");
+                        LogManager.getInstance().info("User is " + distance + "m away from validation point");
                         moveCamera(location);
                     }
                 }
