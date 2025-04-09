@@ -380,15 +380,13 @@ public class GoogleQRCodeReaderActivity extends AppCompatActivity implements QRC
 
     private void onSuccessListener(List<Barcode> barcodes) {
         if (barcodes == null || barcodes.isEmpty()) {
-            PassFlowManager.getInstance().addToStates(PassFlowStateCode.SCAN_QRCODE_ERROR, "No barcodes detected");
-            LogManager.getInstance().error("No barcodes detected", LogCodes.PASSFLOW_QRCODE_READER_EMPTY_RESULT, this);
             return;
         }
 
         Barcode barcodeObj = barcodes.get(0);
         if (barcodeObj == null) {
             PassFlowManager.getInstance().addToStates(PassFlowStateCode.SCAN_QRCODE_ERROR, "Received QR Code result object is empty");
-            LogManager.getInstance().error("Received barcode result object is empty", LogCodes.PASSFLOW_QRCODE_READER_EMPTY_RESULT, this);
+            LogManager.getInstance().error("Received barcode result object is empty", LogCodes.PASSFLOW_QRCODE_READER_EMPTY_RESULT);
             return;
         }
 
@@ -397,7 +395,7 @@ public class GoogleQRCodeReaderActivity extends AppCompatActivity implements QRC
 
         if (validationResult.isEmpty) {
             PassFlowManager.getInstance().addToStates(PassFlowStateCode.SCAN_QRCODE_ERROR, "Received QR Code raw value is empty");
-            LogManager.getInstance().error("Barcode raw value is empty", LogCodes.PASSFLOW_QRCODE_READER_EMPTY_RESULT, this);
+            LogManager.getInstance().error("Barcode raw value is empty", LogCodes.PASSFLOW_QRCODE_READER_EMPTY_RESULT);
             return;
         }
 
