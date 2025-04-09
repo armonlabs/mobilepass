@@ -40,4 +40,11 @@
     <string name="text_qrcode_not_found">QR code not found!</string>
     <string name="text_qrcode_invalid">QR code definition is invalid!</string>
     <string name="text_qrcode_unknown">Invalid QR code format</string>
+    <string name="accessibility_switch_camera">Switch camera</string>
+    <string name="accessibility_qr_code_message">QR code scanning instructions</string>
+    <string name="accessibility_list_state">QR code list status</string>
+    <string name="error_camera_permission">Camera permission is required to scan QR codes</string>
+    <string name="error_camera_setup">Failed to setup camera</string>
+    <string name="accessibility_refresh_list">Refresh QR code list</string>
+    <string name="accessibility_camera_preview">Camera preview</string>
 </resources>

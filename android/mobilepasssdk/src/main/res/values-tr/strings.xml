@@ -40,4 +40,11 @@
 	<string name="text_qrcode_not_found">Karekod tanımı bulunamadı!</string>
 	<string name="text_qrcode_invalid">Karekod tanımı geçersiz!</string>
 	<string name="text_qrcode_unknown">Geçersiz karekod formatı</string>
+	<string name="accessibility_switch_camera">Kamerayı değiştir</string>
+	<string name="accessibility_qr_code_message">Karekod tarama talimatları</string>
+	<string name="accessibility_list_state">Karekod listesi durumu</string>
+	<string name="error_camera_permission">Karekod taramak için kamera izni gereklidir</string>
+	<string name="error_camera_setup">Kamera kurulumu başarısız oldu</string>
+	<string name="accessibility_refresh_list">Karekod listesini yenile</string>
+	<string name="accessibility_camera_preview">Kamera önizleme</string>
 </resources>
