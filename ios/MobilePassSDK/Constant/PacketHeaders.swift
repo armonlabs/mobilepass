@@ -23,6 +23,7 @@ struct PacketHeaders {
             static let PUBLICKEY_CHALLENGE  = 0x01
             static let CHALLENGE_RESULT     = 0x03
             static let DIRECTION_CHALLENGE  = 0x05
+            static let MACFIT_CHALLENGE     = 0x06
         }
         enum FAILURE_REASON {
             static let NOACCESSRIGHT                = 0x01

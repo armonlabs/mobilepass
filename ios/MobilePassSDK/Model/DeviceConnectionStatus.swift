@@ -16,7 +16,8 @@ public struct DeviceConnectionStatus {
         case notFound           = 5
     }
     
-    var id:         String
-    var state:      ConnectionState
-    var failReason: Int?
+    var id:             String
+    var state:          ConnectionState
+    var failReason:     Int?
+    var failMessage:    String?
 }

@@ -13,6 +13,11 @@ public class Configuration {
     public String memberId;
 
     /**
+     * Barcode id that received with Benefits System
+     */
+    public @Nullable String barcode;
+
+    /**
      * URL of server that communicate between SDK, devices and validation server
      */
     public String serverUrl;
@@ -86,6 +91,7 @@ public class Configuration {
 
     public String getLog() {
         return "MemberId: " + (this.memberId != null ? this.memberId : "Empty")
+                + " | Barcode: " + (this.barcode != null ? this.barcode : "Empty")
                 + " | WaitBLEEnabled: " + (this.waitBLEEnabled != null ? this.waitBLEEnabled : ConfigurationDefaults.WaitBleEnabled)
                 + " | BLEConnectionTimeout: " + (this.connectionTimeout != null ? this.connectionTimeout : ConfigurationDefaults.BLEConnectionTimeout)
                 + " | AutoCloseTimeout: " + (this.autoCloseTimeout != null ? this.autoCloseTimeout : "null")

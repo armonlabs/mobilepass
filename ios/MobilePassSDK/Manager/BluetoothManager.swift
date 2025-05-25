@@ -215,9 +215,9 @@ class BluetoothManager: NSObject {
         }
     }
     
-    private func onConnectionStateChanged(identifier: String, connectionState: DeviceConnectionStatus.ConnectionState, failReason: Int? = nil) {
+    private func onConnectionStateChanged(identifier: String, connectionState: DeviceConnectionStatus.ConnectionState, failReason: Int? = nil, failMessage: String? = nil) {
         LogManager.shared.info(message: "Bluetooth connection state changed for \(identifier) > \(self.getDescriptionOfConnectionState(state: connectionState))");
-        self.onConnectionStateChanged?(DeviceConnectionStatus(id: identifier, state: connectionState, failReason: failReason))
+        self.onConnectionStateChanged?(DeviceConnectionStatus(id: identifier, state: connectionState, failReason: failReason, failMessage: failMessage))
         
         if (connectionState == .failed) {
             LogManager.shared.warn(message: "Bluetooth connection to device has failed", code: LogCodes.BLUETOOTH_CONNECTION_FAILED);
@@ -479,9 +479,9 @@ extension BluetoothManager: CBPeripheralDelegate {
                         let deviceConnectionInfo = self.currentConfiguration != nil ? self.currentConfiguration!.deviceList[connectedDevice.serviceUUID.lowercased()] : nil
                         
                         if (deviceConnectionInfo != nil) {
-                            let resultData: Data? = try generateChallengeResponseDataWithDirection(challengeType:   result!.type,
-                                                                                                   iv:              (result!.data!["iv"] as? Data)!,
-                                                                                                   deviceInfo:      deviceConnectionInfo!)
+                            let resultData: Data? = try generateChallengeResponse(challengeType:   result!.type,
+                                                                                  iv:              (result!.data!["iv"] as? Data)!,
+                                                                                  deviceInfo:      deviceConnectionInfo!)
                             
                             peripheral.writeValue(resultData!, for: characteristic, type: .withResponse)
                         } else {
@@ -553,11 +553,19 @@ extension BluetoothManager {
             LogManager.shared.info(message: "Disconnect from device after successful process of passing!")
             self.disconnect()
         } else {
-            onConnectionStateChanged(identifier: deviceIdentifier, connectionState: .failed, failReason: result.data!["reason"] as? Int)
+            onConnectionStateChanged(identifier: deviceIdentifier, connectionState: .failed, failReason: result.data!["reason"] as? Int, failMessage: result.data!["message"] as? String)
         }
     }
     
-    private func generateChallengeResponseDataWithDirection(challengeType: Int, iv: Data, deviceInfo: DeviceConnectionInfo) throws -> Data {
+    private func generateChallengeResponse(challengeType: Int, iv: Data, deviceInfo: DeviceConnectionInfo) throws -> Data {
+        if (currentConfiguration!.dataUserBarcode.isEmpty) {
+            return try self.generateDirectionChallengeResponse(challengeType: challengeType, iv: iv, deviceInfo: deviceInfo)
+        } else {
+            return try self.generateMacfitChallengeResponse(challengeType: challengeType, iv: iv, deviceInfo: deviceInfo)
+        }
+    }
+    
+    private func generateDirectionChallengeResponse(challengeType: Int, iv: Data, deviceInfo: DeviceConnectionInfo) throws -> Data {
         // MARK: Create header data
         let resultDataArray: [UInt8] = [
             UInt8(PacketHeaders.PROTOCOLV2.GROUP.AUTH),
@@ -579,6 +587,35 @@ extension BluetoothManager {
         resultData.append(currentConfiguration!.dataUserId.data(using: .utf8)!.fill(length: 16, repeating: 0x00))
         resultData.append(currentConfiguration!.hardwareId.data(using: .utf8)!.fill(length: 16, repeating: 0x00))
         resultData.append(currentConfiguration!.deviceNumber.mergeToData(currentConfiguration!.dataDirection, currentConfiguration!.relayNumber)!)
+        
+        resultData.append(encryptedResponse)
+        
+        return resultData
+    }
+    
+    private func generateMacfitChallengeResponse(challengeType: Int, iv: Data, deviceInfo: DeviceConnectionInfo) throws -> Data {
+        // MARK: Create header data
+        let resultDataArray: [UInt8] = [
+            UInt8(PacketHeaders.PROTOCOLV2.GROUP.AUTH),
+            UInt8(PacketHeaders.PROTOCOLV2.AUTH.MACFIT_CHALLENGE),
+            UInt8(PacketHeaders.PLATFORM_IOS)
+        ]
+        
+        var resultData: Data = Data(resultDataArray)
+        
+        // MARK: Ready encrypted response
+        var dataIV: Data = iv
+        
+        let sharedKey: Data? = CryptoManager.shared.getSecret(privateKey: ConfigurationManager.shared.getPrivateKey(), publicKey: deviceInfo.publicKey)
+        dataIV.append(sharedKey!)
+        
+        let encryptedResponse: Data = CryptoManager.shared.encodeWithSHA256(plainData: dataIV)
+        
+        // MARK: Ready result data after encryption
+        resultData.append(currentConfiguration!.dataUserId.data(using: .utf8)!.fill(length: 16, repeating: 0x00))
+        resultData.append(currentConfiguration!.dataUserBarcode.data(using: .utf8)!.fill(length: 16, repeating: 0x00))
+        resultData.append(currentConfiguration!.qrCodeId.replacingOccurrences(of: "-", with: "").data(using: .hexadecimal)!)
+        resultData.append(currentConfiguration!.language == Language.EN ? Data([0x01]) : Data([0x00]))
         
         resultData.append(encryptedResponse)
         

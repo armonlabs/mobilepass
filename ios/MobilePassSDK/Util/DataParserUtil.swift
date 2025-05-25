@@ -93,6 +93,7 @@ class DataParserUtil: NSObject {
         case PacketHeaders.PROTOCOLV2.COMMON.FAILURE:
             let dataFormat = [
                 BLEDataParseFormat(fieldName: "reason", length: 1, type: .number),
+                BLEDataParseFormat(fieldName: "message", type: .string)
             ]
             
             return BLEDataContent(type:   DataTypes.TYPE.AuthChallengeResult,

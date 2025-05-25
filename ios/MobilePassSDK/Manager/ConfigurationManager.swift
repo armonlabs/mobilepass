@@ -78,6 +78,10 @@ class ConfigurationManager: NSObject {
         return mCurrentConfig?.memberId ?? ""
     }
     
+    public func getBarcodeId() -> String {
+        return mCurrentConfig?.barcode ?? ""
+    }
+    
     public func getPrivateKey() -> String {
         return mCurrentKeyPair?.privateKey ?? ""
     }

@@ -105,6 +105,8 @@ public class ConfigurationManager {
         return mCurrentConfig != null ? mCurrentConfig.memberId : "";
     }
 
+    public String getBarcodeId() { return mCurrentConfig != null ? mCurrentConfig.barcode : ""; }
+
     public String getPrivateKey() {
         return mCurrentKeyPair != null ? mCurrentKeyPair.privateKey : "";
     }
