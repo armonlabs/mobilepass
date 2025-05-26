@@ -29,7 +29,6 @@ class PassFlowManager: NSObject {
         PassFlowStateCode.SCAN_QRCODE_STARTED,
         PassFlowStateCode.SCAN_QRCODE_INVALID_CONTENT,
         PassFlowStateCode.SCAN_QRCODE_INVALID_FORMAT,
-        PassFlowStateCode.SCAN_QRCODE_ERROR,
         PassFlowStateCode.INVALID_QRCODE_TRIGGER_TYPE,
         PassFlowStateCode.INVALID_QRCODE_MISSING_CONTENT,
         PassFlowStateCode.INVALID_ACTION_LIST_EMPTY,

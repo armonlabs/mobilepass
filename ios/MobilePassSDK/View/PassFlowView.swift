@@ -119,6 +119,7 @@ struct PassFlowView: View, PassFlowDelegate {
         
         if (videoAuthStatus != .authorized) {
             PassFlowManager.shared.addToStates(state: .SCAN_QRCODE_NEED_PERMISSION)
+            LogManager.shared.warn(message: "Camera permission not granted", code: LogCodes.NEED_PERMISSION_CAMERA)
         }
         
         switch (videoAuthStatus) {
@@ -127,23 +128,25 @@ struct PassFlowView: View, PassFlowDelegate {
             break
             
         case .denied, .restricted:
-            LogManager.shared.info(message: "Camera Permission Status: Denied or Restricted, needs to be changed in settings to continue")
+            LogManager.shared.warn(message: "Camera Permission Status: Denied or Restricted, needs to be changed in settings to continue", code: LogCodes.NEED_PERMISSION_CAMERA)
             DelegateManager.shared.needPermission(type: NeedPermissionType.NEED_PERMISSION_CAMERA, showMessage: true)
             break
             
         case .notDetermined:
+            LogManager.shared.info(message: "Requesting camera permission...")
             AVCaptureDevice.requestAccess(for: .video, completionHandler: { (granted) in
-                guard granted else {
-                    LogManager.shared.info(message: "Camera Permission Status: Denied, needs to be changed in settings to continue")
-                    DelegateManager.shared.needPermission(type: NeedPermissionType.NEED_PERMISSION_CAMERA, showMessage: true)
-                    return
+                DispatchQueue.main.async {
+                    if granted {
+                        LogManager.shared.info(message: "Camera Permission Status: Authorized")
+                    } else {
+                        LogManager.shared.warn(message: "Camera Permission Status: Denied, needs to be changed in settings to continue", code: LogCodes.NEED_PERMISSION_CAMERA)
+                        DelegateManager.shared.needPermission(type: NeedPermissionType.NEED_PERMISSION_CAMERA, showMessage: true)
+                    }
                 }
-                
-                LogManager.shared.info(message: "Camera Permission Status: Authorized")
             })
             break
         @unknown default:
-            LogManager.shared.info(message: "Camera Permission Status: Unknown!")
+            LogManager.shared.error(message: "Camera Permission Status: Unknown!", code: LogCodes.NEED_PERMISSION_CAMERA)
             DelegateManager.shared.needPermission(type: NeedPermissionType.NEED_PERMISSION_CAMERA, showMessage: true)
         }
     }

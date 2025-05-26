@@ -9,14 +9,18 @@ import SwiftUI
 import AVFoundation
 
 enum ScanResult: Int {
-    case success            = 1
-    case addInputFailed     = 2
-    case addOutputFailed    = 3
-    case noMatching         = 4
-    case invalidFormat      = 5
-    case invalidContent     = 6
-    case missingInput       = 7
-    case missionSession     = 8
+    case success                    = 1
+    case addInputFailed             = 2
+    case addOutputFailed            = 3
+    case noMatching                 = 4
+    case invalidFormat              = 5
+    case invalidContent             = 6
+    case missingInput               = 7
+    case missingSession             = 8
+    case getCaptureDeviceFailed     = 9
+    case createVideoInputFailed     = 10
+    case createPreviewLayerFailed   = 11
+    case startSessionFailed         = 12
 }
 
 public struct QRCodeScanResult {
@@ -167,22 +171,54 @@ public class QRCodeReaderViewController: UIViewController, QRCodeScannerDelegate
                                                object: nil)
 
         view.backgroundColor = UIColor.black
+        setupCamera()
+    }
+
+    private func setupCamera(retryCount: Int = 0) {
         captureSession = AVCaptureSession()
 
-        guard let videoCaptureDevice = AVCaptureDevice.default(for: .video) else { return }
+        guard let videoCaptureDevice = AVCaptureDevice.default(for: .video) else {
+            LogManager.shared.error(message: "Failed to get video capture device", code: LogCodes.UI_CAMERA_SETUP_FAILED)
+            if retryCount < 3 {
+                LogManager.shared.info(message: "Retrying camera setup... Attempt \(retryCount + 1)")
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                    self.setupCamera(retryCount: retryCount + 1)
+                }
+            } else {
+                delegate?.didFail(result: .getCaptureDeviceFailed)
+            }
+            return
+        }
         
         let videoInput: AVCaptureDeviceInput
 
         do {
             videoInput = try AVCaptureDeviceInput(device: videoCaptureDevice)
         } catch {
+            LogManager.shared.error(message: "Failed to create video input: \(error.localizedDescription)", code: LogCodes.UI_CAMERA_SETUP_FAILED)
+            if retryCount < 3 {
+                LogManager.shared.info(message: "Retrying camera setup... Attempt \(retryCount + 1)")
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                    self.setupCamera(retryCount: retryCount + 1)
+                }
+            } else {
+                delegate?.didFail(result: .createVideoInputFailed)
+            }
             return
         }
 
         if (captureSession != nil && captureSession!.canAddInput(videoInput)) {
             captureSession!.addInput(videoInput)
         } else {
-            delegate?.didFail(result: .addInputFailed)
+            LogManager.shared.error(message: "Failed to add video input to capture session", code: LogCodes.UI_CAMERA_SETUP_FAILED)
+            if retryCount < 3 {
+                LogManager.shared.info(message: "Retrying camera setup... Attempt \(retryCount + 1)")
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                    self.setupCamera(retryCount: retryCount + 1)
+                }
+            } else {
+                delegate?.didFail(result: .addInputFailed)
+            }
             return
         }
 
@@ -194,7 +230,15 @@ public class QRCodeReaderViewController: UIViewController, QRCodeScannerDelegate
             metadataOutput.setMetadataObjectsDelegate(delegate, queue: DispatchQueue.main)
             metadataOutput.metadataObjectTypes = [.qr]
         } else {
-            delegate?.didFail(result: .addOutputFailed)
+            LogManager.shared.error(message: "Failed to add metadata output to capture session", code: LogCodes.UI_CAMERA_SETUP_FAILED)
+            if retryCount < 3 {
+                LogManager.shared.info(message: "Retrying camera setup... Attempt \(retryCount + 1)")
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                    self.setupCamera(retryCount: retryCount + 1)
+                }
+            } else {
+                delegate?.didFail(result: .addOutputFailed)
+            }
             return
         }
     }
@@ -222,12 +266,18 @@ public class QRCodeReaderViewController: UIViewController, QRCodeScannerDelegate
         super.viewWillAppear(animated)
         
         if (captureSession == nil) {
-            delegate?.didFail(result: .missionSession)
+            LogManager.shared.error(message: "Capture session is nil", code: LogCodes.UI_CAMERA_SETUP_FAILED)
+            delegate?.didFail(result: .missingSession)
             return
         }
         
         if previewLayer == nil {
             previewLayer = AVCaptureVideoPreviewLayer(session: captureSession!)
+            if previewLayer == nil {
+                LogManager.shared.error(message: "Failed to create preview layer", code: LogCodes.UI_CAMERA_SETUP_FAILED)
+                delegate?.didFail(result: .createPreviewLayerFailed)
+                return
+            }
         }
         
         previewLayer!.frame = view.layer.bounds
@@ -238,10 +288,23 @@ public class QRCodeReaderViewController: UIViewController, QRCodeScannerDelegate
             LogManager.shared.debug(message: "Starting QR Code capture session")
             
             if (captureSession!.inputs.count > 0) {
-                DispatchQueue.global(qos: .userInitiated).async {
-                    self.captureSession!.startRunning()
+                // Check if camera is available
+                if AVCaptureDevice.authorizationStatus(for: .video) == .authorized {
+                    DispatchQueue.global(qos: .userInitiated).async {
+                        self.captureSession!.startRunning()
+                        if !self.captureSession!.isRunning {
+                            LogManager.shared.error(message: "Failed to start capture session", code: LogCodes.UI_CAMERA_SETUP_FAILED)
+                            DispatchQueue.main.async {
+                                self.delegate?.didFail(result: .startSessionFailed)
+                            }
+                        }
+                    }
+                } else {
+                    LogManager.shared.error(message: "Camera not authorized", code: LogCodes.UI_CAMERA_SETUP_FAILED)
+                    delegate?.didFail(result: .startSessionFailed)
                 }
             } else {
+                LogManager.shared.error(message: "No inputs available for capture session", code: LogCodes.UI_CAMERA_SETUP_FAILED)
                 delegate?.didFail(result: .missingInput)
             }
         }

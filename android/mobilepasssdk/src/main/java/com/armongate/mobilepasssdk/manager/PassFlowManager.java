@@ -20,7 +20,6 @@ public class PassFlowManager {
         this.ignore.add(PassFlowStateCode.SCAN_QRCODE_STARTED);
         this.ignore.add(PassFlowStateCode.SCAN_QRCODE_INVALID_CONTENT);
         this.ignore.add(PassFlowStateCode.SCAN_QRCODE_INVALID_FORMAT);
-        this.ignore.add(PassFlowStateCode.SCAN_QRCODE_ERROR);
         this.ignore.add(PassFlowStateCode.INVALID_QRCODE_TRIGGER_TYPE);
         this.ignore.add(PassFlowStateCode.INVALID_QRCODE_MISSING_CONTENT);
         this.ignore.add(PassFlowStateCode.INVALID_ACTION_LIST_EMPTY);
