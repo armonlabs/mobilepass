@@ -346,6 +346,7 @@ struct StatusView: View {
         
         if ((failReason == BLEFailCode.BenefitsInvalidCard.rawValue
              || failReason == BLEFailCode.BenefitsLimitReached.rawValue
+             || failReason == BLEFailCode.BenefitsNotAllowedClub.rawValue
              || failReason == BLEFailCode.PerfectGymNoAccess.rawValue) && message != nil && !message!.isEmpty) {
             self.viewModel.update(message: message!, icon: "error")
             onPassCompleted(success: false, isRemoteAccess: false)

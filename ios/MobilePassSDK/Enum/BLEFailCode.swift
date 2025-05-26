@@ -15,6 +15,7 @@ public enum BLEFailCode: Int, Codable {
     case BenefitsNetworkError   = 40
     case BenefitsInvalidCard    = 41
     case BenefitsLimitReached   = 42
-    case BenefitsUnknownError   = 43
+    case BenefitsNotAllowedClub = 43
+    case BenefitsUnknownError   = 44
     case DeviceError            = 90
 }

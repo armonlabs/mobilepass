@@ -312,7 +312,7 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
     private void onBluetoothConnectionFailed(int messageId, String messageText, int failCode) {
         onBluetoothFlowCompleted();
 
-        if ((failCode == BLEFailCode.BenefitsInvalidCard || failCode == BLEFailCode.BenefitsLimitReached || failCode == BLEFailCode.PerfectGymNoAccess)
+        if ((failCode == BLEFailCode.BenefitsInvalidCard || failCode == BLEFailCode.BenefitsLimitReached || failCode == BLEFailCode.BenefitsNotAllowedClub || failCode == BLEFailCode.PerfectGymNoAccess)
             && messageText != null && !messageText.isEmpty()) {
             updateStatus(-1, messageText, R.drawable.error);
             onPassCompleted(false);
