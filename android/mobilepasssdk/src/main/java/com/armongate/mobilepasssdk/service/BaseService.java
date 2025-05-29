@@ -176,7 +176,15 @@ public class BaseService {
     }
 
     private <T> void addToRequestQueue(Request<T> req) {
-        req.setRetryPolicy(new DefaultRetryPolicy(15000, 1, 0));
+        req.setRetryPolicy(new DefaultRetryPolicy(15000, 1, 0) {
+            @Override
+            public void retry(VolleyError error) throws VolleyError {
+                if (error instanceof AuthFailureError) {
+                    throw error;
+                }
+                super.retry(error);
+            }
+        });
         getRequestQueue().add(req);
     }
 
