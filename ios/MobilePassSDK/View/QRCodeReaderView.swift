@@ -237,7 +237,9 @@ public class QRCodeReaderViewController: UIViewController, QRCodeScannerDelegate
                     self.setupCamera(retryCount: retryCount + 1)
                 }
             } else {
-                delegate?.didFail(result: .addOutputFailed)
+                DispatchQueue.main.async {
+                    self.delegate?.didFail(result: .addOutputFailed)
+                }
             }
             return
         }
@@ -301,11 +303,15 @@ public class QRCodeReaderViewController: UIViewController, QRCodeScannerDelegate
                     }
                 } else {
                     LogManager.shared.error(message: "Camera not authorized", code: LogCodes.UI_CAMERA_SETUP_FAILED)
-                    delegate?.didFail(result: .startSessionFailed)
+                    DispatchQueue.main.async {
+                        self.delegate?.didFail(result: .startSessionFailed)
+                    }
                 }
             } else {
                 LogManager.shared.error(message: "No inputs available for capture session", code: LogCodes.UI_CAMERA_SETUP_FAILED)
-                delegate?.didFail(result: .missingInput)
+                DispatchQueue.main.async {
+                    self.delegate?.didFail(result: .missingInput)
+                }
             }
         }
     }
