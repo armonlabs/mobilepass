@@ -41,6 +41,9 @@ public class LogCodes {
     public static final int PASSFLOW_QRCODE_READER_ANALYZE_EXCEPTION    = 4211;
     public static final int PASSFLOW_QRCODE_READER_CHANGE_MASK_FAILED   = 4212;
     public static final int PASSFLOW_QRCODE_READER_EMPTY_RESULT         = 4213;
+    public static final int PASSFLOW_QRCODE_READER_PREVIEW_VIEW_NULL    = 4214;
+    public static final int PASSFLOW_QRCODE_READER_CLEANUP_FAILED       = 4215;
+    public static final int PASSFLOW_QRCODE_READER_PERMISSION_DENIED    = 4216;
     public static final int PASSFLOW_ACTION_EMPTY_CONFIG                = 4501;
     public static final int PASSFLOW_ACTION_INVALID_TYPE                = 4502;
     public static final int PASSFLOW_ACTION_EMPTY_QRCODE_CONTENT        = 4503;
@@ -51,5 +54,19 @@ public class LogCodes {
     public static final int PASSFLOW_ACTION_INVALID_NEXT_ACTION         = 4508;
     public static final int UI_SWITCH_CAMERA_FAILED                     = 5101;
     public static final int UI_INVALID_STATE_TO_REPLACE_FRAGMENT        = 5102;
+    public static final int UI_SETUP_ACCESSIBILITY_FAILED               = 5103;
+    public static final int UI_SETUP_FAILED                             = 5104;
     public static final int OTHER                                       = 9999;
+    public static final int PASSFLOW_QRCODE_READER_CAMERA_BINDING_FAILED     = 4217;
+    public static final int PASSFLOW_QRCODE_READER_PREVIEW_SURFACE_FAILED    = 4218;
+    public static final int PASSFLOW_QRCODE_READER_ANALYSIS_CONFIG_FAILED    = 4219;
+    public static final int PASSFLOW_QRCODE_READER_IMAGE_FORMAT_FAILED       = 4220;
+    public static final int PASSFLOW_QRCODE_READER_IMAGE_ROTATION_FAILED     = 4221;
+    public static final int PASSFLOW_QRCODE_READER_IMAGE_BUFFER_FAILED       = 4222;
+    public static final int PASSFLOW_QRCODE_READER_FORMAT_VALIDATION_FAILED  = 4223;
+    public static final int PASSFLOW_QRCODE_READER_CONTENT_PARSING_FAILED    = 4224;
+    public static final int PASSFLOW_QRCODE_READER_CONTENT_VALIDATION_FAILED = 4225;
+    public static final int UI_STATE_SYNC_FAILED                             = 5105;
+    public static final int UI_THREAD_EXECUTION_FAILED                       = 5106;
+    public static final int UI_VIEW_BINDING_FAILED                           = 5107;
 }

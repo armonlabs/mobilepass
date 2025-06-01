@@ -29,6 +29,7 @@ import com.armongate.mobilepasssdk.constant.LogCodes;
 import com.armongate.mobilepasssdk.constant.PacketHeaders;
 import com.armongate.mobilepasssdk.constant.UUIDs;
 import com.armongate.mobilepasssdk.delegate.BluetoothManagerDelegate;
+import com.armongate.mobilepasssdk.enums.Language;
 import com.armongate.mobilepasssdk.model.BLEDataContent;
 import com.armongate.mobilepasssdk.model.BLEScanConfiguration;
 import com.armongate.mobilepasssdk.model.DeviceCapability;
@@ -372,10 +373,10 @@ public class BluetoothManager {
     }
 
     private void onConnectionStateChanged(String identifier, DeviceConnectionStatus.ConnectionState connectionState) {
-        onConnectionStateChanged(identifier, connectionState, null);
+        onConnectionStateChanged(identifier, connectionState, null, null);
     }
 
-    private void onConnectionStateChanged(String identifier, DeviceConnectionStatus.ConnectionState connectionState, Integer failReason) {
+    private void onConnectionStateChanged(String identifier, DeviceConnectionStatus.ConnectionState connectionState, Integer failReason, String failMessage) {
         LogManager.getInstance().info("Bluetooth connection state changed for " + (identifier != null ? identifier : "-") + " > " + connectionState.toString());
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && ActivityCompat.checkSelfPermission(this.activeContext, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
@@ -385,7 +386,7 @@ public class BluetoothManager {
 
         if (delegate != null) {
             if (identifier != null) {
-                delegate.onConnectionStateChanged(new DeviceConnectionStatus(identifier, connectionState, failReason));
+                delegate.onConnectionStateChanged(new DeviceConnectionStatus(identifier, connectionState, failReason, failMessage));
             } else {
                 LogManager.getInstance().debug("Identifier is not provided to generate callback for listener about connection state");
             }
@@ -539,11 +540,23 @@ public class BluetoothManager {
             LogManager.getInstance().info("Disconnecting from device after successful process of passing!");
             disconnect();
         } else {
-            onConnectionStateChanged(deviceIdentifier, DeviceConnectionStatus.ConnectionState.FAILED, result.data.containsKey("reason") ? (Integer) result.data.get("reason") : null);
+            onConnectionStateChanged(
+                    deviceIdentifier,
+                    DeviceConnectionStatus.ConnectionState.FAILED,
+                    result.data.containsKey("reason") ? (Integer) result.data.get("reason") : null,
+                    result.data.containsKey("message") ? (String) result.data.get("message") : null);
         }
     }
 
-    private byte[] generateChallengeResponseDataWithDirection(byte[] challenge, byte[] iv, DeviceConnectionInfo deviceInfo) throws Exception {
+    private byte[] generateChallengeResponse(byte[] challenge, byte[] iv, DeviceConnectionInfo deviceInfo) throws Exception {
+        if (currentConfiguration.dataUserBarcode == null || currentConfiguration.dataUserBarcode.isEmpty()) {
+            return this.generateDirectionChallengeResponse(challenge, iv, deviceInfo);
+        } else {
+            return this.generateMacfitChallengeResponse(challenge, iv, deviceInfo);
+        }
+    }
+
+    private byte[] generateDirectionChallengeResponse(byte[] challenge, byte[] iv, DeviceConnectionInfo deviceInfo) throws Exception {
         byte[] resultData = new byte[] {
                 PacketHeaders.PROTOCOLV2.GROUP.AUTH,
                 PacketHeaders.PROTOCOLV2.AUTH.DIRECTION_CHALLENGE,
@@ -553,6 +566,24 @@ public class BluetoothManager {
         resultData = ArrayUtil.concat(resultData, ConverterUtil.stringToData(currentConfiguration.dataUserId, 16, (byte)0, false));
         resultData = ArrayUtil.concat(resultData, ConverterUtil.stringToData(currentConfiguration.hardwareId, 16, (byte)0, false));
         resultData = ArrayUtil.add(resultData, (byte)ConverterUtil.mergeToData(currentConfiguration.deviceNumber, currentConfiguration.direction, currentConfiguration.relayNumber));
+
+        byte[] encryptedResponse = CryptoManager.getInstance().encryptBytesWithIV(ConfigurationManager.getInstance().getPrivateKey(), deviceInfo.publicKey, challenge, iv);
+        resultData = ArrayUtil.concat(resultData, encryptedResponse);
+
+        return resultData;
+    }
+
+    private byte[] generateMacfitChallengeResponse(byte[] challenge, byte[] iv, DeviceConnectionInfo deviceInfo) throws Exception {
+        byte[] resultData = new byte[] {
+                PacketHeaders.PROTOCOLV2.GROUP.AUTH,
+                PacketHeaders.PROTOCOLV2.AUTH.MACFIT_CHALLENGE,
+                PacketHeaders.PLATFORM_ANDROID
+        };
+
+        resultData = ArrayUtil.concat(resultData, ConverterUtil.stringToData(currentConfiguration.dataUserId, 16, (byte)0, false));
+        resultData = ArrayUtil.concat(resultData, ConverterUtil.stringToData(currentConfiguration.dataUserBarcode, 16, (byte)0, false));
+        resultData = ArrayUtil.concat(resultData, currentConfiguration.qrCodeId.replace("-", "").getBytes());
+        resultData = ArrayUtil.add(resultData, currentConfiguration.language == Language.EN ? (byte)0x01 : (byte)0x00);
 
         byte[] encryptedResponse = CryptoManager.getInstance().encryptBytesWithIV(ConfigurationManager.getInstance().getPrivateKey(), deviceInfo.publicKey, challenge, iv);
         resultData = ArrayUtil.concat(resultData, encryptedResponse);
@@ -891,7 +922,7 @@ public class BluetoothManager {
                             if (connectedDevice != null && deviceConnectionInfo != null) {
                                 LogManager.getInstance().debug("Auth challenge received, device id: " + deviceId);
 
-                                byte[] resultData = generateChallengeResponseDataWithDirection(
+                                byte[] resultData = generateChallengeResponse(
                                         result.data.containsKey("challenge") ? ConverterUtil.hexStringToBytes(result.data.get("challenge").toString()) : new byte[0],
                                         result.data.containsKey("iv") ? ConverterUtil.hexStringToBytes(result.data.get("iv").toString()) : new byte[0],
                                         deviceConnectionInfo

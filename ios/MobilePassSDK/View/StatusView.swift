@@ -205,7 +205,7 @@ struct StatusView: View {
             return
         }
         
-        if (currentConfig!.qrCode == nil) {
+        if (currentConfig!.qrCode == nil || currentConfig!.qrCode!.i == nil || currentConfig!.qrCode!.i!.isEmpty) {
             PassFlowManager.shared.addToStates(state: PassFlowStateCode.INVALID_BLUETOOTH_QRCODE_DATA)
             LogManager.shared.warn(message: "Run bluetooth action has been terminated due to invalid qr code content", code: LogCodes.PASSFLOW_ACTION_EMPTY_QRCODE_CONTENT)
             
@@ -213,7 +213,7 @@ struct StatusView: View {
             
             return
         }
-        
+                
         if (currentConfig!.qrCode!.d == nil) {
             PassFlowManager.shared.addToStates(state: PassFlowStateCode.INVALID_BLUETOOTH_DIRECTION)
             LogManager.shared.warn(message: "Run bluetooth action has been terminated due to invalid direction", code: LogCodes.PASSFLOW_ACTION_EMPTY_DIRECTION)
@@ -252,9 +252,12 @@ struct StatusView: View {
             
             let config: BLEScanConfiguration = BLEScanConfiguration(devices: currentConfig!.devices,
                                                                     userId: ConfigurationManager.shared.getMemberId(),
+                                                                    userBarcode: ConfigurationManager.shared.getBarcodeId(),
+                                                                    qrCodeId: currentConfig!.qrCode!.i!,
                                                                     direction: currentConfig!.qrCode!.d!.rawValue,
                                                                     hardwareId: currentConfig!.qrCode!.h!,
-                                                                    relayNumber: currentConfig!.qrCode!.r!)
+                                                                    relayNumber: currentConfig!.qrCode!.r!,
+                                                                    language: ConfigurationManager.shared.getLanguage() == "en" ? Language.EN : Language.TR)
                 
             PassFlowManager.shared.addToStates(state: PassFlowStateCode.RUN_ACTION_BLUETOOTH_START_SCAN)
             BluetoothManager.shared.startScan(configuration: config)
@@ -309,7 +312,7 @@ struct StatusView: View {
                     || state.state == .notFound
                     || (self.stateModel.lastConnectionState == DeviceConnectionStatus.ConnectionState.connecting && state.state == .disconnected)) {
             PassFlowManager.shared.addToStates(state: .RUN_ACTION_BLUETOOTH_CONNECTION_FAILED)
-            self.onBluetoothConnectionFailed(message: nil)
+            self.onBluetoothConnectionFailed(message: state.failMessage, failReason: state.failReason)
         }
         
         self.stateModel.setConnectionState(state: state.state)
@@ -338,28 +341,36 @@ struct StatusView: View {
         endBluetoothFlow(disconnect: true)
     }
     
-    private func onBluetoothConnectionFailed(message: String?) {
+    private func onBluetoothConnectionFailed(message: String?, failReason: Int? = nil) {
         endBluetoothFlow(disconnect: true)
         
-        if (currentConfig?.nextAction != nil) {
-            if (currentConfig!.nextAction! == PassFlowView.ACTION_LOCATION) {
-                LogManager.shared.info(message: "Bluetooth connection failed and now validate user location to continue remote access")
-                DelegateManager.shared.flowNextActionRequired()
-            } else if (currentConfig!.nextAction! == PassFlowView.ACTION_REMOTEACCESS) {
-                PassFlowManager.shared.addToStates(state: PassFlowStateCode.PROCESS_ACTION_REMOTE_ACCESS)
-                LogManager.shared.info(message: "Bluetooth connection failed and now continue for remote access request")
-                
-                self.viewModel.update(message: "text_status_message_waiting", icon: "waiting")
-                runRemoteAccess()
+        if ((failReason == BLEFailCode.BenefitsInvalidCard.rawValue
+             || failReason == BLEFailCode.BenefitsLimitReached.rawValue
+             || failReason == BLEFailCode.BenefitsNotAllowedClub.rawValue
+             || failReason == BLEFailCode.PerfectGymNoAccess.rawValue) && message != nil && !message!.isEmpty) {
+            self.viewModel.update(message: message!, icon: "error")
+            onPassCompleted(success: false, isRemoteAccess: false)
+        } else {
+            if (currentConfig?.nextAction != nil) {
+                if (currentConfig!.nextAction! == PassFlowView.ACTION_LOCATION) {
+                    LogManager.shared.info(message: "Bluetooth connection failed and now validate user location to continue remote access")
+                    DelegateManager.shared.flowNextActionRequired()
+                } else if (currentConfig!.nextAction! == PassFlowView.ACTION_REMOTEACCESS) {
+                    PassFlowManager.shared.addToStates(state: PassFlowStateCode.PROCESS_ACTION_REMOTE_ACCESS)
+                    LogManager.shared.info(message: "Bluetooth connection failed and now continue for remote access request")
+                    
+                    self.viewModel.update(message: "text_status_message_waiting", icon: "waiting")
+                    runRemoteAccess()
+                } else {
+                    PassFlowManager.shared.addToStates(state: .INVALID_ACTION_TYPE)
+                    LogManager.shared.warn(message: "Bluetooth connection failed and next action has invalid value", code: LogCodes.PASSFLOW_ACTION_INVALID_NEXT_ACTION)
+                    self.viewModel.update(message: "text_status_message_failed", icon: "error")
+                    onPassCompleted(success: false, isRemoteAccess: false)
+                }
             } else {
-                PassFlowManager.shared.addToStates(state: .INVALID_ACTION_TYPE)
-                LogManager.shared.warn(message: "Bluetooth connection failed and next action has invalid value", code: LogCodes.PASSFLOW_ACTION_INVALID_NEXT_ACTION)
-                self.viewModel.update(message: "text_status_message_failed", icon: "error")
+                self.viewModel.update(message: message != nil ? message! : "text_status_message_failed", icon: "error")
                 onPassCompleted(success: false, isRemoteAccess: false)
             }
-        } else {
-            self.viewModel.update(message: message != nil ? message! : "text_status_message_failed", icon: "error")
-            onPassCompleted(success: false, isRemoteAccess: false)
         }
     }
     

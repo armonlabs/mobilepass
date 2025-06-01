@@ -52,4 +52,5 @@ enum LogCodes: Int, Codable {
     case PASSFLOW_ACTION_EMPTY_RELAYNUMBER              = 4507;
     case PASSFLOW_ACTION_INVALID_NEXT_ACTION            = 4508;
     case UI_SWITCH_CAMERA_FAILED                        = 5101;
+    case UI_CAMERA_SETUP_FAILED                         = 5102;
 }

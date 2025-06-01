@@ -48,6 +48,8 @@
 		DE46BB8225E2A971006A727A /* QRCodeListState.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE46BB8125E2A971006A727A /* QRCodeListState.swift */; };
 		DE4B4CDF27AA81FF004CA0AF /* QRCodeScannerDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE4B4CDE27AA81FF004CA0AF /* QRCodeScannerDelegate.swift */; };
 		DE57D5AF25DCDE700099D8AB /* LogManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE57D5AE25DCDE700099D8AB /* LogManager.swift */; };
+		DE76F3D32DE0CDB100728A4E /* Language.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE76F3D22DE0CDB100728A4E /* Language.swift */; };
+		DE76F3D52DE0D9A200728A4E /* BLEFailCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE76F3D42DE0D9A200728A4E /* BLEFailCode.swift */; };
 		DE79EE7025D8899400D8C072 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DE79EE6F25D8899400D8C072 /* Images.xcassets */; };
 		DE79EEAA25D9986100D8C072 /* PassFlowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE79EEA925D9986100D8C072 /* PassFlowController.swift */; };
 		DE79EEAE25D9988300D8C072 /* PassFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE79EEAD25D9988300D8C072 /* PassFlowView.swift */; };
@@ -137,6 +139,8 @@
 		DE46BB8125E2A971006A727A /* QRCodeListState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRCodeListState.swift; sourceTree = "<group>"; };
 		DE4B4CDE27AA81FF004CA0AF /* QRCodeScannerDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRCodeScannerDelegate.swift; sourceTree = "<group>"; };
 		DE57D5AE25DCDE700099D8AB /* LogManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogManager.swift; sourceTree = "<group>"; };
+		DE76F3D22DE0CDB100728A4E /* Language.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Language.swift; sourceTree = "<group>"; };
+		DE76F3D42DE0D9A200728A4E /* BLEFailCode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLEFailCode.swift; sourceTree = "<group>"; };
 		DE79EE6F25D8899400D8C072 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		DE79EEA925D9986100D8C072 /* PassFlowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PassFlowController.swift; sourceTree = "<group>"; };
 		DE79EEAD25D9988300D8C072 /* PassFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PassFlowView.swift; sourceTree = "<group>"; };
@@ -351,6 +355,8 @@
 				DECEC29226CFF35E00280603 /* LogCodes.swift */,
 				DEFEC1A42A28C0F5002899F3 /* PassFlowResultCode.swift */,
 				DEFEC1A62A28C175002899F3 /* PassFlowStateCode.swift */,
+				DE76F3D22DE0CDB100728A4E /* Language.swift */,
+				DE76F3D42DE0D9A200728A4E /* BLEFailCode.swift */,
 			);
 			path = Enum;
 			sourceTree = "<group>";
@@ -517,6 +523,7 @@
 				DE45B1A726C97E5800FB8712 /* ResponseAccessPointListTerminal.swift in Sources */,
 				DECEC29326CFF35E00280603 /* LogCodes.swift in Sources */,
 				DE2722A025D871EC00E1F8F7 /* ScanQRCodeView.swift in Sources */,
+				DE76F3D32DE0CDB100728A4E /* Language.swift in Sources */,
 				DE45B1A326C97E1900FB8712 /* ResponseAccessPointListItem.swift in Sources */,
 				DEF0BFA325D292C100397D18 /* UUIDs.swift in Sources */,
 				DE14A09A25D11C9500F8B8B3 /* MobilePass.swift in Sources */,
@@ -537,6 +544,7 @@
 				DE14A0A325D11F7400F8B8B3 /* CryptoKeyPair.swift in Sources */,
 				DEB3115F25EC2F0500DD91AF /* BLEScanConfiguration.swift in Sources */,
 				DEEFD88126CDACDA00E2E4F9 /* LogLevel.swift in Sources */,
+				DE76F3D52DE0D9A200728A4E /* BLEFailCode.swift in Sources */,
 				DEF0BF8725D286A600397D18 /* String+Extensions.swift in Sources */,
 				DE2D2BDD2D76F6B1000A0975 /* AnalyticsResult.swift in Sources */,
 				DE30E52725DD15CD004CAED2 /* Configuration.swift in Sources */,

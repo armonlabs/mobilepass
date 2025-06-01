@@ -20,10 +20,12 @@ import androidx.fragment.app.FragmentActivity;
 
 import com.armongate.mobilepasssdk.R;
 import com.armongate.mobilepasssdk.activity.PassFlowActivity;
+import com.armongate.mobilepasssdk.constant.BLEFailCode;
 import com.armongate.mobilepasssdk.constant.LogCodes;
 import com.armongate.mobilepasssdk.constant.NeedPermissionType;
 import com.armongate.mobilepasssdk.constant.PassFlowStateCode;
 import com.armongate.mobilepasssdk.delegate.BluetoothManagerDelegate;
+import com.armongate.mobilepasssdk.enums.Language;
 import com.armongate.mobilepasssdk.manager.BluetoothManager;
 import com.armongate.mobilepasssdk.manager.ConfigurationManager;
 import com.armongate.mobilepasssdk.manager.DelegateManager;
@@ -45,6 +47,7 @@ import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class StatusFragment extends Fragment implements BluetoothManagerDelegate {
     private String  mActionType;
@@ -214,11 +217,11 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
     private void runBluetooth() {
         PassFlowManager.getInstance().addToStates(PassFlowStateCode.RUN_ACTION_BLUETOOTH_STARTED);
 
-        if (mQRCode == null) {
+        if (mQRCode == null || mQRCode.i == null || mQRCode.i.isEmpty()) {
             PassFlowManager.getInstance().addToStates(PassFlowStateCode.INVALID_BLUETOOTH_QRCODE_DATA);
             LogManager.getInstance().warn("Run bluetooth action has been terminated due to invalid qr code content", LogCodes.PASSFLOW_ACTION_EMPTY_QRCODE_CONTENT);
 
-            onBluetoothConnectionFailed(R.string.text_status_message_error_invalid_qrcode_content);
+            onBluetoothConnectionFailed(R.string.text_status_message_error_invalid_qrcode_content, "", -1);
             return;
         }
 
@@ -226,7 +229,7 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
             PassFlowManager.getInstance().addToStates(PassFlowStateCode.INVALID_BLUETOOTH_DIRECTION);
             LogManager.getInstance().warn("Run bluetooth action has been terminated due to invalid direction", LogCodes.PASSFLOW_ACTION_EMPTY_DIRECTION);
 
-            onBluetoothConnectionFailed(R.string.text_status_message_error_invalid_direction);
+            onBluetoothConnectionFailed(R.string.text_status_message_error_invalid_direction, "", -1);
             return;
         }
 
@@ -234,7 +237,7 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
             PassFlowManager.getInstance().addToStates(PassFlowStateCode.INVALID_BLUETOOTH_HARDWARE_ID);
             LogManager.getInstance().warn("Run bluetooth action has been terminated due to invalid hardware id", LogCodes.PASSFLOW_ACTION_EMPTY_HARDWAREID);
 
-            onBluetoothConnectionFailed(R.string.text_status_message_error_invalid_hardware_id);
+            onBluetoothConnectionFailed(R.string.text_status_message_error_invalid_hardware_id, "", -1);
             return;
         }
 
@@ -242,7 +245,7 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
             PassFlowManager.getInstance().addToStates(PassFlowStateCode.INVALID_BLUETOOTH_RELAY_NUMBER);
             LogManager.getInstance().warn("Run bluetooth action has been terminated due to invalid relay number", LogCodes.PASSFLOW_ACTION_EMPTY_RELAYNUMBER);
 
-            onBluetoothConnectionFailed(R.string.text_status_message_error_invalid_relay_number);
+            onBluetoothConnectionFailed(R.string.text_status_message_error_invalid_relay_number, "", -1);
             return;
         }
 
@@ -253,7 +256,7 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
 
             updateStatus( R.string.text_status_message_scanning, "", R.drawable.waiting);
 
-            BLEScanConfiguration config = new BLEScanConfiguration(mDevices, ConfigurationManager.getInstance().getMemberId(), mQRCode.h, mQRCode.d, mQRCode.r);
+            BLEScanConfiguration config = new BLEScanConfiguration(mDevices, ConfigurationManager.getInstance().getMemberId(), ConfigurationManager.getInstance().getBarcodeId(), mQRCode.i, mQRCode.h, mQRCode.d, mQRCode.r, Objects.equals(ConfigurationManager.getInstance().getLanguage(), "en") ? Language.EN : Language.TR);
 
             PassFlowManager.getInstance().addToStates(PassFlowStateCode.RUN_ACTION_BLUETOOTH_START_SCAN);
 
@@ -271,7 +274,7 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
                 PassFlowManager.getInstance().addToStates(PassFlowStateCode.RUN_ACTION_BLUETOOTH_OFF_NO_WAIT);
                 LogManager.getInstance().info("Bluetooth disabled now and SDK configuration says no need to wait for it. Ignore Bluetooth scanning and continue to next action.");
 
-                onBluetoothConnectionFailed(-1);
+                onBluetoothConnectionFailed(-1, "", -1);
             }
         }
     }
@@ -283,7 +286,7 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
             DelegateManager.getInstance().flowConnectionStateChanged(false);
 
             PassFlowManager.getInstance().addToStates(PassFlowStateCode.RUN_ACTION_BLUETOOTH_TIMEOUT);
-            onBluetoothConnectionFailed(-1);
+            onBluetoothConnectionFailed(-1, "", -1);
         };
 
         mTimerHandler.postDelayed(mTimerRunnable, ConfigurationManager.getInstance().getBLEConnectionTimeout() * 1000);
@@ -306,31 +309,37 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
         onBluetoothFlowCompleted();
     }
 
-    private void onBluetoothConnectionFailed(int messageId) {
+    private void onBluetoothConnectionFailed(int messageId, String messageText, int failCode) {
         onBluetoothFlowCompleted();
 
-        if (mNextAction != null && mNextAction.length() > 0) {
-            if (mNextAction.equals(PassFlowActivity.ACTION_LOCATION)) {
-                LogManager.getInstance().info("Bluetooth connection failed and now validate user location to continue remote access");
-                DelegateManager.getInstance().flowNextActionRequired();
-            } else if (mNextAction.equals(PassFlowActivity.ACTION_REMOTEACCESS)) {
-                LogManager.getInstance().info("Bluetooth connection failed and now continue for remote access request");
-                
-                mActionType = PassFlowActivity.ACTION_REMOTEACCESS;
-                PassFlowManager.getInstance().addToStates(PassFlowStateCode.PROCESS_ACTION_REMOTE_ACCESS);
+        if ((failCode == BLEFailCode.BenefitsInvalidCard || failCode == BLEFailCode.BenefitsLimitReached || failCode == BLEFailCode.BenefitsNotAllowedClub || failCode == BLEFailCode.PerfectGymNoAccess)
+            && messageText != null && !messageText.isEmpty()) {
+            updateStatus(-1, messageText, R.drawable.error);
+            onPassCompleted(false);
+        } else {
+            if (mNextAction != null && mNextAction.length() > 0) {
+                if (mNextAction.equals(PassFlowActivity.ACTION_LOCATION)) {
+                    LogManager.getInstance().info("Bluetooth connection failed and now validate user location to continue remote access");
+                    DelegateManager.getInstance().flowNextActionRequired();
+                } else if (mNextAction.equals(PassFlowActivity.ACTION_REMOTEACCESS)) {
+                    LogManager.getInstance().info("Bluetooth connection failed and now continue for remote access request");
 
-                updateStatus(R.string.text_status_message_waiting,"", R.drawable.waiting);
-                runRemoteAccess();
+                    mActionType = PassFlowActivity.ACTION_REMOTEACCESS;
+                    PassFlowManager.getInstance().addToStates(PassFlowStateCode.PROCESS_ACTION_REMOTE_ACCESS);
+
+                    updateStatus(R.string.text_status_message_waiting, "", R.drawable.waiting);
+                    runRemoteAccess();
+                } else {
+                    PassFlowManager.getInstance().addToStates(PassFlowStateCode.INVALID_ACTION_TYPE);
+
+                    LogManager.getInstance().warn("Bluetooth connection failed and next action has invalid value", LogCodes.PASSFLOW_ACTION_INVALID_NEXT_ACTION);
+                    updateStatus(R.string.text_status_message_failed, "", R.drawable.error);
+                    onPassCompleted(false);
+                }
             } else {
-                PassFlowManager.getInstance().addToStates(PassFlowStateCode.INVALID_ACTION_TYPE);
-
-                LogManager.getInstance().warn("Bluetooth connection failed and next action has invalid value", LogCodes.PASSFLOW_ACTION_INVALID_NEXT_ACTION);
-                updateStatus(R.string.text_status_message_failed,"", R.drawable.error);
+                updateStatus(messageId != -1 ? messageId : R.string.text_status_message_failed, "", R.drawable.error);
                 onPassCompleted(false);
             }
-        } else {
-            updateStatus(messageId != -1 ? messageId :  R.string.text_status_message_failed, "", R.drawable.error);
-            onPassCompleted(false);
         }
     }
 
@@ -461,7 +470,7 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
                 || state.state == DeviceConnectionStatus.ConnectionState.NOT_FOUND
                 || (mLastConnectionState == DeviceConnectionStatus.ConnectionState.CONNECTING && state.state == DeviceConnectionStatus.ConnectionState.DISCONNECTED)) {
             PassFlowManager.getInstance().addToStates(PassFlowStateCode.RUN_ACTION_BLUETOOTH_CONNECTION_FAILED);
-            onBluetoothConnectionFailed(-1);
+            onBluetoothConnectionFailed(-1, state.failMessage, state.failReason);
         }
 
         mLastConnectionState = state.state;

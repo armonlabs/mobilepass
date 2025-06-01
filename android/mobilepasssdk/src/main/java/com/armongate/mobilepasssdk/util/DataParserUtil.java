@@ -84,7 +84,8 @@ public class DataParserUtil {
                 return new BLEDataContent(DataTypes.TYPE.AuthChallengeResult, DataTypes.RESULT.Succeed, null);
             case PacketHeaders.PROTOCOLV2.COMMON.FAILURE:
                 BLEDataParseFormat[] dataFormat = new BLEDataParseFormat[] {
-                        new BLEDataParseFormat("reason", 1, BLEDataParseFormat.DataType.NUMBER)
+                        new BLEDataParseFormat("reason", 1, BLEDataParseFormat.DataType.NUMBER),
+                        new BLEDataParseFormat("message", BLEDataParseFormat.DataType.STRING)
                 };
 
                 return new BLEDataContent(DataTypes.TYPE.AuthChallengeResult,
