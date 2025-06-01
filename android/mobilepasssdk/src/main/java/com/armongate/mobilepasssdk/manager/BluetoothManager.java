@@ -582,7 +582,7 @@ public class BluetoothManager {
 
         resultData = ArrayUtil.concat(resultData, ConverterUtil.stringToData(currentConfiguration.dataUserId, 16, (byte)0, false));
         resultData = ArrayUtil.concat(resultData, ConverterUtil.stringToData(currentConfiguration.dataUserBarcode, 16, (byte)0, false));
-        resultData = ArrayUtil.concat(resultData, currentConfiguration.qrCodeId.replace("-", "").getBytes());
+        resultData = ArrayUtil.concat(resultData, ConverterUtil.hexStringToBytes(currentConfiguration.qrCodeId.replace("-", "")));
         resultData = ArrayUtil.add(resultData, currentConfiguration.language == Language.EN ? (byte)0x01 : (byte)0x00);
 
         byte[] encryptedResponse = CryptoManager.getInstance().encryptBytesWithIV(ConfigurationManager.getInstance().getPrivateKey(), deviceInfo.publicKey, challenge, iv);
