@@ -95,12 +95,40 @@ struct ScanQRCodeView: View, QRCodeListStateDelegate {
                     if (result.result == .success) {
                         DelegateManager.shared.flowQRCodeFound(code: result.code)
                     } else {
-                        if (ConfigurationManager.shared.closeWhenInvalidQRCode() && result.result == .invalidFormat) {
-                            DelegateManager.shared.flowCloseWithInvalidQRCode(code: result.code)
-                        } else {
-                            stateModel.setInvalid(isInvalidContent: result.result == .invalidContent,
-                                                  isInvalidFormat: result.result == .invalidFormat,
-                                                  qrCodeContent: result.code)
+                        LogManager.shared.error(message: "ScanQRCodeView error: \(result.result)", code: LogCodes.UI_CAMERA_SETUP_FAILED)
+                        switch result.result {
+                        case .cameraUnavailable:
+                            stateModel.message = "text_status_message_camera_unavailable"
+                            stateModel.backgroundColor = Color.red
+                        case .getCaptureDeviceFailed:
+                            stateModel.message = "text_status_message_camera_not_found"
+                            stateModel.backgroundColor = Color.red
+                        case .createVideoInputFailed:
+                            stateModel.message = "text_status_message_camera_input_failed"
+                            stateModel.backgroundColor = Color.red
+                        case .addInputFailed:
+                            stateModel.message = "text_status_message_camera_input_add_failed"
+                            stateModel.backgroundColor = Color.red
+                        case .addOutputFailed:
+                            stateModel.message = "text_status_message_camera_output_add_failed"
+                            stateModel.backgroundColor = Color.red
+                        case .missingSession:
+                            stateModel.message = "text_status_message_camera_session_failed"
+                            stateModel.backgroundColor = Color.red
+                        case .createPreviewLayerFailed:
+                            stateModel.message = "text_status_message_camera_preview_failed"
+                            stateModel.backgroundColor = Color.red
+                        case .startSessionFailed:
+                            stateModel.message = "text_status_message_camera_start_failed"
+                            stateModel.backgroundColor = Color.red
+                        default:
+                            if (ConfigurationManager.shared.closeWhenInvalidQRCode() && result.result == .invalidFormat) {
+                                DelegateManager.shared.flowCloseWithInvalidQRCode(code: result.code)
+                            } else {
+                                stateModel.setInvalid(isInvalidContent: result.result == .invalidContent,
+                                                      isInvalidFormat: result.result == .invalidFormat,
+                                                      qrCodeContent: result.code)
+                            }
                         }
                     }
                 }

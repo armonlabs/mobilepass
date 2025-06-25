@@ -30,6 +30,14 @@
 "text_status_message_suggestion" = "You can pass with Bluetooth without experiencing network issues";
 "text_status_message_suggestion_enable" = "Bluetooth must be enabled on your phone";
 "text_status_message_suggestion_authorize" = "You need to grant Bluetooth permission to the application";
+"text_status_message_camera_not_found" = "No camera found on the device. Please make sure your device's camera is working.";
+"text_status_message_camera_input_failed" = "Unable to open the camera. Please close and reopen the app.";
+"text_status_message_camera_input_add_failed" = "Could not connect to the camera. Please make sure no other app is using the camera.";
+"text_status_message_camera_output_add_failed" = "Could not start camera stream. Please restart the app.";
+"text_status_message_camera_session_failed" = "Could not start camera session. Please close and reopen the app.";
+"text_status_message_camera_preview_failed" = "Unable to display camera preview. Please restart your device.";
+"text_status_message_camera_start_failed" = "Camera could not start. Please check camera permissions and make sure no other app is using the camera.";
+"text_status_message_camera_unavailable" = "Camera is currently unavailable. Please close other apps using the camera and try again, or restart your device.";
 "text_location_message" = "You must be in a defined location to continue";
 "text_location_message_reduced" = "You must be in a defined location to continue\n\nEnabling 'Precise Location' in app permissions will speed up your location validation";
 "text_button_close" = "Close";

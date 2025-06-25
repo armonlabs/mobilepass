@@ -30,6 +30,14 @@
 "text_status_message_suggestion" = "Bluetooth ile ağ sorunları yaşamadan geçiş yapabilirsiniz";
 "text_status_message_suggestion_enable" = "Telefonunuzda Bluetooth etkinleştirilmiş olmalıdır";
 "text_status_message_suggestion_authorize" = "Uygulamaya Bluetooth izni vermeniz gerekmektedir";
+"text_status_message_camera_not_found" = "Cihazda kamera bulunamadı. Lütfen cihazınızın kamerasının çalıştığından emin olun.";
+"text_status_message_camera_input_failed" = "Kamera açılamadı. Lütfen uygulamayı kapatıp tekrar deneyin.";
+"text_status_message_camera_input_add_failed" = "Kamera bağlantısı kurulamadı. Lütfen başka bir uygulamanın kamerayı kullanmadığından emin olun.";
+"text_status_message_camera_output_add_failed" = "Kamera veri akışı başlatılamadı. Lütfen uygulamayı yeniden başlatın.";
+"text_status_message_camera_session_failed" = "Kamera oturumu başlatılamadı. Lütfen uygulamayı kapatıp tekrar deneyin.";
+"text_status_message_camera_preview_failed" = "Kamera görüntüsü gösterilemiyor. Lütfen cihazınızı yeniden başlatın.";
+"text_status_message_camera_start_failed" = "Kamera başlatılamadı. Lütfen kamera izinlerini kontrol edin ve başka bir uygulamanın kamerayı kullanmadığından emin olun.";
+"text_status_message_camera_unavailable" = "Kamera şu anda kullanılamıyor. Lütfen arka planda kamera kullanan uygulamaları kapatıp tekrar deneyin veya cihazınızı yeniden başlatın.";
 "text_location_message" = "Devam edebilmek için tanımlı konumda olmanız gerekmektedir";
 "text_location_message_reduced" = "Devam edebilmek için tanımlı konumda olmanız gerekmektedir\n\Uygulama izinlerinde 'Tam Konum'u etkinleştirmek, konum doğrulamanızı hızlandıracaktır";
 "text_button_close" = "Kapat";
