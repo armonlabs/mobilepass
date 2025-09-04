@@ -95,17 +95,20 @@ class DelegateManager: NSObject {
         let states = PassFlowManager.shared.getLogStates()
         let startTime = states.first?.datetime ?? Date()
         let duration = Int64(Date().timeIntervalSince(startTime) * 1000)
-        
+
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+
         let analyticsSteps = states.map { state in
             AnalyticsStep(
                 code: state.state,
                 message: state.data,
-                timestamp: state.datetime ?? startTime
+                timestamp: state.datetime != nil ? formatter.string(from: state.datetime!) : formatter.string(from: startTime)
             )
         }
 
         let request = RequestAnalyticsData(
-            accessTime: ISO8601DateFormatter().string(from: Date()),
+            accessTime: formatter.string(from: Date()),
             duration: duration,
             result: result,
             method: isRemoteAccess == nil ? nil : (isRemoteAccess! ? .remote : .ble),
@@ -115,8 +118,8 @@ class DelegateManager: NSObject {
             os: .ios,
             steps: analyticsSteps
         )
-        
-        AnalyticsService().sendAnalytics(request: request) { _ in }   
+
+        AnalyticsService().sendAnalytics(request: request) { _ in }
     }
     
     func onCompleted(success: Bool, isRemoteAccess: Bool, direction: Direction?, clubId: String?, clubName: String?) {
