@@ -50,7 +50,7 @@ allprojects {
 
 ```
 dependencies {
-	implementation 'com.github.armonlabs:mobilepass:v1.7.5'
+	implementation 'com.github.armonlabs:mobilepass:v1.7.6'
 }
 ```
 
@@ -387,7 +387,7 @@ Library is configurable while initialization. Available props are listed below
 | Parameter         | Description                                                                                                                                                       | Type                  | Required |
 | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- | -------- |
 | memberId          | Member id that will be used for validation to pass                                                                                                                | String                | Yes      |
-| barcode          | Benefits System user identifier that will be used for validation to pass                                                                                                                | String                | No      |
+| barcode           | Benefits System user identifier that will be used for validation to pass                                                                                          | String                | No       |
 | serverUrl         | URL of server that communicate between SDK, devices and validation server                                                                                         | String                | Yes      |
 | qrCodeMessage     | Information message for QR Code reader that will be shown at top of screen                                                                                        | String                | No       |
 | token             | OAuth token value of current user's session to validate                                                                                                           | String                | No       |
