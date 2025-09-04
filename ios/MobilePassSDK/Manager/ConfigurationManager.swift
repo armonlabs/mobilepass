@@ -191,12 +191,19 @@ class ConfigurationManager: NSObject {
     private func checkKeyPair() throws -> Bool {
         mCurrentKeyPair = nil
         
+        let firstRun: String = try StorageManager.shared.getValue(key: StorageKeys.FIRST_RUN, secure: false)
+        if (firstRun == "") {
+            LogManager.shared.info(message: "First run of application")
+            _ = try StorageManager.shared.setValue(key: StorageKeys.FIRST_RUN, value: "yes", secure: false)
+            _ = try StorageManager.shared.deleteValue(key: StorageKeys.USER_DETAILS, secure: true)
+        }
+        
         var newlyCreated: Bool = false
         let storedUserKeys: String = try StorageManager.shared.getValue(key: StorageKeys.USER_DETAILS, secure: true)
         
         if (storedUserKeys.count > 0) {
             mUserKeyDetails = try JSONUtil.shared.decodeJSONArray(jsonString: storedUserKeys)
-            
+                        
             for user in mUserKeyDetails {
                 if (user.userId == getMemberId()) {
                     LogManager.shared.info(message: "Key pair has already been generated for member id: \(getMemberId())")

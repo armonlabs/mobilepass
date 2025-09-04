@@ -231,6 +231,14 @@ public class ConfigurationManager {
     private boolean checkKeyPair() {
         mCurrentKeyPair = null;
 
+        String firstRun = StorageManager.getInstance().getValue(mCurrentContext, StorageKeys.FIRST_RUN);
+
+        if (firstRun.isEmpty()) {
+            LogManager.getInstance().info("First run of application");
+            StorageManager.getInstance().setValue(mCurrentContext, StorageKeys.FIRST_RUN, "yes");
+            StorageManager.getInstance().deleteValue(mCurrentContext, StorageKeys.USER_DETAILS);
+        }
+
         String storedUserKeys = StorageManager.getInstance().getValue(mCurrentContext, StorageKeys.USER_DETAILS, new SecureAreaManager(mCurrentContext));
 
         boolean newlyCreated = false;

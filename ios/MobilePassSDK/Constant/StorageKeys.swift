@@ -18,5 +18,6 @@ struct StorageKeys {
     static let LIST_VERSION                 = "armon_mobilepass_sdk_list_version"
     static let FLAG_CONFIGURATION_ACTIVE    = "armon_mobilepass_sdk_config_active";
     static let ANALYTICS_QUEUE              = "armon_mobilepass_sdk_analytics_queue";
+    static let FIRST_RUN                    = "armon_mobilepass_sdk_first_run"
     
 }
