@@ -7,6 +7,7 @@ public class LogCodes {
     public static final int CONFIGURATION_KEYPAIR                       = 1301;
     public static final int CONFIGURATION_STORAGE                       = 1401;
     public static final int BLUETOOTH_SCANNING_FLOW                     = 2101;
+    public static final int BLUETOOTH_MISSING_CONTEXT                   = 2102;
     public static final int BLUETOOTH_ADAPTER_ERROR                     = 2201;
     public static final int BLUETOOTH_SCANNER_FAILED                    = 2202;
     public static final int BLUETOOTH_CONNECTION_FLOW                   = 2301;

@@ -34,8 +34,8 @@ public class MainActivity extends AppCompatActivity implements MobilePassDelegat
         } else {
             Configuration config = new Configuration();
             config.memberId = txtMemberId.getText().toString(); // "00988791";
-            config.serverUrl = "https://dev3.armon.com.tr:4334"; // "https://10.10.10.243:4334"; // "https://qr.marsathletic.com";
-            config.barcode = "600542998112";
+            config.serverUrl = "https://macfit.armon.com.tr:3443"; // "https://dev3.armon.com.tr:4334"; // "https://10.10.10.243:4334"; // "https://qr.marsathletic.com";
+            // config.barcode = "600542998112";
             config.language = "tr";
             config.waitBLEEnabled = false;
             config.closeWhenInvalidQRCode = true;
@@ -70,7 +70,7 @@ public class MainActivity extends AppCompatActivity implements MobilePassDelegat
 
     @Override
     public void onLogReceived(LogItem log) {
-        Log.i("MobilePass", "Log Received >> " + log.level + " | " + log.message);
+        // Log.i("MobilePass", "Log Received >> " + log.level + " | " + log.message);
     }
 
     @Override

@@ -11,9 +11,9 @@ struct AnalyticsStep: Codable {
     var m: String?
     var t: String
     
-    init(code: Int, message: String?, timestamp: Date) {
+    init(code: Int, message: String?, timestamp: String) {
         self.c = code
         self.m = message
-        self.t = ISO8601DateFormatter().string(from: timestamp)
+        self.t = timestamp
     }
 }

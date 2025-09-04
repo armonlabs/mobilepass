@@ -135,6 +135,12 @@ public class BluetoothManager {
 
     public void startScan(BLEScanConfiguration configuration) {
         LogManager.getInstance().info("Bluetooth scanner is starting...");
+
+        if (this.activeContext == null) {
+            LogManager.getInstance().warn("BluetoothManager: activeContext is null in startScan. Initialization may be missing.", LogCodes.BLUETOOTH_MISSING_CONTEXT);
+            return;
+        }
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && ActivityCompat.checkSelfPermission(this.activeContext, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
             LogManager.getInstance().info("Missing BluetoothScan permission!");
             return;
@@ -189,6 +195,11 @@ public class BluetoothManager {
     public void stopScan(boolean disconnect) {
         LogManager.getInstance().info("Bluetooth scanner is stopping...");
 
+        if (this.activeContext == null) {
+            LogManager.getInstance().warn("BluetoothManager: activeContext is null in stopScan. Initialization may be missing.", LogCodes.BLUETOOTH_MISSING_CONTEXT);
+            return;
+        }
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && ActivityCompat.checkSelfPermission(this.activeContext, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
             LogManager.getInstance().info("Missing BluetoothScan permission!");
             return;
@@ -218,6 +229,11 @@ public class BluetoothManager {
 
     public void connectToDevice(String deviceIdentifier) {
         LogManager.getInstance().debug("Connect to device is requested for identifier: " + deviceIdentifier);
+
+        if (this.activeContext == null) {
+            LogManager.getInstance().warn("BluetoothManager: activeContext is null in connectToDevice. Initialization may be missing.", LogCodes.BLUETOOTH_MISSING_CONTEXT);
+            return;
+        }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && ActivityCompat.checkSelfPermission(this.activeContext, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
             LogManager.getInstance().info("Missing BluetoothScan permission!");
@@ -253,6 +269,12 @@ public class BluetoothManager {
 
     private void readyBluetoothAdapter() {
         LogManager.getInstance().info("Bluetooth adapter is initializing...");
+
+        if (this.activeContext == null) {
+            LogManager.getInstance().warn("BluetoothManager: activeContext is null in readyBluetoothAdapter. Initialization may be missing.", LogCodes.BLUETOOTH_MISSING_CONTEXT);
+            return;
+        }
+
         android.bluetooth.BluetoothManager manager = (android.bluetooth.BluetoothManager) this.activeContext.getSystemService(Context.BLUETOOTH_SERVICE);
 
         if (manager != null) {
@@ -339,6 +361,11 @@ public class BluetoothManager {
     private void disconnect() {
         LogManager.getInstance().info("Disconnect from connected device is requested");
 
+        if (this.activeContext == null) {
+            LogManager.getInstance().warn("BluetoothManager: activeContext is null in disconnect. Initialization may be missing.", LogCodes.BLUETOOTH_MISSING_CONTEXT);
+            return;
+        }
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && ActivityCompat.checkSelfPermission(this.activeContext, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
             LogManager.getInstance().info("Missing BluetoothScan permission!");
             return;
@@ -378,6 +405,11 @@ public class BluetoothManager {
 
     private void onConnectionStateChanged(String identifier, DeviceConnectionStatus.ConnectionState connectionState, Integer failReason, String failMessage) {
         LogManager.getInstance().info("Bluetooth connection state changed for " + (identifier != null ? identifier : "-") + " > " + connectionState.toString());
+
+        if (this.activeContext == null) {
+            LogManager.getInstance().warn("BluetoothManager: activeContext is null in onConnectionStateChanged. Initialization may be missing.", LogCodes.BLUETOOTH_MISSING_CONTEXT);
+            return;
+        }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && ActivityCompat.checkSelfPermission(this.activeContext, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
             LogManager.getInstance().info("Missing BluetoothScan permission!");
@@ -481,6 +513,11 @@ public class BluetoothManager {
 
     private void checkWriteQueue() {
         LogManager.getInstance().debug("Checking write queue for Bluetooth communication. Queue Size: " + mWriteQueue.size() + ", IsWriteActive: " + mWriteActive);
+
+        if (this.activeContext == null) {
+            LogManager.getInstance().warn("BluetoothManager: activeContext is null in checkWriteQueue. Initialization may be missing.", LogCodes.BLUETOOTH_MISSING_CONTEXT);
+            return;
+        }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && ActivityCompat.checkSelfPermission(this.activeContext, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
             LogManager.getInstance().info("Missing BluetoothScan permission!");
