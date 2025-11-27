@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import UIKit
 
 enum ConfigurationError: Error {
     case validationError(String)
@@ -45,15 +44,6 @@ class ConfigurationManager: NSObject {
         
         try validateConfig()
         try sendUserData()
-    }
-    
-    public func setToken(token: String, language: String) throws -> Void {
-        if (mCurrentConfig != nil) {
-            mCurrentConfig!.token = token
-            mCurrentConfig!.language = language
-            
-            try sendUserData()
-        }
     }
     
     public func getQRCodeContent(qrCodeData: String) -> QRCodeContent? {
@@ -96,36 +86,20 @@ class ConfigurationManager: NSObject {
         return serverUrl
     }
     
-    public func getMessageQRCode() -> String {
-        return mCurrentConfig?.qrCodeMessage ?? ""
-    }
-    
-    public func getToken() -> String {
-        return mCurrentConfig?.token ?? "unknown"
-    }
-    
     public func getLanguage() -> String {
         return mCurrentConfig?.language ?? ConfigurationDefaults.Language
-    }
-    
-    public func isMockLocationAllowed() -> Bool {
-        return mCurrentConfig?.allowMockLocation ?? ConfigurationDefaults.AllowMockLocation
     }
     
     public func bleConnectionTimeout() -> Int {
         return mCurrentConfig?.connectionTimeout ?? ConfigurationDefaults.BLEConnectionTimeout
     }
     
-    public func autoCloseTimeout() -> Int? {
-        return mCurrentConfig?.autoCloseTimeout
+    public func locationVerificationTimeout() -> Int {
+        return mCurrentConfig?.locationVerificationTimeout ?? ConfigurationDefaults.LocationVerificationTimeout
     }
     
-    public func waitForBLEEnabled() -> Bool {
-        return mCurrentConfig?.waitBLEEnabled ?? ConfigurationDefaults.WaitBleEnabled
-    }
-    
-    public func closeWhenInvalidQRCode() -> Bool {
-        return mCurrentConfig?.closeWhenInvalidQRCode ?? ConfigurationDefaults.CloseWhenInvalidQRCode
+    public func continueWithoutBLE() -> Bool {
+        return mCurrentConfig?.continueWithoutBLE ?? ConfigurationDefaults.ContinueWithoutBLE
     }
     
     public func getLogLevel() -> Int {
@@ -136,10 +110,6 @@ class ConfigurationManager: NSObject {
         return mCurrentConfig?.getLog() ?? ""
     }
     
-    public func getCloseColor() -> UIColor {
-        return mCurrentConfig?.closeColor ?? UIColor.systemBlue
-    }
-        
     public func getQRCodesCount() -> Int {
         return mQRCodes.count;
     }
@@ -162,7 +132,11 @@ class ConfigurationManager: NSObject {
         mQRCodes        = (storageQRCodes != nil && storageQRCodes!.count > 0 ? try? JSONUtil.shared.decodeJSONData(jsonString: storageQRCodes!) : [:]) ?? [:]
         mAccessPoints   = (storageAccessPoints != nil && storageAccessPoints!.count > 0 ? try? JSONUtil.shared.decodeJSONData(jsonString: storageAccessPoints!) : [:]) ?? [:]
         
-        DelegateManager.shared.onQRCodesDataLoaded(count: mQRCodes.count)
+        // Notify app about cached data availability
+        DelegateManager.shared.qrCodeListChanged(
+            state: .USING_STORED_DATA,
+            count: mQRCodes.count
+        )
         
         LogManager.shared.info(message: "Stored QR Code list is ready to use, total: \(mQRCodes.count)")
         LogManager.shared.info(message: "Stored Access Point list is ready to use, total: \(mAccessPoints.count)")

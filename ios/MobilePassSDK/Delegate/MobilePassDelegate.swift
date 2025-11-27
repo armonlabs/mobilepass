@@ -7,15 +7,13 @@
 
 public protocol MobilePassDelegate {
     func onLogReceived(log: LogItem)
-    func onInvalidQRCode(content: String)
     
     func onMemberIdChanged()
-    func onSyncMemberIdCompleted()
-    func onSyncMemberIdFailed(statusCode: Int)
-    func onQRCodesDataLoaded(count: Int)
-    func onQRCodesSyncStarted()
-    func onQRCodesSyncFailed(statusCode: Int)
-    func onQRCodesReady(synced: Bool, count: Int)
-    func onQRCodesEmpty()
-    func onScanFlowCompleted(result: PassFlowResult)
+    func onSyncMemberIdCompleted(success: Bool, statusCode: Int?)
+    func onQRCodesSyncStateChanged(state: QRCodesSyncState)
+    func onPassFlowStateChanged(state: PassFlowStateUpdate)
+    
+    func onLocationVerificationRequired(requirement: LocationRequirement)
+    
+    func onPermissionRequired(type: NeedPermissionType)    
 }

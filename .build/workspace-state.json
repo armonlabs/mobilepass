@@ -1,0 +1,29 @@
+{
+  "object" : {
+    "artifacts" : [
+      {
+        "kind" : "xcframework",
+        "packageRef" : {
+          "identity" : "mobilepass",
+          "kind" : "root",
+          "location" : "/Users/erinccakir/Projects/armon/mobilepass",
+          "name" : "mobilepass"
+        },
+        "path" : "/Users/erinccakir/Projects/armon/mobilepass/.build/artifacts/mobilepass/MobilePassSDK/MobilePassSDK.xcframework",
+        "source" : {
+          "checksum" : "e4374b31c139d647f06baafd5736419a2ff236365ad7e6ae858a943466683e95",
+          "type" : "remote",
+          "url" : "https://github.com/armonlabs/mobilepass/raw/main/ios/Distribution/MobilePassSDK.xcframework.1.7.6.zip"
+        },
+        "targetName" : "MobilePassSDK"
+      }
+    ],
+    "dependencies" : [
+
+    ],
+    "prebuilts" : [
+
+    ]
+  },
+  "version" : 7
+}

@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import UIKit
 
 public class MobilePass {
     
@@ -28,44 +27,53 @@ public class MobilePass {
             LogManager.shared.info(message: "Configuration: \(config.getLog())")
             
             try ConfigurationManager.shared.setReady()
+            
+            // Initialize Bluetooth manager early so state is ready when QR code is scanned
+            BluetoothManager.shared.setReady()
         } catch {
             LogManager.shared.error(message: "Set configuration with given parameters failed!")
         }
     }
     
     /**
-     * To set or update OAuth token of user and language code
-     *
-     * @param token OAuth token value of current user's session to validate
-     * @param language Language code to localize texts [tr | en]
+     * Sync QR code list from server
      */
-    public func updateToken(token: String, language: String) {
-        do {
-            try ConfigurationManager.shared.setToken(token: token, language: language)
-        } catch {
-            LogManager.shared.error(message: "Update token with given parameters failed!")
-        }
+    public func sync() {
+        ConfigurationManager.shared.refreshList()
     }
     
     /**
-     * Starts qr code reading session and related flow
+     * Process scanned QR code data from external scanner
      *
-     * ! Don't forget to set token before this call
+     * @param data QR code string data scanned by the app
+     * @return QRCodeProcessResult with validation status and requirements
      */
-    public func triggerQRCodeRead() -> UIViewController {
+    public func processQRCode(data: String) -> QRCodeProcessResult {
         PassFlowManager.shared.clearStates()
         
-        DelegateManager.shared.clearFlags()
-        var controller = UIViewController()
-        
-        if #available(iOS 13.0, *) {
-            controller = PassFlowController()
-            DelegateManager.shared.setMainDelegate(delegate: delegate, viewController: controller)
-        }
-        
-        BluetoothManager.shared.setReady()
-        
-        return controller;
+        return PassFlowManager.shared.processQRCode(data: data)
+    }
+    
+    /**
+     * Confirm that location has been verified by the app
+     *
+     * Call this after your app:
+     * 1. Receives onLocationVerificationRequired callback with lat/lon/radius
+     * 2. Gets user's location and calculates distance
+     * 3. Shows UI and user confirms or is within radius
+     *
+     * The app is responsible for all location verification logic and UI
+     * SDK will automatically continue the pass flow after this call
+     */
+    public func confirmLocationVerified() {
+        PassFlowManager.shared.confirmLocationVerified()
+    }
+    
+    /**
+     * Cancel current flow - stops any active Bluetooth operations and resets state
+     */
+    public func cancelFlow() {
+        PassFlowManager.shared.cancelFlow()
     }
     
 }

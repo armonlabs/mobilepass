@@ -8,6 +8,12 @@ import com.armongate.mobilepasssdk.delegate.MobilePassDelegate;
 public class Configuration {
 
     /**
+     * API key for SDK authentication
+     * Each authorized application receives a unique key
+     */
+    public String apiKey;
+
+    /**
      * Member id that will be used for validation to pass
      */
     public String memberId;
@@ -23,29 +29,12 @@ public class Configuration {
     public String serverUrl;
 
     /**
-     * Information message for QR Code reader that will be shown at top of screen
-     */
-    public @Nullable String qrCodeMessage;
-
-    /**
-     * OAuth token value of current user's session to validate
-     */
-    public @Nullable String token;
-
-    /**
      * Language code to localize texts
      *
      * 'tr' - Turkish
      * 'en' - English
      */
     public @Nullable String language;
-
-    /**
-     * Determines usage of mock location in flow
-     *
-     * default: false
-     */
-    public @Nullable Boolean allowMockLocation;
 
     /**
      * Bluetooth connection timeout in seconds
@@ -55,26 +44,21 @@ public class Configuration {
     public @Nullable Integer connectionTimeout;
 
     /**
-     * Auto close timeout for screen after pass completed, nil means stay opened
+     * Location verification timeout in seconds (for remote access with location requirement)
+     *
+     * default: 30 seconds
      */
-    public @Nullable Integer autoCloseTimeout;
+    public @Nullable Integer locationVerificationTimeout;
 
     /**
-     * Flag to decide action for disabled Bluetooth state
+     * Flag to decide action when BLE is unavailable (disabled, missing permissions, etc.)
      *
-     * "true" means wait user to enable Bluetooth
-     * "false" means continue to next step
+     * "true" means continue to next action (e.g., remote access) if BLE requirements not met
+     * "false" means wait for user to satisfy BLE requirements
      *
      * default: false
      */
-    public @Nullable Boolean waitBLEEnabled;
-
-    /**
-     * Close QR code scanner and give information if content is invalid to pass
-     *
-     * default: false
-     */
-    public @Nullable Boolean closeWhenInvalidQRCode;
+    public @Nullable Boolean continueWithoutBLE;
 
     /**
      * Minimum level to be informed about logs
@@ -90,12 +74,10 @@ public class Configuration {
 
 
     public String getLog() {
-        return "MemberId: " + (this.memberId != null ? this.memberId : "Empty")
+        return "ApiKey: " + (this.apiKey != null ? this.apiKey.substring(0, Math.min(8, this.apiKey.length())) + "..." : "Empty")
+                + " | MemberId: " + (this.memberId != null ? this.memberId : "Empty")
                 + " | Barcode: " + (this.barcode != null ? this.barcode : "Empty")
-                + " | WaitBLEEnabled: " + (this.waitBLEEnabled != null ? this.waitBLEEnabled : ConfigurationDefaults.WaitBleEnabled)
-                + " | BLEConnectionTimeout: " + (this.connectionTimeout != null ? this.connectionTimeout : ConfigurationDefaults.BLEConnectionTimeout)
-                + " | AutoCloseTimeout: " + (this.autoCloseTimeout != null ? this.autoCloseTimeout : "null")
-                + " | CloseWhenInvalidQRCode: " + (this.closeWhenInvalidQRCode != null ? this.closeWhenInvalidQRCode : ConfigurationDefaults.CloseWhenInvalidQRCode)
-                + " | AllowMockLocation: " + (this.allowMockLocation != null ? this.allowMockLocation : ConfigurationDefaults.AllowMockLocation);
+                + " | ContinueWithoutBLE: " + (this.continueWithoutBLE != null ? this.continueWithoutBLE : ConfigurationDefaults.ContinueWithoutBLE)
+                + " | BLEConnectionTimeout: " + (this.connectionTimeout != null ? this.connectionTimeout : ConfigurationDefaults.BLEConnectionTimeout);
     }
 }

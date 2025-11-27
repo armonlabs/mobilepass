@@ -6,9 +6,11 @@
 //
 
 import Foundation
-import UIKit
 
 public class Configuration {
+    /** API key for SDK authentication - Each authorized application receives a unique key */
+    var apiKey: String
+    
     /** Member id that will be used for validation to pass */
     var memberId: String
     
@@ -18,35 +20,23 @@ public class Configuration {
     /** URL of server that communicate between SDK, devices and validation server */
     var serverUrl: String
     
-    /** Information message for QR Code reader that will be shown at top of screen */
-    var qrCodeMessage: String?
-    
-    /** OAuth token value of current user's session to validate */
-    var token: String?
-    
     /** Language code to localize texts [tr | en] */
     var language: String?
-    
-    /** Determines usage of mock location in flow | default: false*/
-    var allowMockLocation: Bool?
-    
+        
     /** Bluetooth connection timeout in seconds, default 5 seconds */
     var connectionTimeout: Int?
     
-    /** Auto close timeout for screen after pass completed, nil means stay opened */
-    var autoCloseTimeout: Int?
-    
-    /** Close QR code scanner and give information if content is invalid to pass | default: false */
-    var closeWhenInvalidQRCode: Bool?
-    
+    /** Location verification timeout in seconds (for remote access with location requirement), default 30 seconds */
+    var locationVerificationTimeout: Int?
+        
     /**
-        Flag to decide action for disabled Bluetooth state
-        "true" means wait user to enable Bluetooth
-        "false" means continue to next step
+        Flag to decide action when BLE is unavailable (disabled, missing permissions, etc.)
+        "true" means continue to next action (e.g., remote access) if BLE requirements not met
+        "false" means wait for user to satisfy BLE requirements
     
         @default false
      */
-    var waitBLEEnabled: Bool?
+    var continueWithoutBLE: Bool?
     
     /** Minimum level to be informed about logs, default LogLevel.INFO (2) */
     var logLevel: LogLevel?
@@ -54,41 +44,32 @@ public class Configuration {
     /** Optional listener instance for MobilePass SDK callbacks */
     var delegate: MobilePassDelegate?
     
-    /*** Optional close button color */
-    var closeColor: UIColor?
     
-    public init(memberId: String,
+    public init(apiKey: String,
+                memberId: String,
                 serverUrl: String,
                 barcode: String?,
-                token: String?,
                 language: String?,
-                qrCodeMessage: String?,
-                allowMockLocation: Bool?,
                 connectionTimeout: Int?,
-                autoCloseTimeout: Int?,
-                waitBLEEnabled: Bool?,
-                closeWhenInvalidQRCode: Bool?,
+                locationVerificationTimeout: Int?,
+                continueWithoutBLE: Bool?,
                 logLevel: LogLevel? = nil,
-                closeColor: UIColor? = nil,
                 delegate: MobilePassDelegate? = nil) {
+        self.apiKey                 = apiKey
         self.memberId               = memberId
         self.barcode                = barcode
         self.serverUrl              = serverUrl
-        self.qrCodeMessage          = qrCodeMessage
-        self.token                  = token
         self.language               = language
-        self.allowMockLocation      = allowMockLocation
         self.connectionTimeout      = connectionTimeout
-        self.autoCloseTimeout       = autoCloseTimeout
-        self.waitBLEEnabled         = waitBLEEnabled
-        self.closeWhenInvalidQRCode = closeWhenInvalidQRCode
+        self.locationVerificationTimeout = locationVerificationTimeout
+        self.continueWithoutBLE     = continueWithoutBLE
         self.logLevel               = logLevel
-        self.closeColor             = closeColor
         self.delegate               = delegate
     }
     
     public func getLog() -> String {
-        return "MemberId: \(memberId ) | Barcode: \(barcode ?? "-") | WaitBLEEnabled: \((waitBLEEnabled ?? ConfigurationDefaults.WaitBleEnabled).description) | BLEConnectionTimeout: \((connectionTimeout ?? ConfigurationDefaults.BLEConnectionTimeout).description) | AutoCloseTimeout: \(autoCloseTimeout != nil ? autoCloseTimeout!.description : "null") | AllowMockLocation: \((allowMockLocation ?? ConfigurationDefaults.AllowMockLocation).description)";
+        let maskedKey = apiKey.count > 8 ? String(apiKey.prefix(8)) + "..." : apiKey
+        return "ApiKey: \(maskedKey) | MemberId: \(memberId ) | Barcode: \(barcode ?? "-") | ContinueWithoutBLE: \((continueWithoutBLE ?? ConfigurationDefaults.ContinueWithoutBLE).description) | BLEConnectionTimeout: \((connectionTimeout ?? ConfigurationDefaults.BLEConnectionTimeout).description)";
     }
     
 }

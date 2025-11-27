@@ -69,7 +69,6 @@ class BaseService: NSObject {
         
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         request.addValue("application/json", forHTTPHeaderField: "Accept")
-        request.setValue("\(ConfigurationManager.shared.getToken())", forHTTPHeaderField: "Authorization")
         request.setValue("Mon, 26 Jul 1997 05:00:00 GMT", forHTTPHeaderField: "If-Modified-Since")
         request.setValue("no-cache", forHTTPHeaderField: "Cache-Control")
         request.setValue("\(ConfigurationManager.shared.getLanguage())", forHTTPHeaderField: "accept-language")
@@ -83,7 +82,9 @@ class BaseService: NSObject {
     }
     
     private func request<T: Decodable>(request: URLRequest, completion: @escaping (Result<T?, RequestError>) -> Void) {
-        URLSession.shared.dataTask(with: request) { data, response, error in
+        let task = URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
+            guard let self = self else { return }
+            
             let response = response as? HTTPURLResponse
             let statusCode = response?.statusCode
             
@@ -97,7 +98,7 @@ class BaseService: NSObject {
                 var message = "";
 
                 let responseMsg: ResponseMessage? = self.getResponse(fromData: data)
-                message = responseMsg != nil ? responseMsg!.message : ""
+                message = responseMsg?.message ?? ""
                 
                 LogManager.shared.debug(message: "Request completed with message: \(message)")
                 LogManager.shared.debug(message: "Request completed with status code: \(statusCode!)")
@@ -116,7 +117,9 @@ class BaseService: NSObject {
                 LogManager.shared.debug(message: "Response data is valid")
                 completion(.success(state!))
             }
-        }.resume()
+        }
+        
+        task.resume()
     }
     
     private func getResponse<T: Decodable>(fromData data: Data) -> T? {

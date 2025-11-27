@@ -61,9 +61,8 @@ public class ConfigurationManager {
     }
 
     public void setConfig(Context context, Configuration data) {
-        DeviceManager deviceInfo = new DeviceManager();
-
-        mCurrentServiceProvider = deviceInfo.getServiceProvider(context);
+        // Note: Service provider detection removed (no longer needed without UI dependencies)
+        mCurrentServiceProvider = "Unknown";
         mCurrentContext = context;
         mCurrentConfig = data;
     }
@@ -74,9 +73,8 @@ public class ConfigurationManager {
         sendUserData();
     }
 
-    public void setToken(String token, String language) {
+    public void setToken(String language) {
         if (mCurrentConfig != null) {
-            mCurrentConfig.token = token;
             mCurrentConfig.language = language;
 
             sendUserData();
@@ -121,44 +119,20 @@ public class ConfigurationManager {
         return serverUrl;
     }
 
-    public String getMessageQRCode() {
-        return mCurrentConfig != null && mCurrentConfig.qrCodeMessage != null ? mCurrentConfig.qrCodeMessage : "";
-    }
-
-    public String getToken() {
-        return mCurrentConfig != null && mCurrentConfig.token != null ? mCurrentConfig.token : "unknown";
-    }
-
     public String getLanguage() {
         return mCurrentConfig != null && mCurrentConfig.language != null ? mCurrentConfig.language : ConfigurationDefaults.Language;
-    }
-
-    public boolean allowMockLocation() {
-        return mCurrentConfig != null && mCurrentConfig.allowMockLocation != null ? mCurrentConfig.allowMockLocation : ConfigurationDefaults.AllowMockLocation;
     }
 
     public Integer getBLEConnectionTimeout() {
         return mCurrentConfig != null && mCurrentConfig.connectionTimeout != null ? mCurrentConfig.connectionTimeout : ConfigurationDefaults.BLEConnectionTimeout;
     }
 
-    public Integer autoCloseTimeout() {
-        return mCurrentConfig != null ? mCurrentConfig.autoCloseTimeout : null;
+    public Integer getLocationVerificationTimeout() {
+        return mCurrentConfig != null && mCurrentConfig.locationVerificationTimeout != null ? mCurrentConfig.locationVerificationTimeout : ConfigurationDefaults.LocationVerificationTimeout;
     }
 
-    public Boolean waitForBLEEnabled() {
-        return mCurrentConfig != null && mCurrentConfig.waitBLEEnabled != null ? mCurrentConfig.waitBLEEnabled : ConfigurationDefaults.WaitBleEnabled;
-    }
-
-    public Boolean closeWhenInvalidQRCode() {
-        return mCurrentConfig != null && mCurrentConfig.closeWhenInvalidQRCode != null ? mCurrentConfig.closeWhenInvalidQRCode : ConfigurationDefaults.CloseWhenInvalidQRCode;
-    }
-
-    public boolean usingHMS() {
-        return mCurrentServiceProvider != null && mCurrentServiceProvider.equals(ServiceProviders.Huawei);
-    }
-
-    public String getServiceProvider() {
-        return mCurrentServiceProvider;
+    public Boolean continueWithoutBLE() {
+        return mCurrentConfig != null && mCurrentConfig.continueWithoutBLE != null ? mCurrentConfig.continueWithoutBLE : ConfigurationDefaults.ContinueWithoutBLE;
     }
 
     public int getLogLevel() {
@@ -167,10 +141,6 @@ public class ConfigurationManager {
 
     public String getConfigurationLog() {
         return mCurrentConfig != null ? mCurrentConfig.getLog() : "";
-    }
-
-    public int getQRCodesCount() {
-        return mQRCodes.size();
     }
 
     public void refreshList() {
@@ -202,8 +172,7 @@ public class ConfigurationManager {
             mAccessPoints = new HashMap<>();
         }
 
-        DelegateManager.getInstance().onQRCodesDataLoaded(mQRCodes.size());
-
+        // Note: Stored data is loaded silently. Sync status is reported via onQRCodesSyncStateChanged()
         LogManager.getInstance().info("Stored QR Code list is ready to use, total: " + mQRCodes.size());
         LogManager.getInstance().info("Stored Access Point list is ready to use, total: " + mAccessPoints.size());
     }

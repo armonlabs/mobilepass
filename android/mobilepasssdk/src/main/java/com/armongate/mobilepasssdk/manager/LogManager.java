@@ -79,9 +79,9 @@ public class LogManager {
                 break;
         }
 
-        Log.i(LOG_TAG, prefix + " | " + message);
-
+        // Apply log level filtering to both console and delegate
         if (type >= ConfigurationManager.getInstance().getLogLevel()) {
+            Log.i(LOG_TAG, prefix + " | " + message);
             DelegateManager.getInstance().onLogItemCreated(new LogItem(type, code, message));
         }
     }

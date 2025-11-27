@@ -8,10 +8,11 @@
 import Foundation
 
 struct ConfigurationDefaults {
-    static let WaitBleEnabled           = false
+    static let ContinueWithoutBLE       = false
     static let AllowMockLocation        = false
     static let CloseWhenInvalidQRCode   = false
-    static let BLEConnectionTimeout     = 5
+    static let BLEConnectionTimeout     = 10
+    static let LocationVerificationTimeout = 30
     static let Language                 = "en"
     static let CurrentListVersion       = "1"
 }

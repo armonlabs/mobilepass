@@ -88,7 +88,6 @@ public class BaseService {
     // Private Functions
 
     private <T> void request(String method, String url, JSONObject data, final BaseService.ServiceResultListener<T> listener, @Nullable final Class<T> clazz) {
-        // TODO Remove
         nuke();
 
         String serverUrl = ConfigurationManager.getInstance().getServerURL() + url;
@@ -113,20 +112,20 @@ public class BaseService {
 
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        LogManager.getInstance().info("Error received " + (error.networkResponse != null ? error.networkResponse.statusCode : "NoNetwork"));
+                        LogManager.getInstance().error("Error received " + (error.networkResponse != null ? error.networkResponse.statusCode : "NoNetwork"), null);
 
                         String message = "";
 
                         if (error.networkResponse != null && error.networkResponse.data != null) {
                             try {
-                                LogManager.getInstance().info(new String(error.networkResponse.data));
-
                                 Gson gson = new Gson();
                                 ResponseMessage responseMsg = gson.fromJson(new String(error.networkResponse.data), ResponseMessage.class);
 
-                                message = responseMsg.message;
+                                if (responseMsg != null && responseMsg.message != null) {
+                                    message = responseMsg.message;
+                                }
                             } catch (Exception ex) {
-                                LogManager.getInstance().error(ex.getMessage(), null);
+                                LogManager.getInstance().error(ex.getMessage() != null ? ex.getMessage() : "Failed to parse error response", null);
                             }
                         }
 
@@ -143,12 +142,9 @@ public class BaseService {
                 }) {
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
-                String token = ConfigurationManager.getInstance().getToken();
-
                 Map<String, String> params = new HashMap<>();
                 params.put("Content-Type", "application/json");
                 params.put("Accept", "application/json");
-                params.put("Authorization", token);
                 params.put("If-Modified-Since", "Mon, 26 Jul 1997 05:00:00 GMT");
                 params.put("Cache-Control", "no-cache");
                 params.put("accept-language", ConfigurationManager.getInstance().getLanguage());
@@ -156,7 +152,6 @@ public class BaseService {
                 params.put("mobilepass-memberid", ConfigurationManager.getInstance().getMemberId());
                 params.put("mobilepass-barcode", ConfigurationManager.getInstance().getBarcodeId());
                 params.put("mobilepass-config", ConfigurationManager.getInstance().getConfigurationLog());
-                params.put("mobilepass-provider", ConfigurationManager.getInstance().getServiceProvider());
 
                 return params;
             }
@@ -219,6 +214,6 @@ public class BaseService {
         } catch (Exception e) {
         }
     }
-
 }
+
 

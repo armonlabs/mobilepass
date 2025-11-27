@@ -104,7 +104,7 @@ class BluetoothManager: NSObject {
                     LogManager.shared.info(message: "Bluetooth authorization status is allowed, but state is not powered on yet")
                 }
             } else if (authorizationStatus != .notDetermined) {
-                DelegateManager.shared.needPermission(type: NeedPermissionType.NEED_PERMISSION_BLUETOOTH, showMessage: true)
+                DelegateManager.shared.needPermission(type: NeedPermissionType.NEED_PERMISSION_BLUETOOTH)
             }
         } else {
             // Fallback on earlier versions
@@ -217,7 +217,13 @@ class BluetoothManager: NSObject {
     
     private func onConnectionStateChanged(identifier: String, connectionState: DeviceConnectionStatus.ConnectionState, failReason: Int? = nil, failMessage: String? = nil) {
         LogManager.shared.info(message: "Bluetooth connection state changed for \(identifier) > \(self.getDescriptionOfConnectionState(state: connectionState))");
-        self.onConnectionStateChanged?(DeviceConnectionStatus(id: identifier, state: connectionState, failReason: failReason, failMessage: failMessage))
+        
+        // Check if delegate exists - PassFlowManager may have cleared it after processing terminal state
+        if self.onConnectionStateChanged != nil {
+            self.onConnectionStateChanged?(DeviceConnectionStatus(id: identifier, state: connectionState, failReason: failReason, failMessage: failMessage))
+        } else {
+            LogManager.shared.debug(message: "Delegate is nil - callback skipped (likely already processed by PassFlowManager)")
+        }
         
         if (connectionState == .failed) {
             LogManager.shared.warn(message: "Bluetooth connection to device has failed", code: LogCodes.BLUETOOTH_CONNECTION_FAILED);
