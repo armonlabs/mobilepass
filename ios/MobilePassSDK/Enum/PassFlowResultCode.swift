@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum PassFlowResultCode: Int, Codable {
+public enum PassFlowResultCode: Int, Codable {
     case CANCEL     = 1
     case SUCCESS    = 2
     case FAIL       = 3

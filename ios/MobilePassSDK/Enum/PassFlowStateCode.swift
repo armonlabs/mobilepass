@@ -9,7 +9,7 @@ import Foundation
 
 /// State codes exposed to app via delegate callbacks
 /// Includes all meaningful milestones that app should track for complete flow understanding
-enum PassFlowStateCode: Int, Codable {
+public enum PassFlowStateCode: Int, Codable {
     // QR Code States (3)
     case SCAN_QRCODE_INVALID_FORMAT = 1006      // QR has invalid format
     case SCAN_QRCODE_NO_MATCH = 1007            // QR not in authorized list

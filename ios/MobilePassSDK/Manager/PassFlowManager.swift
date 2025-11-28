@@ -19,6 +19,11 @@ class PassFlowManager: NSObject {
     
     // MARK: Setup
     
+    /**
+     * Setup Bluetooth state listener for iOS
+     * This is iOS-specific: listens to CoreBluetooth state changes
+     * Allows automatic retry when user enables Bluetooth after being prompted
+     */
     private func setupBluetoothStateListener() {
         // Listen for Bluetooth state changes to retry when user enables BT
         BluetoothManager.shared.onBleStateChanged = { [weak self] capability in
@@ -416,20 +421,43 @@ class PassFlowManager: NSObject {
     private func executeBluetooth() {
         guard let content = activeQRCodeContent,
               let terminals = content.terminals,
-              let qrCodeData = content.qrCode?.q,
-              let qrCodeId = content.qrCode?.i,
-              let direction = content.qrCode?.d,
-              let hardwareId = content.qrCode?.h,
-              let relayNumber = content.qrCode?.r else {
+              !terminals.isEmpty else {
             LogManager.shared.error(message: "Missing required data for Bluetooth execution")
-            // Critical error: Complete flow as failed
-            DelegateManager.shared.onCompleted(
-                resultCode: PassFlowResultCode.FAIL.rawValue,
-                isRemoteAccess: false,
-                direction: activeQRCodeContent?.qrCode?.d,
-                clubId: activeQRCodeContent?.clubInfo?.i,
-                clubName: activeQRCodeContent?.clubInfo?.n
-            )
+            fallbackOrFail()
+            return
+        }
+        
+        guard let qrCode = content.qrCode else {
+            LogManager.shared.error(message: "QR code data is missing")
+            fallbackOrFail()
+            return
+        }
+        
+        // Validate QR code ID
+        guard let qrCodeId = qrCode.i, !qrCodeId.isEmpty else {
+            LogManager.shared.warn(message: "QR code ID is empty")
+            fallbackOrFail()
+            return
+        }
+        
+        // Validate direction
+        guard let direction = qrCode.d else {
+            LogManager.shared.warn(message: "Direction is empty")
+            fallbackOrFail()
+            return
+        }
+        
+        // Validate hardware ID
+        guard let hardwareId = qrCode.h, !hardwareId.isEmpty else {
+            LogManager.shared.warn(message: "Hardware ID is empty")
+            fallbackOrFail()
+            return
+        }
+        
+        // Validate relay number
+        guard let relayNumber = qrCode.r else {
+            LogManager.shared.warn(message: "Relay number is empty")
+            fallbackOrFail()
             return
         }
         
@@ -557,20 +585,8 @@ class PassFlowManager: NSObject {
                 LogManager.shared.warn(message: "Bluetooth connection failed: \(status.failMessage ?? "Unknown error")")
                 self.addToStates(state: .RUN_ACTION_BLUETOOTH_CONNECTION_FAILED, data: status.failMessage)
                 
-                if !self.actionList.isEmpty {
-                    // Fallback to next action (e.g., remote access)
-                    LogManager.shared.info(message: "Trying next action after Bluetooth failure")
-                    self.executeNextAction()
-                } else {
-                    // No fallback - complete with failure
-                    DelegateManager.shared.onCompleted(
-                        resultCode: PassFlowResultCode.FAIL.rawValue,
-                        isRemoteAccess: false,
-                        direction: content.qrCode?.d != nil ? content.qrCode!.d! : nil,
-                        clubId: content.clubInfo?.i,
-                        clubName: content.clubInfo?.n
-                    )
-                }
+                // Try next action or fail
+                self.fallbackOrFail()
                 
             case .connecting:
                 LogManager.shared.debug(message: "Bluetooth connecting...")
@@ -601,24 +617,40 @@ class PassFlowManager: NSObject {
             // Stop scanning
             BluetoothManager.shared.stopScan(disconnect: true)
             
-            // Try next action if available
-            if !self.actionList.isEmpty {
-                LogManager.shared.info(message: "Bluetooth timeout - trying next action (e.g., remote access)")
-                self.executeNextAction()
-            } else {
-                // No fallback - complete with failure
-                LogManager.shared.info(message: "Bluetooth timeout - no fallback action available")
-                DelegateManager.shared.onCompleted(
-                    resultCode: PassFlowResultCode.FAIL.rawValue,
-                    isRemoteAccess: false,
-                    direction: content.qrCode?.d != nil ? content.qrCode!.d! : nil,
-                    clubId: content.clubInfo?.i,
-                    clubName: content.clubInfo?.n
-                )
-            }
+            // Try next action or fail
+            self.fallbackOrFail()
         }
         
         BluetoothManager.shared.startScan(configuration: configuration)
+    }
+    
+    // MARK: Helper Methods
+    
+    /**
+     * Try fallback action or complete with failure
+     * Matches Android implementation but adapted for iOS
+     */
+    private func fallbackOrFail() {
+        if !actionList.isEmpty {
+            LogManager.shared.info(message: "Trying next action")
+            executeNextAction()
+        } else {
+            LogManager.shared.info(message: "No fallback action available")
+            
+            // Clear BLE delegate to stop receiving callbacks
+            BluetoothManager.shared.onConnectionStateChanged = nil
+            bleScanSessionId = nil
+            
+            let isRemote = actionCurrent == "remoteAccess"
+            
+            DelegateManager.shared.onCompleted(
+                resultCode: PassFlowResultCode.FAIL.rawValue,
+                isRemoteAccess: isRemote,
+                direction: activeQRCodeContent?.qrCode?.d,
+                clubId: activeQRCodeContent?.clubInfo?.i,
+                clubName: activeQRCodeContent?.clubInfo?.n
+            )
+        }
     }
     
     private func executeRemoteAccess() {
