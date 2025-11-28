@@ -73,6 +73,7 @@ public class PassFlowManager {
     private boolean isWaitingForBLEEnabled = false;
     private boolean isWaitingForLocationVerification = false;
     private boolean lastBleEnabledState = false;
+    private String lastFailureMessage = null; // Store failure message from BLE or remote access
 
     // Setup
     private void setupBluetoothStateListener() {
@@ -610,6 +611,9 @@ public class PassFlowManager {
                         cancelBLETimeout();
                         BluetoothManager.getInstance().stopScan(true);
                         
+                        // Store failure message for potential use in onCompleted
+                        lastFailureMessage = status.failMessage;
+                        
                         LogManager.getInstance().warn("Bluetooth connection failed: " + status.failMessage, PassFlowStateCode.RUN_ACTION_BLUETOOTH_CONNECTION_FAILED);
                         addToStates(PassFlowStateCode.RUN_ACTION_BLUETOOTH_CONNECTION_FAILED, status.failMessage);
                         
@@ -727,6 +731,9 @@ public class PassFlowManager {
             public void onError(int errorCode, String message) {
                 LogManager.getInstance().warn("Remote access failed: " + errorCode + " - " + message, PassFlowStateCode.RUN_ACTION_REMOTE_ACCESS_REQUEST_FAILED);
 
+                // Store error message for potential use in onCompleted
+                lastFailureMessage = message;
+
                 // Handle specific error codes
                 switch (errorCode) {
                     case 401:
@@ -746,7 +753,29 @@ public class PassFlowManager {
                         break;
                 }
 
-                fallbackOrFail();
+                // Important: Don't fallback to Bluetooth if unauthorized (401)
+                // User is not authorized - Bluetooth won't help either!
+                boolean shouldTryFallback = errorCode != 401 && !actionList.isEmpty();
+
+                if (shouldTryFallback) {
+                    LogManager.getInstance().info("Remote access failed (code: " + errorCode + "), trying next action (Bluetooth fallback)");
+                    executeNextAction();
+                } else {
+                    if (errorCode == 401) {
+                        LogManager.getInstance().info("Remote access failed: Unauthorized (401) - no fallback");
+                    } else {
+                        LogManager.getInstance().info("Remote access failed - no fallback action available");
+                    }
+
+                    DelegateManager.getInstance().onCompleted(
+                            PassFlowResultCode.FAIL,
+                            true,
+                            activeQRCodeContent != null && activeQRCodeContent.qrCode != null ? activeQRCodeContent.qrCode.d : null,
+                            activeQRCodeContent != null && activeQRCodeContent.clubInfo != null ? activeQRCodeContent.clubInfo.i : null,
+                            activeQRCodeContent != null && activeQRCodeContent.clubInfo != null ? activeQRCodeContent.clubInfo.n : null,
+                            message
+                    );
+                }
             }
         });
     }
@@ -771,7 +800,8 @@ public class PassFlowManager {
                     actionCurrent.equals("remoteAccess"),
                     activeQRCodeContent != null && activeQRCodeContent.qrCode != null ? activeQRCodeContent.qrCode.d : null,
                     activeQRCodeContent != null && activeQRCodeContent.clubInfo != null ? activeQRCodeContent.clubInfo.i : null,
-                    activeQRCodeContent != null && activeQRCodeContent.clubInfo != null ? activeQRCodeContent.clubInfo.n : null
+                    activeQRCodeContent != null && activeQRCodeContent.clubInfo != null ? activeQRCodeContent.clubInfo.n : null,
+                    lastFailureMessage
             );
         }
     }

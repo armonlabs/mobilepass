@@ -69,13 +69,16 @@ public class MainActivity extends AppCompatActivity implements MobilePassDelegat
         // String mockQRCode = "TEST_QR_CODE_DATA_123456"; // → INVALID_FORMAT
         // String mockQRCode = "http://app.armongate.com/o/uuid"; // → INVALID_FORMAT (http)
         // String mockQRCode = "https://app.armongate.com/rq/invalid-uuid"; // → INVALID_FORMAT (UUID format)
-        String mockQRCode = "https://app.armongate.com/o/0c6fceca-7a86-486c-a7c2-4e9e45a96b25";
-        
-        Log.i("MobilePass", "MAIN - Simulating QR scan: " + mockQRCode);
+        String qrEntrance = "https://app.armongate.com/o/0c6fceca-7a86-486c-a7c2-4e9e45a96b25";
+        String qrExit = "https://app.armongate.com/o/42261949-645f-4705-8ad7-dfaebea5c20f";
+
+        String currentQR = qrExit;
+
+        Log.i("MobilePass", "MAIN - Simulating QR scan: " + currentQR);
         Toast.makeText(this, "📷 QR Kod taranıyor...", Toast.LENGTH_SHORT).show();
         
         // SDK'ya QR kodu gönder
-        QRCodeProcessResult result = sdk.processQRCode(mockQRCode);
+        QRCodeProcessResult result = sdk.processQRCode(currentQR);
         
         // Sonucu kontrol et
         if (result.isValid()) {
@@ -163,7 +166,8 @@ public class MainActivity extends AppCompatActivity implements MobilePassDelegat
                         "Result: " + result.result + 
                         ", ClubId: " + result.clubId + 
                         ", ClubName: " + result.clubName + 
-                        ", Direction: " + result.direction);
+                        ", Direction: " + result.direction +
+                        ", Message: " + result.message);
 
                 for (PassFlowState state :
                         result.states) {

@@ -626,7 +626,8 @@ extension BluetoothManager {
             LogManager.shared.info(message: "Disconnect from device after successful process of passing!")
             self.disconnect()
         } else {
-            onConnectionStateChanged(identifier: deviceIdentifier, connectionState: .failed, failReason: result.data!["reason"] as? Int, failMessage: result.data!["message"] as? String)
+            let failMessage = result.data!["message"] as? String
+            onConnectionStateChanged(identifier: deviceIdentifier, connectionState: .failed, failReason: result.data!["reason"] as? Int, failMessage: failMessage)
         }
     }
     

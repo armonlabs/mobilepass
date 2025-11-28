@@ -623,11 +623,12 @@ public class BluetoothManager {
             LogManager.getInstance().info("Disconnecting from device after successful process of passing!");
             disconnect();
         } else {
+            String failMessage = result.data.containsKey("message") ? (String) result.data.get("message") : null;
             onConnectionStateChanged(
                     deviceIdentifier,
                     DeviceConnectionStatus.ConnectionState.FAILED,
                     result.data.containsKey("reason") ? (Integer) result.data.get("reason") : null,
-                    result.data.containsKey("message") ? (String) result.data.get("message") : null);
+                    failMessage);
         }
     }
 

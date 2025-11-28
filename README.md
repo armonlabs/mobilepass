@@ -285,6 +285,7 @@ Remote Access States:
 - `clubId: String?` - Club ID if available
 - `clubName: String?` - Club name if available
 - `states: [PassFlowState]` - History of states
+- `message: String?` - Error/failure message from BLE device or remote server (only set on failure when no fallback available)
 
 #### `onLocationVerificationRequired(requirement: LocationRequirement)`
 

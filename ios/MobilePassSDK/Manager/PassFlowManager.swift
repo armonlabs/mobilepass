@@ -56,6 +56,7 @@ class PassFlowManager: NSObject {
     private var locationTimeoutTimer: Timer? = nil
     private var bleScanSessionId: UUID? = nil
     private var isWaitingForBLEEnabled: Bool = false
+    private var lastFailureMessage: String? = nil // Store failure message from BLE or remote access
     
     // All state codes are now user-facing - no ignore list needed
     
@@ -582,6 +583,9 @@ class PassFlowManager: NSObject {
                 self.cancelBLETimeout()
                 BluetoothManager.shared.stopScan(disconnect: true)
                 
+                // Store failure message for potential use in onCompleted
+                self.lastFailureMessage = status.failMessage
+                
                 LogManager.shared.warn(message: "Bluetooth connection failed: \(status.failMessage ?? "Unknown error")")
                 self.addToStates(state: .RUN_ACTION_BLUETOOTH_CONNECTION_FAILED, data: status.failMessage)
                 
@@ -648,14 +652,15 @@ class PassFlowManager: NSObject {
                 isRemoteAccess: isRemote,
                 direction: activeQRCodeContent?.qrCode?.d,
                 clubId: activeQRCodeContent?.clubInfo?.i,
-                clubName: activeQRCodeContent?.clubInfo?.n
+                clubName: activeQRCodeContent?.clubInfo?.n,
+                message: lastFailureMessage
             )
         }
     }
     
     private func executeRemoteAccess() {
         guard let content = activeQRCodeContent,
-              let qrCodeData = content.qrCode?.q else {
+              let qrCodeId = content.qrCode?.i else {
             LogManager.shared.error(message: "Missing required data for remote access")
             // Critical error: Complete flow as failed
             DelegateManager.shared.onCompleted(
@@ -668,7 +673,7 @@ class PassFlowManager: NSObject {
             return
         }
         
-        let request = RequestAccess(q: qrCodeData)
+        let request = RequestAccess(q: qrCodeId)
         
         LogManager.shared.info(message: "Executing remote access")
         AccessPointService().remoteOpen(request: request) { result in
@@ -691,6 +696,9 @@ class PassFlowManager: NSObject {
                 
             case .failure(let error):
                 LogManager.shared.error(message: "Remote access failed: \(error.localizedDescription)")
+                
+                // Store error message for potential use in onCompleted
+                self.lastFailureMessage = error.message
                 
                 // Add specific error state based on status code (matching Android implementation)
                 let statusCode = error.code
@@ -725,7 +733,8 @@ class PassFlowManager: NSObject {
                         isRemoteAccess: true,
                         direction: content.qrCode?.d != nil ? content.qrCode!.d! : nil,
                         clubId: content.clubInfo?.i,
-                        clubName: content.clubInfo?.n
+                        clubName: content.clubInfo?.n,
+                        message: error.message
                     )
                 }
             }
