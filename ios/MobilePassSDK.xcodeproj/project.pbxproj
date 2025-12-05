@@ -49,6 +49,10 @@
 		DEB3116625EC2F9A00DD91AF /* DeviceConnectionStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEB3116525EC2F9A00DD91AF /* DeviceConnectionStatus.swift */; };
 		DEB3116925EC2FB600DD91AF /* DeviceInRange.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEB3116825EC2FB600DD91AF /* DeviceInRange.swift */; };
 		DEB3116C25EC2FD900DD91AF /* DeviceCapability.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEB3116B25EC2FD900DD91AF /* DeviceCapability.swift */; };
+		DECC839B2EE1AFCB00FF955D /* ResponseHandshake.swift in Sources */ = {isa = PBXBuildFile; fileRef = DECC839A2EE1AFCB00FF955D /* ResponseHandshake.swift */; };
+		DECC839D2EE1AFD200FF955D /* RequestHandshake.swift in Sources */ = {isa = PBXBuildFile; fileRef = DECC839C2EE1AFD200FF955D /* RequestHandshake.swift */; };
+		DECC83A02EE1AFDF00FF955D /* EphemeralKeyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DECC839E2EE1AFDF00FF955D /* EphemeralKeyManager.swift */; };
+		DECC83A12EE1AFDF00FF955D /* HandshakeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DECC839F2EE1AFDF00FF955D /* HandshakeManager.swift */; };
 		DECEC29126CE50A700280603 /* ConfigurationDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = DECEC29026CE50A700280603 /* ConfigurationDefaults.swift */; };
 		DECEC29326CFF35E00280603 /* LogCodes.swift in Sources */ = {isa = PBXBuildFile; fileRef = DECEC29226CFF35E00280603 /* LogCodes.swift */; };
 		DED2AE1C289016E600CDF0FB /* PassResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = DED2AE1B289016E600CDF0FB /* PassResult.swift */; };
@@ -133,6 +137,10 @@
 		DEB3116525EC2F9A00DD91AF /* DeviceConnectionStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceConnectionStatus.swift; sourceTree = "<group>"; };
 		DEB3116825EC2FB600DD91AF /* DeviceInRange.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceInRange.swift; sourceTree = "<group>"; };
 		DEB3116B25EC2FD900DD91AF /* DeviceCapability.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceCapability.swift; sourceTree = "<group>"; };
+		DECC839A2EE1AFCB00FF955D /* ResponseHandshake.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResponseHandshake.swift; sourceTree = "<group>"; };
+		DECC839C2EE1AFD200FF955D /* RequestHandshake.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestHandshake.swift; sourceTree = "<group>"; };
+		DECC839E2EE1AFDF00FF955D /* EphemeralKeyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EphemeralKeyManager.swift; sourceTree = "<group>"; };
+		DECC839F2EE1AFDF00FF955D /* HandshakeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HandshakeManager.swift; sourceTree = "<group>"; };
 		DECEC29026CE50A700280603 /* ConfigurationDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigurationDefaults.swift; sourceTree = "<group>"; };
 		DECEC29226CFF35E00280603 /* LogCodes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogCodes.swift; sourceTree = "<group>"; };
 		DED2AE1B289016E600CDF0FB /* PassResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PassResult.swift; sourceTree = "<group>"; };
@@ -220,6 +228,8 @@
 		DE14A09C25D11DB200F8B8B3 /* Manager */ = {
 			isa = PBXGroup;
 			children = (
+				DECC839E2EE1AFDF00FF955D /* EphemeralKeyManager.swift */,
+				DECC839F2EE1AFDF00FF955D /* HandshakeManager.swift */,
 				DE14A09D25D11DCB00F8B8B3 /* CryptoManager.swift */,
 				DE07C72225D181E100BD7021 /* BluetoothManager.swift */,
 				DEF0BFA525D29E7600397D18 /* StorageManager.swift */,
@@ -273,6 +283,7 @@
 		DE30E53025DD38DC004CAED2 /* Request */ = {
 			isa = PBXGroup;
 			children = (
+				DECC839C2EE1AFD200FF955D /* RequestHandshake.swift */,
 				DE2D2BE42D76F6FB000A0975 /* RequestAnalyticsData.swift */,
 				DE30E53225DD38FD004CAED2 /* RequestPagination.swift */,
 				DE30E53625DD393D004CAED2 /* RequestSetUserData.swift */,
@@ -284,6 +295,7 @@
 		DE30E53125DD38E4004CAED2 /* Response */ = {
 			isa = PBXGroup;
 			children = (
+				DECC839A2EE1AFCB00FF955D /* ResponseHandshake.swift */,
 				DE30E54125DD3AB3004CAED2 /* ResponsePagination.swift */,
 				DE30E56125DD4565004CAED2 /* ResponseDefault.swift */,
 				DE9089A026B301F200C33845 /* ResponseMessage.swift */,
@@ -490,6 +502,8 @@
 				DEF0BFB325D2AACA00397D18 /* StorageDataDevice.swift in Sources */,
 				DEF0BF9025D28C7E00397D18 /* PacketHeaders.swift in Sources */,
 				DEFEC1A72A28C175002899F3 /* PassFlowStateCode.swift in Sources */,
+				DECC83A02EE1AFDF00FF955D /* EphemeralKeyManager.swift in Sources */,
+				DECC83A12EE1AFDF00FF955D /* HandshakeManager.swift in Sources */,
 				DE07C72325D181E100BD7021 /* BluetoothManager.swift in Sources */,
 				DEF0BFBB25D2CB7E00397D18 /* BaseService.swift in Sources */,
 				DE45B1A126C97E0400FB8712 /* ResponseAccessPointList.swift in Sources */,
@@ -522,6 +536,7 @@
 				DEDC3C412ED4A55C0010051C /* SDKFlowState.swift in Sources */,
 				DEB3116925EC2FB600DD91AF /* DeviceInRange.swift in Sources */,
 				DE2D2BE52D76F6FB000A0975 /* RequestAnalyticsData.swift in Sources */,
+				DECC839D2EE1AFD200FF955D /* RequestHandshake.swift in Sources */,
 				DE19DF2525DA345300AB250C /* MobilePassDelegate.swift in Sources */,
 				DEF0BF9725D28D3000397D18 /* DataTypes.swift in Sources */,
 				DEF0BF8425D2868500397D18 /* Data+Extensions.swift in Sources */,
@@ -534,6 +549,7 @@
 				DE19DF2D25DA3EB700AB250C /* DelegateManager.swift in Sources */,
 				DEF0BF9D25D28FB100397D18 /* BLEDataContent.swift in Sources */,
 				DE30E53E25DD39F6004CAED2 /* Direction.swift in Sources */,
+				DECC839B2EE1AFCB00FF955D /* ResponseHandshake.swift in Sources */,
 				DE30AAF026CCF42700F015C5 /* QRCodeMatch.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -689,7 +705,7 @@
 					"@loader_path/Frameworks",
 					"$(SRCROOT)",
 				);
-				MARKETING_VERSION = 2.0.0-rc.1;
+				MARKETING_VERSION = "2.0.0-rc.1";
 				PRODUCT_BUNDLE_IDENTIFIER = com.armongate.MobilePassSDK;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
@@ -721,7 +737,7 @@
 					"@loader_path/Frameworks",
 					"$(SRCROOT)",
 				);
-				MARKETING_VERSION = 2.0.0-rc.1;
+				MARKETING_VERSION = "2.0.0-rc.1";
 				PRODUCT_BUNDLE_IDENTIFIER = com.armongate.MobilePassSDK;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;

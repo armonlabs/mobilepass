@@ -36,7 +36,17 @@ class ConfigurationManager: NSObject {
     // MARK: Public Methods
     
     public func setConfig(data: Configuration) -> Void {
+        let configChanged = mCurrentConfig?.memberId != data.memberId || 
+                           mCurrentConfig?.apiKey != data.apiKey
+        
         mCurrentConfig = data
+        
+        // Clear cached keys if member or API key changed
+        if configChanged {
+            HandshakeManager.shared.clearCache()
+            EphemeralKeyManager.shared.clear()
+            LogManager.shared.info(message: "Configuration changed, cleared authentication caches")
+        }
     }
     
     public func setReady() throws -> Void {
@@ -70,6 +80,10 @@ class ConfigurationManager: NSObject {
     
     public func getBarcodeId() -> String {
         return mCurrentConfig?.barcode ?? ""
+    }
+    
+    public func getApiKey() -> String? {
+        return mCurrentConfig?.apiKey
     }
     
     public func getPrivateKey() -> String {

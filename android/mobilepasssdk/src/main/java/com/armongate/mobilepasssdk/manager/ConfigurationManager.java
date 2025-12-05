@@ -61,10 +61,23 @@ public class ConfigurationManager {
     }
 
     public void setConfig(Context context, Configuration data) {
+        // Detect configuration changes that require cache clearing
+        boolean memberIdChanged = (mCurrentConfig != null && data != null && 
+                                    !data.memberId.equals(mCurrentConfig.memberId));
+        boolean apiKeyChanged = (mCurrentConfig != null && data != null && 
+                                 !data.apiKey.equals(mCurrentConfig.apiKey));
+        
         // Note: Service provider detection removed (no longer needed without UI dependencies)
         mCurrentServiceProvider = "Unknown";
         mCurrentContext = context;
         mCurrentConfig = data;
+        
+        // Clear security caches if memberId or apiKey changed
+        if (memberIdChanged || apiKeyChanged) {
+            LogManager.getInstance().info("Configuration changed (memberId or apiKey), clearing security caches");
+            HandshakeManager.getInstance().clearCache();
+            EphemeralKeyManager.getInstance().clear();
+        }
     }
 
     public void setReady() {
@@ -101,6 +114,10 @@ public class ConfigurationManager {
 
     public String getMemberId() {
         return mCurrentConfig != null ? mCurrentConfig.memberId : "";
+    }
+
+    public String getApiKey() {
+        return mCurrentConfig != null ? mCurrentConfig.apiKey : "";
     }
 
     public String getBarcodeId() { return mCurrentConfig != null ? mCurrentConfig.barcode : ""; }

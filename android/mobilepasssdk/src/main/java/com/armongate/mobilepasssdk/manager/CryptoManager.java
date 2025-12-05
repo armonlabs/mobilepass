@@ -33,7 +33,9 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
 
 import javax.crypto.KeyAgreement;
+import javax.crypto.Mac;
 import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 
 public class CryptoManager {
 
@@ -192,6 +194,75 @@ public class CryptoManager {
             LogManager.getInstance().debug("Encryption of data with IV failed with error: " + ex.getLocalizedMessage());
             return new byte[0];
         }
+    }
+
+    // HMAC and Hashing Functions for Request Signing
+
+    /**
+     * Computes HMAC-SHA256 signature
+     * @param key The secret key as byte array
+     * @param message The message to sign as byte array
+     * @return HMAC-SHA256 signature as byte array, or null on error
+     */
+    public byte[] hmacSHA256(byte[] key, byte[] message) {
+        try {
+            Mac mac = Mac.getInstance("HmacSHA256");
+            SecretKeySpec secretKeySpec = new SecretKeySpec(key, "HmacSHA256");
+            mac.init(secretKeySpec);
+            return mac.doFinal(message);
+        } catch (Exception ex) {
+            LogManager.getInstance().error("HMAC-SHA256 failed: " + ex.getLocalizedMessage(), null);
+            return null;
+        }
+    }
+
+    /**
+     * Computes HMAC-SHA256 signature with string inputs
+     * @param key The secret key as byte array
+     * @param message The message to sign as string (UTF-8 encoded)
+     * @return HMAC-SHA256 signature as byte array, or null on error
+     */
+    public byte[] hmacSHA256(byte[] key, String message) {
+        try {
+            return hmacSHA256(key, message.getBytes("UTF-8"));
+        } catch (Exception ex) {
+            LogManager.getInstance().error("HMAC-SHA256 (string) failed: " + ex.getLocalizedMessage(), null);
+            return null;
+        }
+    }
+
+    /**
+     * Computes SHA-256 hash and returns hex string
+     * @param input The input string to hash (UTF-8 encoded)
+     * @return Lowercase hex string of SHA-256 hash
+     */
+    public String sha256Hex(String input) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(input.getBytes("UTF-8"));
+            
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : hash) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) hexString.append('0');
+                hexString.append(hex);
+            }
+            return hexString.toString();
+        } catch (Exception ex) {
+            LogManager.getInstance().error("SHA-256 hex failed: " + ex.getLocalizedMessage(), null);
+            return "";
+        }
+    }
+
+    /**
+     * Generates cryptographically secure random bytes
+     * @param count Number of random bytes to generate
+     * @return Random byte array of specified length
+     */
+    public byte[] generateRandomBytes(int count) {
+        byte[] bytes = new byte[count];
+        new SecureRandom().nextBytes(bytes);
+        return bytes;
     }
 
 }

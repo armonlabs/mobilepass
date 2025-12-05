@@ -39,7 +39,7 @@ public class MainActivity extends AppCompatActivity implements MobilePassDelegat
             Toast.makeText(this, "Üye numaranızı giriniz", Toast.LENGTH_SHORT).show();
         } else {
             Configuration config = new Configuration();
-            config.apiKey = "AB456C12998AA";
+            config.apiKey = "38fa3d202700f52dfb2842c7360574ec833a4e090b65852e4115ad4f811afe91";
             config.memberId = txtMemberId.getText().toString();
             config.serverUrl = "https://macfit.armon.com.tr:3443";
             config.language = "tr";

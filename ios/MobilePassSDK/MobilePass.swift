@@ -30,8 +30,30 @@ public class MobilePass {
             
             // Initialize Bluetooth manager early so state is ready when QR code is scanned
             BluetoothManager.shared.setReady()
+            
+            // Perform initial handshake for request signing
+            performInitialHandshake()
         } catch {
             LogManager.shared.error(message: "Set configuration with given parameters failed!")
+        }
+    }
+    
+    /**
+     * Performs initial handshake to establish ephemeral key for request signing
+     * This is called during SDK initialization
+     */
+    private func performInitialHandshake() {
+        LogManager.shared.debug(message: "Performing initial handshake")
+        
+        HandshakeManager.shared.performHandshake { result in
+            switch result {
+            case .success():
+                LogManager.shared.info(message: "Initial handshake completed successfully")
+                
+            case .failure(let error):
+                LogManager.shared.warn(message: "Initial handshake failed: \(error.localizedDescription)")
+                LogManager.shared.warn(message: "Handshake will be retried automatically before next API request")
+            }
         }
     }
     
