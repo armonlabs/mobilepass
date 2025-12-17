@@ -110,7 +110,7 @@ public class BaseService {
         }
         
         try {
-            String sdkVersion = "2.0.1-rc.1";
+            String sdkVersion = "2.0.1-rc.2";
             String osVersion = "Android " + android.os.Build.VERSION.RELEASE + " (API " + android.os.Build.VERSION.SDK_INT + ")";
             
             // Safe access to potentially null device info with fallbacks
@@ -132,7 +132,7 @@ public class BaseService {
         } catch (Exception ex) {
             // Fallback to basic User-Agent if any exception occurs
             LogManager.getInstance().warn("Failed to build detailed User-Agent, using fallback", null);
-            cachedUserAgent = "MobilePassSDK/2.0.1-rc.1";
+            cachedUserAgent = "MobilePassSDK/2.0.1-rc.2";
         }
         
         return cachedUserAgent;
@@ -260,7 +260,7 @@ public class BaseService {
                 params.put("Cache-Control", "no-cache");
                 params.put("User-Agent", getUserAgent());
                 params.put("accept-language", ConfigurationManager.getInstance().getLanguage());
-                params.put("mobilepass-version", "2.0.1-rc.1");
+                params.put("mobilepass-version", "2.0.1-rc.2");
                 params.put("mobilepass-memberid", ConfigurationManager.getInstance().getMemberId());
                 params.put("mobilepass-barcode", ConfigurationManager.getInstance().getBarcodeId());
                 params.put("mobilepass-config", ConfigurationManager.getInstance().getConfigurationLog());
