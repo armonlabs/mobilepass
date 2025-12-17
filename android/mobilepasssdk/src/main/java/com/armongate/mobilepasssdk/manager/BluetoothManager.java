@@ -658,9 +658,18 @@ public class BluetoothManager {
     }
 
     private byte[] generateMacfitChallengeResponse(byte[] challenge, byte[] iv, DeviceConnectionInfo deviceInfo) throws Exception {
+        // Determine if installationId exists
+        String installationId = ConfigurationManager.getInstance().getInstallationId();
+        boolean hasInstallationId = installationId != null && !installationId.isEmpty();
+
+        // Create header data with dynamic challenge type
+        byte challengeHeader = hasInstallationId ?
+                PacketHeaders.PROTOCOLV2.AUTH.MACFIT_CHALLENGE_WITH_INSTALLATIONID :
+                PacketHeaders.PROTOCOLV2.AUTH.MACFIT_CHALLENGE;
+
         byte[] resultData = new byte[] {
                 PacketHeaders.PROTOCOLV2.GROUP.AUTH,
-                PacketHeaders.PROTOCOLV2.AUTH.MACFIT_CHALLENGE,
+                challengeHeader,
                 PacketHeaders.PLATFORM_ANDROID
         };
 
@@ -668,6 +677,14 @@ public class BluetoothManager {
         resultData = ArrayUtil.concat(resultData, ConverterUtil.stringToData(currentConfiguration.dataUserBarcode, 16, (byte)0, false));
         resultData = ArrayUtil.concat(resultData, ConverterUtil.hexStringToBytes(currentConfiguration.qrCodeId.replace("-", "")));
         resultData = ArrayUtil.add(resultData, currentConfiguration.language == Language.EN ? (byte)0x01 : (byte)0x00);
+
+        // Add installationId with length prefix if available
+        if (hasInstallationId) {
+            byte[] installationIdBytes = installationId.getBytes();
+            byte length = (byte) installationIdBytes.length;
+            resultData = ArrayUtil.add(resultData, length);
+            resultData = ArrayUtil.concat(resultData, installationIdBytes);
+        }
 
         byte[] encryptedResponse = CryptoManager.getInstance().encryptBytesWithIV(ConfigurationManager.getInstance().getPrivateKey(), deviceInfo.publicKey, challenge, iv);
         resultData = ArrayUtil.concat(resultData, encryptedResponse);

@@ -8,11 +8,18 @@
 import Foundation
 
 struct RequestAccess: Codable {
-    var q: String;
-    
+    var qrCodeId:       String;
+    var installationId: String?;
+        
     var dictionary: [String: Any] {
-        return [
-            "q": q
+        var dict: [String: Any] = [
+            "q": qrCodeId
         ]
+        
+        if let installationId = installationId {
+            dict["i"] = installationId
+        }
+        
+        return dict
     }
 }

@@ -24,6 +24,11 @@ public class Configuration {
     public @Nullable String barcode;
 
     /**
+     * Application installation id for identifying unique installation
+     */
+    public @Nullable String installationId;
+
+    /**
      * URL of server that communicate between SDK, devices and validation server
      */
     public String serverUrl;
@@ -77,6 +82,7 @@ public class Configuration {
         return "ApiKey: " + (this.apiKey != null ? this.apiKey.substring(0, Math.min(8, this.apiKey.length())) + "..." : "Empty")
                 + " | MemberId: " + (this.memberId != null ? this.memberId : "Empty")
                 + " | Barcode: " + (this.barcode != null ? this.barcode : "Empty")
+                + " | InstallationId: " + (this.installationId != null ? this.installationId : "Empty")
                 + " | ContinueWithoutBLE: " + (this.continueWithoutBLE != null ? this.continueWithoutBLE : ConfigurationDefaults.ContinueWithoutBLE)
                 + " | BLEConnectionTimeout: " + (this.connectionTimeout != null ? this.connectionTimeout : ConfigurationDefaults.BLEConnectionTimeout);
     }

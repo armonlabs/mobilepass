@@ -17,8 +17,9 @@ public struct BLEScanConfiguration {
     var deviceNumber:       Int
     var relayNumber:        Int
     var language:           Language
+    var installationId:     String?
     
-    init(devices: [ResponseAccessPointListTerminal], userId: String, userBarcode: String, qrCodeId: String, direction: Int, hardwareId: String, relayNumber: Int, language: Language) {
+    init(devices: [ResponseAccessPointListTerminal], userId: String, userBarcode: String, qrCodeId: String, direction: Int, hardwareId: String, relayNumber: Int, language: Language, installationId: String?) {
         self.dataUserId         = userId
         self.dataUserBarcode    = userBarcode
         self.dataDirection      = direction
@@ -27,6 +28,7 @@ public struct BLEScanConfiguration {
         self.deviceNumber       = 0 // Default value
         self.relayNumber        = relayNumber
         self.language           = language
+        self.installationId     = installationId
         
         self.deviceList = [:]
         

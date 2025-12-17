@@ -16,6 +16,9 @@ public class Configuration {
     
     /** Barcode id that received with Benefits System */
     var barcode: String?
+
+    /** Application installation id for identifying unique installation */
+    var installationId: String?
     
     /** URL of server that communicate between SDK, devices and validation server */
     var serverUrl: String
@@ -49,27 +52,29 @@ public class Configuration {
                 memberId: String,
                 serverUrl: String,
                 barcode: String?,
+                installationId: String?,
                 language: String?,
                 connectionTimeout: Int?,
                 locationVerificationTimeout: Int?,
                 continueWithoutBLE: Bool?,
                 logLevel: LogLevel? = nil,
                 delegate: MobilePassDelegate? = nil) {
-        self.apiKey                 = apiKey
-        self.memberId               = memberId
-        self.barcode                = barcode
-        self.serverUrl              = serverUrl
-        self.language               = language
-        self.connectionTimeout      = connectionTimeout
-        self.locationVerificationTimeout = locationVerificationTimeout
-        self.continueWithoutBLE     = continueWithoutBLE
-        self.logLevel               = logLevel
-        self.delegate               = delegate
+        self.apiKey                         = apiKey
+        self.memberId                       = memberId
+        self.barcode                        = barcode
+        self.installationId                 = installationId
+        self.serverUrl                      = serverUrl
+        self.language                       = language
+        self.connectionTimeout              = connectionTimeout
+        self.locationVerificationTimeout    = locationVerificationTimeout
+        self.continueWithoutBLE             = continueWithoutBLE
+        self.logLevel                       = logLevel
+        self.delegate                       = delegate
     }
     
     public func getLog() -> String {
         let maskedKey = apiKey.count > 8 ? String(apiKey.prefix(8)) + "..." : apiKey
-        return "ApiKey: \(maskedKey) | MemberId: \(memberId ) | Barcode: \(barcode ?? "-") | ContinueWithoutBLE: \((continueWithoutBLE ?? ConfigurationDefaults.ContinueWithoutBLE).description) | BLEConnectionTimeout: \((connectionTimeout ?? ConfigurationDefaults.BLEConnectionTimeout).description)";
+        return "ApiKey: \(maskedKey) | MemberId: \(memberId ) | Barcode: \(barcode ?? "-") | InstallationId: \(installationId ?? "-") | ContinueWithoutBLE: \((continueWithoutBLE ?? ConfigurationDefaults.ContinueWithoutBLE).description) | BLEConnectionTimeout: \((connectionTimeout ?? ConfigurationDefaults.BLEConnectionTimeout).description)";
     }
     
 }

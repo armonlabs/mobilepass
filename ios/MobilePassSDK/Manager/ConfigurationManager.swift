@@ -81,6 +81,10 @@ class ConfigurationManager: NSObject {
     public func getBarcodeId() -> String {
         return mCurrentConfig?.barcode ?? ""
     }
+
+    public func getInstallationId() -> String? {
+        return mCurrentConfig?.installationId
+    }
     
     public func getApiKey() -> String? {
         return mCurrentConfig?.apiKey

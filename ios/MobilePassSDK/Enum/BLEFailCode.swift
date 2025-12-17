@@ -8,14 +8,15 @@
 import Foundation
 
 public enum BLEFailCode: Int, Codable {
-    case UserNotFound           = 20
-    case ChallengeFailed        = 21
-    case PerfectGymNetworkError = 30
-    case PerfectGymNoAccess     = 31
-    case BenefitsNetworkError   = 40
-    case BenefitsInvalidCard    = 41
-    case BenefitsLimitReached   = 42
-    case BenefitsNotAllowedClub = 43
-    case BenefitsUnknownError   = 44
-    case DeviceError            = 90
+    case UserNotFound                   = 20
+    case ChallengeFailed                = 21
+    case PerfectGymNetworkError         = 30
+    case PerfectGymNoAccess             = 31
+    case BenefitsNetworkError           = 40
+    case BenefitsInvalidCard            = 41
+    case BenefitsLimitReached           = 42
+    case BenefitsNotAllowedClub         = 43
+    case BenefitsUnknownError           = 44
+    case BenefitsInvalidInstallationId  = 45
+    case DeviceError                    = 90
 }

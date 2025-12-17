@@ -536,7 +536,8 @@ class PassFlowManager: NSObject {
             direction: direction.rawValue,
             hardwareId: hardwareId,
             relayNumber: relayNumber,
-            language: Language(rawValue: language) ?? .TR
+            language: Language(rawValue: language) ?? .TR,
+            installationId: ConfigurationManager.shared.getInstallationId()
         )
         
         // Create unique session ID for this scan to prevent race conditions
@@ -673,7 +674,7 @@ class PassFlowManager: NSObject {
             return
         }
         
-        let request = RequestAccess(q: qrCodeId)
+        let request = RequestAccess(qrCodeId: qrCodeId, installationId: ConfigurationManager.shared.getInstallationId())
         
         LogManager.shared.info(message: "Executing remote access")
         AccessPointService().remoteOpen(request: request) { result in
