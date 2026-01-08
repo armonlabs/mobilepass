@@ -41,7 +41,7 @@ class LogManager: NSObject {
     }
     
     func getVersion() -> String {
-        return "1.7.6"
+        return "1.8.0"
     }
     
     // MARK: Private Functions
