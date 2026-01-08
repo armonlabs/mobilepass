@@ -536,8 +536,7 @@ class PassFlowManager: NSObject {
             direction: direction.rawValue,
             hardwareId: hardwareId,
             relayNumber: relayNumber,
-            language: Language(rawValue: language) ?? .TR,
-            installationId: ConfigurationManager.shared.getInstallationId()
+            language: Language(rawValue: language) ?? .TR
         )
         
         // Create unique session ID for this scan to prevent race conditions

@@ -707,6 +707,9 @@ public class PassFlowManager {
         RequestAccess request = new RequestAccess();
         request.q = activeQRCodeContent.qrCode.i;
 
+        if (ConfigurationManager.getInstance().getInstallationId() != null && !ConfigurationManager.getInstance().getInstallationId().isEmpty()) {
+            request.i = ConfigurationManager.getInstance().getInstallationId();
+        }
 
         new AccessPointService().remoteOpen(request, new BaseService.ServiceResultListener() {
             @Override

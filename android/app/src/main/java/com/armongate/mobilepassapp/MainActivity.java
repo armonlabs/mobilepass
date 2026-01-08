@@ -41,6 +41,8 @@ public class MainActivity extends AppCompatActivity implements MobilePassDelegat
             Configuration config = new Configuration();
             config.apiKey = "38fa3d202700f52dfb2842c7360574ec833a4e090b65852e4115ad4f811afe91";
             config.memberId = txtMemberId.getText().toString();
+            config.barcode = "3453645646546";
+            config.installationId = "aaa5555bbbbbaaa444";
             config.serverUrl = "https://macfit.armon.com.tr:3443";
             config.language = "tr";
             config.continueWithoutBLE = true;
@@ -55,31 +57,33 @@ public class MainActivity extends AppCompatActivity implements MobilePassDelegat
     }
 
     // Yeni metod: Mock QR kod tarama
-    public void onButtonScanQRClicked(View v) {
+    public void onButtonScanQREntranceClicked(View v) {
         if (sdk == null) {
             Toast.makeText(this, "⚠️ Önce 'Başlat' butonuna basın!", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Test için örnek QR kod verisi
-        // Geçerli format: https://(app|sdk).armongate.com/(rq|bd|o|s)/[UUID](/[0-2])?
-        // String mockQRCode = "https://app.armongate.com/o/2e9324d4-698a-44d7-8b37-ec862d924754";
-        
-        // Test için invalid format örnekleri:
-        // String mockQRCode = "TEST_QR_CODE_DATA_123456"; // → INVALID_FORMAT
-        // String mockQRCode = "http://app.armongate.com/o/uuid"; // → INVALID_FORMAT (http)
-        // String mockQRCode = "https://app.armongate.com/rq/invalid-uuid"; // → INVALID_FORMAT (UUID format)
         String qrEntrance = "https://app.armongate.com/o/0c6fceca-7a86-486c-a7c2-4e9e45a96b25";
+        processQR(qrEntrance);
+    }
+
+    public void onButtonScanQRExitClicked(View v) {
+        if (sdk == null) {
+            Toast.makeText(this, "⚠️ Önce 'Başlat' butonuna basın!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         String qrExit = "https://app.armongate.com/o/42261949-645f-4705-8ad7-dfaebea5c20f";
+        processQR(qrExit);
+    }
 
-        String currentQR = qrExit;
-
-        Log.i("MobilePass", "MAIN - Simulating QR scan: " + currentQR);
+    private void processQR(String qrCode) {
+        Log.i("MobilePass", "MAIN - Simulating QR scan: " + qrCode);
         Toast.makeText(this, "📷 QR Kod taranıyor...", Toast.LENGTH_SHORT).show();
-        
+
         // SDK'ya QR kodu gönder
-        QRCodeProcessResult result = sdk.processQRCode(currentQR);
-        
+        QRCodeProcessResult result = sdk.processQRCode(qrCode);
+
         // Sonucu kontrol et
         if (result.isValid()) {
             Log.i("MobilePass", "MAIN - QR kod geçerli! SDK akışı başlatıldı.");
