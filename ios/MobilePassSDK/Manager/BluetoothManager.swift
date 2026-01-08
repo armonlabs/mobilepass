@@ -594,10 +594,18 @@ extension BluetoothManager {
     }
     
     private func generateMacfitChallengeResponse(challengeType: Int, iv: Data, deviceInfo: DeviceConnectionInfo) throws -> Data {
-        // MARK: Create header data
+        // MARK: Determine if installationId exists
+        let installationId = ConfigurationManager.shared.getInstallationId()
+        let hasInstallationId = installationId != nil && !installationId!.isEmpty
+
+        // MARK: Create header data with dynamic challenge type
+        let challengeHeader = hasInstallationId ? 
+            UInt8(PacketHeaders.PROTOCOLV2.AUTH.MACFIT_CHALLENGE_WITH_INSTALLATIONID) :
+            UInt8(PacketHeaders.PROTOCOLV2.AUTH.MACFIT_CHALLENGE)
+
         let resultDataArray: [UInt8] = [
             UInt8(PacketHeaders.PROTOCOLV2.GROUP.AUTH),
-            UInt8(PacketHeaders.PROTOCOLV2.AUTH.MACFIT_CHALLENGE),
+            challengeHeader,
             UInt8(PacketHeaders.PLATFORM_IOS)
         ]
         
@@ -616,6 +624,14 @@ extension BluetoothManager {
         resultData.append(currentConfiguration!.dataUserBarcode.data(using: .utf8)!.fill(length: 16, repeating: 0x00))
         resultData.append(currentConfiguration!.qrCodeId.replacingOccurrences(of: "-", with: "").data(using: .hexadecimal)!)
         resultData.append(currentConfiguration!.language == Language.EN ? Data([0x01]) : Data([0x00]))
+
+        // MARK: Add installationId with length prefix if available
+        if hasInstallationId {
+            let installationIdData = installationId!.data(using: .utf8)!
+            let length = UInt8(installationIdData.count)
+            resultData.append(Data([length]))
+            resultData.append(installationIdData)
+        }
         
         resultData.append(encryptedResponse)
         

@@ -193,6 +193,10 @@ public class StatusFragment extends Fragment implements BluetoothManagerDelegate
         RequestAccess request = new RequestAccess();
         request.q = mQRCode.i;
 
+        if (ConfigurationManager.getInstance().getInstallationId() != null && !ConfigurationManager.getInstance().getInstallationId().isEmpty()) {
+            request.i = ConfigurationManager.getInstance().getInstallationId();
+        }
+
         PassFlowManager.getInstance().addToStates(PassFlowStateCode.RUN_ACTION_REMOTE_ACCESS_REQUEST);
 
         new AccessPointService().remoteOpen(request, new BaseService.ServiceResultListener() {

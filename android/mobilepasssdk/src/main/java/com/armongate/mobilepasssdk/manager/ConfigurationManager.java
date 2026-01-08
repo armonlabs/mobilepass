@@ -107,6 +107,8 @@ public class ConfigurationManager {
 
     public String getBarcodeId() { return mCurrentConfig != null ? mCurrentConfig.barcode : ""; }
 
+    public String getInstallationId() { return mCurrentConfig != null ? mCurrentConfig.installationId : null; }
+
     public String getPrivateKey() {
         return mCurrentKeyPair != null ? mCurrentKeyPair.privateKey : "";
     }

@@ -15,6 +15,9 @@ public class Configuration {
     /** Barcode id that received with Benefits System */
     var barcode: String?
     
+    /** Application installation id for identifying unique installation */
+    var installationId: String?
+
     /** URL of server that communicate between SDK, devices and validation server */
     var serverUrl: String
     
@@ -60,6 +63,7 @@ public class Configuration {
     public init(memberId: String,
                 serverUrl: String,
                 barcode: String?,
+                installationId: String?,
                 token: String?,
                 language: String?,
                 qrCodeMessage: String?,
@@ -73,6 +77,7 @@ public class Configuration {
                 delegate: MobilePassDelegate? = nil) {
         self.memberId               = memberId
         self.barcode                = barcode
+        self.installationId         = installationId
         self.serverUrl              = serverUrl
         self.qrCodeMessage          = qrCodeMessage
         self.token                  = token
@@ -88,7 +93,7 @@ public class Configuration {
     }
     
     public func getLog() -> String {
-        return "MemberId: \(memberId ) | Barcode: \(barcode ?? "-") | WaitBLEEnabled: \((waitBLEEnabled ?? ConfigurationDefaults.WaitBleEnabled).description) | BLEConnectionTimeout: \((connectionTimeout ?? ConfigurationDefaults.BLEConnectionTimeout).description) | AutoCloseTimeout: \(autoCloseTimeout != nil ? autoCloseTimeout!.description : "null") | AllowMockLocation: \((allowMockLocation ?? ConfigurationDefaults.AllowMockLocation).description)";
+        return "MemberId: \(memberId ) | Barcode: \(barcode ?? "-") | InstallationId: \(installationId ?? "-") | WaitBLEEnabled: \((waitBLEEnabled ?? ConfigurationDefaults.WaitBleEnabled).description) | BLEConnectionTimeout: \((connectionTimeout ?? ConfigurationDefaults.BLEConnectionTimeout).description) | AutoCloseTimeout: \(autoCloseTimeout != nil ? autoCloseTimeout!.description : "null") | AllowMockLocation: \((allowMockLocation ?? ConfigurationDefaults.AllowMockLocation).description)";
     }
     
 }

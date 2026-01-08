@@ -18,6 +18,11 @@ public class Configuration {
     public @Nullable String barcode;
 
     /**
+     * Application installation id for identifying unique installation
+     */
+    public @Nullable String installationId;
+
+    /**
      * URL of server that communicate between SDK, devices and validation server
      */
     public String serverUrl;
@@ -92,6 +97,7 @@ public class Configuration {
     public String getLog() {
         return "MemberId: " + (this.memberId != null ? this.memberId : "Empty")
                 + " | Barcode: " + (this.barcode != null ? this.barcode : "Empty")
+                + " | InstallationId: " + (this.installationId != null ? this.installationId : "Empty")
                 + " | WaitBLEEnabled: " + (this.waitBLEEnabled != null ? this.waitBLEEnabled : ConfigurationDefaults.WaitBleEnabled)
                 + " | BLEConnectionTimeout: " + (this.connectionTimeout != null ? this.connectionTimeout : ConfigurationDefaults.BLEConnectionTimeout)
                 + " | AutoCloseTimeout: " + (this.autoCloseTimeout != null ? this.autoCloseTimeout : "null")

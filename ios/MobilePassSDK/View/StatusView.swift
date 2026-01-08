@@ -170,7 +170,7 @@ struct StatusView: View {
         
         PassFlowManager.shared.addToStates(state: PassFlowStateCode.RUN_ACTION_REMOTE_ACCESS_REQUEST)
            
-        AccessPointService().remoteOpen(request: RequestAccess(q: currentConfig!.qrCode!.i!), completion: { (result) in
+        AccessPointService().remoteOpen(request: RequestAccess(qrCodeId: currentConfig!.qrCode!.i!, installationId: ConfigurationManager.shared.getInstallationId()), completion: { (result) in
             DispatchQueue.main.async {
                 if case .success(_) = result {
                     PassFlowManager.shared.addToStates(state: PassFlowStateCode.RUN_ACTION_REMOTE_ACCESS_REQUEST_SUCCEED)
