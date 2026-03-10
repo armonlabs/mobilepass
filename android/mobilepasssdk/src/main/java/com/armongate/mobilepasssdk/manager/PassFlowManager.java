@@ -81,6 +81,18 @@ public class PassFlowManager {
         lastBleEnabledState = BluetoothManager.getInstance().getCurrentState().enabled;
     }
 
+    private Integer getActiveDirection() {
+        return activeQRCodeContent != null && activeQRCodeContent.qrCode != null ? activeQRCodeContent.qrCode.d : null;
+    }
+
+    private String getActiveClubId() {
+        return activeQRCodeContent != null && activeQRCodeContent.clubInfo != null ? activeQRCodeContent.clubInfo.i : null;
+    }
+
+    private String getActiveClubName() {
+        return activeQRCodeContent != null && activeQRCodeContent.clubInfo != null ? activeQRCodeContent.clubInfo.n : null;
+    }
+
     // Public Functions
     public void clearStates() {
         states.clear();
@@ -107,9 +119,9 @@ public class PassFlowManager {
         
         // Capture current state info before clearing
         boolean isRemote = actionCurrent != null && actionCurrent.equals("remoteAccess");
-        Integer direction = activeQRCodeContent != null && activeQRCodeContent.qrCode != null ? activeQRCodeContent.qrCode.d : null;
-        String clubId = activeQRCodeContent != null && activeQRCodeContent.clubInfo != null ? activeQRCodeContent.clubInfo.i : null;
-        String clubName = activeQRCodeContent != null && activeQRCodeContent.clubInfo != null ? activeQRCodeContent.clubInfo.n : null;
+        Integer direction = getActiveDirection();
+        String clubId = getActiveClubId();
+        String clubName = getActiveClubName();
         
         // Clear all states and reset flow (also cancels timeouts)
         clearStates();
@@ -122,7 +134,9 @@ public class PassFlowManager {
             clubId,
             clubName
         );
-    }    private void cancelBLETimeout() {
+    }
+
+    private void cancelBLETimeout() {
         if (bleTimeoutHandler != null) {
             bleTimeoutHandler.removeCallbacksAndMessages(null);
             bleTimeoutHandler = null;
@@ -418,9 +432,9 @@ public class PassFlowManager {
                                 DelegateManager.getInstance().onCompleted(
                                     PassFlowResultCode.FAIL_LOCATION_TIMEOUT,
                                     true,
-                                    activeQRCodeContent.qrCode != null ? activeQRCodeContent.qrCode.d : null,
-                                    activeQRCodeContent.clubInfo != null ? activeQRCodeContent.clubInfo.i : null,
-                                    activeQRCodeContent.clubInfo != null ? activeQRCodeContent.clubInfo.n : null
+                                    getActiveDirection(),
+                                    getActiveClubId(),
+                                    getActiveClubName()
                                 );
                             }
                         }
@@ -456,9 +470,9 @@ public class PassFlowManager {
             DelegateManager.getInstance().onCompleted(
                     PassFlowResultCode.FAIL,
                     false,
-                    activeQRCodeContent != null && activeQRCodeContent.qrCode != null ? activeQRCodeContent.qrCode.d : null,
-                    activeQRCodeContent != null && activeQRCodeContent.clubInfo != null ? activeQRCodeContent.clubInfo.i : null,
-                    activeQRCodeContent != null && activeQRCodeContent.clubInfo != null ? activeQRCodeContent.clubInfo.n : null
+                    getActiveDirection(),
+                    getActiveClubId(),
+                    getActiveClubName()
             );
             return;
         }
@@ -516,9 +530,9 @@ public class PassFlowManager {
                 DelegateManager.getInstance().onCompleted(
                     PassFlowResultCode.FAIL_PERMISSION,
                     false,
-                    activeQRCodeContent != null && activeQRCodeContent.qrCode != null ? activeQRCodeContent.qrCode.d : null,
-                    activeQRCodeContent != null && activeQRCodeContent.clubInfo != null ? activeQRCodeContent.clubInfo.i : null,
-                    activeQRCodeContent != null && activeQRCodeContent.clubInfo != null ? activeQRCodeContent.clubInfo.n : null
+                    getActiveDirection(),
+                    getActiveClubId(),
+                    getActiveClubName()
                 );
             }
             return;
@@ -595,9 +609,9 @@ public class PassFlowManager {
                         DelegateManager.getInstance().onCompleted(
                                 PassFlowResultCode.SUCCESS,
                                 false,
-                                activeQRCodeContent.qrCode != null ? activeQRCodeContent.qrCode.d : null,
-                                activeQRCodeContent.clubInfo != null ? activeQRCodeContent.clubInfo.i : null,
-                                activeQRCodeContent.clubInfo != null ? activeQRCodeContent.clubInfo.n : null
+                            getActiveDirection(),
+                            getActiveClubId(),
+                            getActiveClubName()
                         );
                         break;
 
@@ -697,9 +711,9 @@ public class PassFlowManager {
             DelegateManager.getInstance().onCompleted(
                     PassFlowResultCode.FAIL,
                     true,
-                    activeQRCodeContent != null && activeQRCodeContent.qrCode != null ? activeQRCodeContent.qrCode.d : null,
-                    activeQRCodeContent != null && activeQRCodeContent.clubInfo != null ? activeQRCodeContent.clubInfo.i : null,
-                    activeQRCodeContent != null && activeQRCodeContent.clubInfo != null ? activeQRCodeContent.clubInfo.n : null
+                    getActiveDirection(),
+                    getActiveClubId(),
+                    getActiveClubName()
             );
             return;
         }
@@ -724,9 +738,9 @@ public class PassFlowManager {
                 DelegateManager.getInstance().onCompleted(
                         PassFlowResultCode.SUCCESS,
                         true,
-                        activeQRCodeContent.qrCode != null ? activeQRCodeContent.qrCode.d : null,
-                        activeQRCodeContent.clubInfo != null ? activeQRCodeContent.clubInfo.i : null,
-                        activeQRCodeContent.clubInfo != null ? activeQRCodeContent.clubInfo.n : null
+                    getActiveDirection(),
+                    getActiveClubId(),
+                    getActiveClubName()
                 );
             }
 
@@ -773,9 +787,9 @@ public class PassFlowManager {
                     DelegateManager.getInstance().onCompleted(
                             PassFlowResultCode.FAIL,
                             true,
-                            activeQRCodeContent != null && activeQRCodeContent.qrCode != null ? activeQRCodeContent.qrCode.d : null,
-                            activeQRCodeContent != null && activeQRCodeContent.clubInfo != null ? activeQRCodeContent.clubInfo.i : null,
-                            activeQRCodeContent != null && activeQRCodeContent.clubInfo != null ? activeQRCodeContent.clubInfo.n : null,
+                            getActiveDirection(),
+                            getActiveClubId(),
+                            getActiveClubName(),
                             message
                     );
                 }
@@ -801,9 +815,9 @@ public class PassFlowManager {
             DelegateManager.getInstance().onCompleted(
                     PassFlowResultCode.FAIL,
                     actionCurrent.equals("remoteAccess"),
-                    activeQRCodeContent != null && activeQRCodeContent.qrCode != null ? activeQRCodeContent.qrCode.d : null,
-                    activeQRCodeContent != null && activeQRCodeContent.clubInfo != null ? activeQRCodeContent.clubInfo.i : null,
-                    activeQRCodeContent != null && activeQRCodeContent.clubInfo != null ? activeQRCodeContent.clubInfo.n : null,
+                    getActiveDirection(),
+                    getActiveClubId(),
+                    getActiveClubName(),
                     lastFailureMessage
             );
         }
