@@ -61,11 +61,23 @@ public class ConfigurationManager {
     }
 
     public void setConfig(Context context, Configuration data) {
-        DeviceManager deviceInfo = new DeviceManager();
-
-        mCurrentServiceProvider = deviceInfo.getServiceProvider(context);
+        // Detect configuration changes that require cache clearing
+        boolean memberIdChanged = (mCurrentConfig != null && data != null && 
+                                    !data.memberId.equals(mCurrentConfig.memberId));
+        boolean apiKeyChanged = (mCurrentConfig != null && data != null && 
+                                 !data.apiKey.equals(mCurrentConfig.apiKey));
+        
+        // Note: Service provider detection removed (no longer needed without UI dependencies)
+        mCurrentServiceProvider = "Unknown";
         mCurrentContext = context;
         mCurrentConfig = data;
+        
+        // Clear security caches if memberId or apiKey changed
+        if (memberIdChanged || apiKeyChanged) {
+            LogManager.getInstance().info("Configuration changed (memberId or apiKey), clearing security caches");
+            HandshakeManager.getInstance().clearCache();
+            EphemeralKeyManager.getInstance().clear();
+        }
     }
 
     public void setReady() {
@@ -74,9 +86,8 @@ public class ConfigurationManager {
         sendUserData();
     }
 
-    public void setToken(String token, String language) {
+    public void setToken(String language) {
         if (mCurrentConfig != null) {
-            mCurrentConfig.token = token;
             mCurrentConfig.language = language;
 
             sendUserData();
@@ -105,7 +116,13 @@ public class ConfigurationManager {
         return mCurrentConfig != null ? mCurrentConfig.memberId : "";
     }
 
+    public String getApiKey() {
+        return mCurrentConfig != null ? mCurrentConfig.apiKey : "";
+    }
+
     public String getBarcodeId() { return mCurrentConfig != null ? mCurrentConfig.barcode : ""; }
+
+    public String getInstallationId() { return mCurrentConfig != null ? mCurrentConfig.installationId : null; }
 
     public String getPrivateKey() {
         return mCurrentKeyPair != null ? mCurrentKeyPair.privateKey : "";
@@ -121,44 +138,20 @@ public class ConfigurationManager {
         return serverUrl;
     }
 
-    public String getMessageQRCode() {
-        return mCurrentConfig != null && mCurrentConfig.qrCodeMessage != null ? mCurrentConfig.qrCodeMessage : "";
-    }
-
-    public String getToken() {
-        return mCurrentConfig != null && mCurrentConfig.token != null ? mCurrentConfig.token : "unknown";
-    }
-
     public String getLanguage() {
         return mCurrentConfig != null && mCurrentConfig.language != null ? mCurrentConfig.language : ConfigurationDefaults.Language;
-    }
-
-    public boolean allowMockLocation() {
-        return mCurrentConfig != null && mCurrentConfig.allowMockLocation != null ? mCurrentConfig.allowMockLocation : ConfigurationDefaults.AllowMockLocation;
     }
 
     public Integer getBLEConnectionTimeout() {
         return mCurrentConfig != null && mCurrentConfig.connectionTimeout != null ? mCurrentConfig.connectionTimeout : ConfigurationDefaults.BLEConnectionTimeout;
     }
 
-    public Integer autoCloseTimeout() {
-        return mCurrentConfig != null ? mCurrentConfig.autoCloseTimeout : null;
+    public Integer getLocationVerificationTimeout() {
+        return mCurrentConfig != null && mCurrentConfig.locationVerificationTimeout != null ? mCurrentConfig.locationVerificationTimeout : ConfigurationDefaults.LocationVerificationTimeout;
     }
 
-    public Boolean waitForBLEEnabled() {
-        return mCurrentConfig != null && mCurrentConfig.waitBLEEnabled != null ? mCurrentConfig.waitBLEEnabled : ConfigurationDefaults.WaitBleEnabled;
-    }
-
-    public Boolean closeWhenInvalidQRCode() {
-        return mCurrentConfig != null && mCurrentConfig.closeWhenInvalidQRCode != null ? mCurrentConfig.closeWhenInvalidQRCode : ConfigurationDefaults.CloseWhenInvalidQRCode;
-    }
-
-    public boolean usingHMS() {
-        return mCurrentServiceProvider != null && mCurrentServiceProvider.equals(ServiceProviders.Huawei);
-    }
-
-    public String getServiceProvider() {
-        return mCurrentServiceProvider;
+    public Boolean continueWithoutBLE() {
+        return mCurrentConfig != null && mCurrentConfig.continueWithoutBLE != null ? mCurrentConfig.continueWithoutBLE : ConfigurationDefaults.ContinueWithoutBLE;
     }
 
     public int getLogLevel() {
@@ -167,10 +160,6 @@ public class ConfigurationManager {
 
     public String getConfigurationLog() {
         return mCurrentConfig != null ? mCurrentConfig.getLog() : "";
-    }
-
-    public int getQRCodesCount() {
-        return mQRCodes.size();
     }
 
     public void refreshList() {
@@ -202,8 +191,7 @@ public class ConfigurationManager {
             mAccessPoints = new HashMap<>();
         }
 
-        DelegateManager.getInstance().onQRCodesDataLoaded(mQRCodes.size());
-
+        // Note: Stored data is loaded silently. Sync status is reported via onQRCodesSyncStateChanged()
         LogManager.getInstance().info("Stored QR Code list is ready to use, total: " + mQRCodes.size());
         LogManager.getInstance().info("Stored Access Point list is ready to use, total: " + mAccessPoints.size());
     }

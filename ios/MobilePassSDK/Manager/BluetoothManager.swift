@@ -36,6 +36,9 @@ class BluetoothManager: NSObject {
     private var isConnectionActive:         Bool = false
     private var lastConnectionTime:         Dictionary<String, TimeInterval> = [:]
     
+    // Session tracking for preventing stale callbacks
+    private var activeScanSessionId:        UUID? = nil
+    
     
     // MARK: Public Functions
     
@@ -58,6 +61,10 @@ class BluetoothManager: NSObject {
         
         // Check current central manager instance
         setReady()
+        
+        // Create new scan session ID - iOS specific session tracking
+        // This prevents stale callbacks from previous scans
+        activeScanSessionId = UUID()
         
         // Ready for new scanning
         clearFieldsForNewScan(configuration: configuration)
@@ -104,7 +111,7 @@ class BluetoothManager: NSObject {
                     LogManager.shared.info(message: "Bluetooth authorization status is allowed, but state is not powered on yet")
                 }
             } else if (authorizationStatus != .notDetermined) {
-                DelegateManager.shared.needPermission(type: NeedPermissionType.NEED_PERMISSION_BLUETOOTH, showMessage: true)
+                DelegateManager.shared.needPermission(type: NeedPermissionType.NEED_PERMISSION_BLUETOOTH)
             }
         } else {
             // Fallback on earlier versions
@@ -118,6 +125,9 @@ class BluetoothManager: NSObject {
             LogManager.shared.info(message: "Bluetooth scanner has not been initialized yet, so stop request has been ignored")
             return
         }
+        
+        // Invalidate scan session - prevents stale callbacks
+        activeScanSessionId = nil
         
         self.currentCentralManager.stopScan()
         LogManager.shared.info(message: "Bluetooth scanner has been stopped successfully")
@@ -217,7 +227,13 @@ class BluetoothManager: NSObject {
     
     private func onConnectionStateChanged(identifier: String, connectionState: DeviceConnectionStatus.ConnectionState, failReason: Int? = nil, failMessage: String? = nil) {
         LogManager.shared.info(message: "Bluetooth connection state changed for \(identifier) > \(self.getDescriptionOfConnectionState(state: connectionState))");
-        self.onConnectionStateChanged?(DeviceConnectionStatus(id: identifier, state: connectionState, failReason: failReason, failMessage: failMessage))
+        
+        // Check if delegate exists - PassFlowManager may have cleared it after processing terminal state
+        if self.onConnectionStateChanged != nil {
+            self.onConnectionStateChanged?(DeviceConnectionStatus(id: identifier, state: connectionState, failReason: failReason, failMessage: failMessage))
+        } else {
+            LogManager.shared.debug(message: "Delegate is nil - callback skipped (likely already processed by PassFlowManager)")
+        }
         
         if (connectionState == .failed) {
             LogManager.shared.warn(message: "Bluetooth connection to device has failed", code: LogCodes.BLUETOOTH_CONNECTION_FAILED);
@@ -297,6 +313,13 @@ extension BluetoothManager: CBCentralManagerDelegate {
     }
     
     func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
+        // iOS specific: Guard against stale scan session callbacks
+        // CBCentralManager delegate persists across scans
+        guard activeScanSessionId != nil else {
+            LogManager.shared.debug(message: "Ignoring peripheral discovery - no active scan session")
+            return
+        }
+        
         if (self.isConnectionActive) {
             return
         }
@@ -339,6 +362,14 @@ extension BluetoothManager: CBCentralManagerDelegate {
     }
     
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
+        // iOS specific: Verify this connection belongs to active scan session
+        guard activeScanSessionId != nil else {
+            LogManager.shared.debug(message: "Ignoring connection - no active scan session")
+            // Disconnect stale connection from previous scan
+            central.cancelPeripheralConnection(peripheral)
+            return
+        }
+        
         LogManager.shared.info(message: "Connected to \(peripheral.getName())")
         
         // Set event listener
@@ -356,10 +387,22 @@ extension BluetoothManager: CBCentralManagerDelegate {
             LogManager.shared.info(message: "Disconnected from \(peripheral.getName())")
         }
         
-        onConnectionStateChanged(identifier: peripheral.identifier.uuidString, connectionState: .disconnected)
+        // Note: Disconnect can happen after scan session ends - that's normal
+        // Only notify if we have an active session
+        if activeScanSessionId != nil {
+            onConnectionStateChanged(identifier: peripheral.identifier.uuidString, connectionState: .disconnected)
+        } else {
+            LogManager.shared.debug(message: "Disconnect notification ignored - no active session")
+        }
     }
     
     func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
+        // iOS specific: Only process if we have active scan session
+        guard activeScanSessionId != nil else {
+            LogManager.shared.debug(message: "Ignoring connection failure - no active scan session")
+            return
+        }
+        
         if (error != nil) {
             LogManager.shared.error(message: "Failed to connect, error: \(error!.localizedDescription)", code: LogCodes.BLUETOOTH_CONNECTION_FLOW)
         } else {
@@ -375,6 +418,12 @@ extension BluetoothManager: CBCentralManagerDelegate {
 extension BluetoothManager: CBPeripheralDelegate {
     
     func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
+        // iOS specific: Verify we're in active scan session
+        guard activeScanSessionId != nil else {
+            LogManager.shared.debug(message: "Ignoring service discovery - no active scan session")
+            return
+        }
+        
         if (error != nil) {
             LogManager.shared.error(message: "Error on discovering peripheral services: \(error!.localizedDescription)", code: LogCodes.BLUETOOTH_CONNECTION_FLOW)
             onConnectionStateChanged(identifier: peripheral.identifier.uuidString, connectionState: .failed)
@@ -397,6 +446,12 @@ extension BluetoothManager: CBPeripheralDelegate {
     }
     
     func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
+        // iOS specific: Verify we're in active scan session
+        guard activeScanSessionId != nil else {
+            LogManager.shared.debug(message: "Ignoring characteristic discovery - no active scan session")
+            return
+        }
+        
         if (error != nil) {
             LogManager.shared.error(message: "Error on discovering service characteristics: \(error!.localizedDescription)", code: LogCodes.BLUETOOTH_CONNECTION_FLOW)
             onConnectionStateChanged(identifier: peripheral.identifier.uuidString, connectionState: .failed)
@@ -432,6 +487,12 @@ extension BluetoothManager: CBPeripheralDelegate {
     }
     
     func peripheral(_ peripheral: CBPeripheral, didWriteValueFor characteristic: CBCharacteristic, error: Error?) {
+        // iOS specific: Verify we're in active scan session
+        guard activeScanSessionId != nil else {
+            LogManager.shared.debug(message: "Ignoring write response - no active scan session")
+            return
+        }
+        
         if (error != nil) {
             LogManager.shared.error(message: "Sending value to characteristic failed, error: \(error!.localizedDescription)")
             onConnectionStateChanged(identifier: peripheral.identifier.uuidString, connectionState: .failed)
@@ -441,6 +502,12 @@ extension BluetoothManager: CBPeripheralDelegate {
     }
     
     func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
+        // iOS specific: Verify we're in active scan session
+        guard activeScanSessionId != nil else {
+            LogManager.shared.debug(message: "Ignoring value update - no active scan session")
+            return
+        }
+        
         if (error != nil) {
             LogManager.shared.error(message: "Receiving value from characteristic failed, error: \(error!.localizedDescription)")
             onConnectionStateChanged(identifier: peripheral.identifier.uuidString, connectionState: .failed)
@@ -509,6 +576,12 @@ extension BluetoothManager: CBPeripheralDelegate {
     }
     
     func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
+        // iOS specific: Verify we're in active scan session
+        guard activeScanSessionId != nil else {
+            LogManager.shared.debug(message: "Ignoring notification state change - no active scan session")
+            return
+        }
+        
         if (error != nil) {
             LogManager.shared.error(message: "Error on changing notification state for characteristic (\(characteristic.uuid.uuidString)) > \(error!.localizedDescription)")
             onConnectionStateChanged(identifier: peripheral.identifier.uuidString, connectionState: .failed)
@@ -553,7 +626,8 @@ extension BluetoothManager {
             LogManager.shared.info(message: "Disconnect from device after successful process of passing!")
             self.disconnect()
         } else {
-            onConnectionStateChanged(identifier: deviceIdentifier, connectionState: .failed, failReason: result.data!["reason"] as? Int, failMessage: result.data!["message"] as? String)
+            let failMessage = result.data!["message"] as? String
+            onConnectionStateChanged(identifier: deviceIdentifier, connectionState: .failed, failReason: result.data!["reason"] as? Int, failMessage: failMessage)
         }
     }
     
@@ -594,10 +668,18 @@ extension BluetoothManager {
     }
     
     private func generateMacfitChallengeResponse(challengeType: Int, iv: Data, deviceInfo: DeviceConnectionInfo) throws -> Data {
-        // MARK: Create header data
+        // MARK: Determine if installationId exists
+        let installationId = ConfigurationManager.shared.getInstallationId()
+        let hasInstallationId = installationId != nil && !installationId!.isEmpty
+        
+        // MARK: Create header data with dynamic challenge type
+        let challengeHeader = hasInstallationId ? 
+            UInt8(PacketHeaders.PROTOCOLV2.AUTH.MACFIT_CHALLENGE_WITH_INSTALLATIONID) :
+            UInt8(PacketHeaders.PROTOCOLV2.AUTH.MACFIT_CHALLENGE)
+        
         let resultDataArray: [UInt8] = [
             UInt8(PacketHeaders.PROTOCOLV2.GROUP.AUTH),
-            UInt8(PacketHeaders.PROTOCOLV2.AUTH.MACFIT_CHALLENGE),
+            challengeHeader,
             UInt8(PacketHeaders.PLATFORM_IOS)
         ]
         
@@ -616,6 +698,14 @@ extension BluetoothManager {
         resultData.append(currentConfiguration!.dataUserBarcode.data(using: .utf8)!.fill(length: 16, repeating: 0x00))
         resultData.append(currentConfiguration!.qrCodeId.replacingOccurrences(of: "-", with: "").data(using: .hexadecimal)!)
         resultData.append(currentConfiguration!.language == Language.EN ? Data([0x01]) : Data([0x00]))
+        
+        // MARK: Add installationId with length prefix if available
+        if hasInstallationId {
+            let installationIdData = installationId!.data(using: .utf8)!
+            let length = UInt8(installationIdData.count)
+            resultData.append(Data([length]))
+            resultData.append(installationIdData)
+        }
         
         resultData.append(encryptedResponse)
         

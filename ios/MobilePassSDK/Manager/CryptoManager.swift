@@ -141,6 +141,55 @@ class CryptoManager: NSObject {
             return Data(bytes: outBytes, count: outLength)
     }
     
+    func hmacSHA256(key: Data, message: String) -> Data {
+        guard let messageData = message.data(using: .utf8) else {
+            LogManager.shared.error(message: "Failed to convert message to data for HMAC")
+            return Data()
+        }
+        return hmacSHA256(key: key, data: messageData)
+    }
+    
+    func hmacSHA256(key: Data, data: Data) -> Data {
+        var hmac = [UInt8](repeating: 0, count: Int(CC_SHA256_DIGEST_LENGTH))
+        key.withUnsafeBytes { keyBytes in
+            data.withUnsafeBytes { dataBytes in
+                CCHmac(CCHmacAlgorithm(kCCHmacAlgSHA256),
+                       keyBytes.baseAddress, key.count,
+                       dataBytes.baseAddress, data.count,
+                       &hmac)
+            }
+        }
+        return Data(hmac)
+    }
+    
+    func generateRandomBytes(count: Int) -> Data {
+        var bytes = [UInt8](repeating: 0, count: count)
+        let status = SecRandomCopyBytes(kSecRandomDefault, count, &bytes)
+        if status != errSecSuccess {
+            LogManager.shared.error(message: "Failed to generate random bytes")
+            for i in 0..<count {
+                bytes[i] = UInt8.random(in: 0...255)
+            }
+        }
+        return Data(bytes)
+    }
+    
+    func sha256Hex(_ data: Data) -> String {
+        var hash = [UInt8](repeating: 0, count: Int(CC_SHA256_DIGEST_LENGTH))
+        data.withUnsafeBytes {
+            _ = CC_SHA256($0.baseAddress, CC_LONG(data.count), &hash)
+        }
+        return hash.map { String(format: "%02x", $0) }.joined()
+    }
+    
+    func sha256Hex(_ string: String) -> String {
+        guard let data = string.data(using: .utf8) else {
+            LogManager.shared.error(message: "Failed to convert string to UTF-8 data for hashing")
+            return ""
+        }
+        return sha256Hex(data)
+    }
+    
     // MARK: Private Functions
     
     private func getKeyRef(keyBase64: String, keyOptions: Dictionary<String, Any>) -> SecKey? {

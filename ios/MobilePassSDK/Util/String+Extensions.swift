@@ -34,7 +34,7 @@ extension String {
     
     func localized(withComment comment: String = "") -> String {
         if #available(iOS 13.0, *) {
-            return Bundle(for: PassFlowController.self).localizedString(forKey: self, value: "\(self)", table: nil)
+            return Bundle(for: ConfigurationManager.self).localizedString(forKey: self, value: "\(self)", table: nil)
         } else {
             return ""
         }
@@ -42,13 +42,13 @@ extension String {
     
     func localized(_ language: String) -> String {
         if #available(iOS 13.0, *) {
-            let path = Bundle(for: PassFlowController.self).path(forResource: language, ofType: "lproj")
+            let path = Bundle(for: ConfigurationManager.self).path(forResource: language, ofType: "lproj")
         
             let bundle: Bundle
             if let path = path {
-                bundle = Bundle(path: path) ?? Bundle(for: PassFlowController.self)
+                bundle = Bundle(path: path) ?? Bundle(for: ConfigurationManager.self)
             } else {
-                bundle = Bundle(for: PassFlowController.self)
+                bundle = Bundle(for: ConfigurationManager.self)
             }
             
             return bundle.localizedString(forKey: self, value: "\(self)", table: nil)

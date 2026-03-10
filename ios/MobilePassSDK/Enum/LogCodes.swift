@@ -22,7 +22,6 @@ enum LogCodes: Int, Codable {
     case BLUETOOTH_CONNECTION_DUPLICATE                 = 2304;
     case BLUETOOTH_COMMUNICATION_FLOW                   = 2401;
     case NEED_PERMISSION_DEFAULT                        = 3100;
-    case NEED_PERMISSION_CAMERA                         = 3101;
     case NEED_PERMISSION_LOCATION                       = 3102;
     case NEED_PERMISSION_BLUETOOTH                      = 3103;
     case NEED_ENABLE_BLE                                = 3104;
@@ -51,6 +50,4 @@ enum LogCodes: Int, Codable {
     case PASSFLOW_ACTION_EMPTY_HARDWAREID               = 4506;
     case PASSFLOW_ACTION_EMPTY_RELAYNUMBER              = 4507;
     case PASSFLOW_ACTION_INVALID_NEXT_ACTION            = 4508;
-    case UI_SWITCH_CAMERA_FAILED                        = 5101;
-    case UI_CAMERA_SETUP_FAILED                         = 5102;
 }

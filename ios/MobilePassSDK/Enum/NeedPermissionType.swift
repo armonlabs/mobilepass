@@ -8,9 +8,6 @@
 import Foundation
 
 public enum NeedPermissionType: Int, Codable {
-    case NEED_PERMISSION_CAMERA         = 1
-    case NEED_PERMISSION_LOCATION       = 2
-    case NEED_PERMISSION_BLUETOOTH      = 3
-    case NEED_ENABLE_BLE                = 4
-    case NEED_ENABLE_LOCATION_SERVICES  = 5
+    case NEED_PERMISSION_BLUETOOTH      = 1
+    case NEED_ENABLE_BLE                = 2
 }

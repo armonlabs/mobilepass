@@ -1,12 +1,9 @@
 package com.armongate.mobilepasssdk;
 
-import android.content.ComponentName;
 import android.content.Context;
-import android.content.Intent;
 
 import androidx.annotation.Nullable;
 
-import com.armongate.mobilepasssdk.activity.PassFlowActivity;
 import com.armongate.mobilepasssdk.delegate.MobilePassDelegate;
 import com.armongate.mobilepasssdk.manager.BluetoothManager;
 import com.armongate.mobilepasssdk.manager.ConfigurationManager;
@@ -14,6 +11,7 @@ import com.armongate.mobilepasssdk.manager.DelegateManager;
 import com.armongate.mobilepasssdk.manager.LogManager;
 import com.armongate.mobilepasssdk.manager.PassFlowManager;
 import com.armongate.mobilepasssdk.model.Configuration;
+import com.armongate.mobilepasssdk.model.QRCodeProcessResult;
 import com.armongate.mobilepasssdk.service.BaseService;
 
 public class MobilePass {
@@ -38,8 +36,7 @@ public class MobilePass {
 
         ConfigurationManager.getInstance().setConfig(context, config);
 
-        LogManager.getInstance().info("SDK Version: 1.7.6");
-        LogManager.getInstance().info("Service Provider: " + ConfigurationManager.getInstance().getServiceProvider());
+        LogManager.getInstance().info("SDK Version: 2.0.0");
         LogManager.getInstance().info("Configuration: " + config.getLog());
 
         BaseService.getInstance().setContext(context);
@@ -55,35 +52,48 @@ public class MobilePass {
     }
 
     /**
-     * To set or update OAuth token of user and language code
-     *
-     * @param token OAuth token value of current user's session to validate
-     * @param language Language code to localize texts [tr | en]
+     * Sync QR code list from server
      */
-    public void updateToken(String token, String language) {
-        ConfigurationManager.getInstance().setToken(token, language);
+    public void sync() {
+        ConfigurationManager.getInstance().refreshList();
     }
 
     /**
-     * Starts qr code reading session and related flow
+     * Process scanned QR code data from external scanner
+     *
+     * @param data QR code string data scanned by the app
+     * @return QRCodeProcessResult with validation status and error type
      */
-    public void triggerQRCodeRead() {
+    public QRCodeProcessResult processQRCode(String data) {
         PassFlowManager.getInstance().clearStates();
-
-        DelegateManager.getInstance().clearFlowFlags();
         BluetoothManager.getInstance().setReady();
 
-        showActivity();
+        return PassFlowManager.getInstance().processQRCode(data);
     }
 
-    private void showActivity() {
-        Class<PassFlowActivity> cls = PassFlowActivity.class;
+    /**
+     * Confirm that location has been verified by the app
+     *
+     * Call this after your app:
+     * 1. Receives onLocationVerificationRequired callback with lat/lon/radius
+     * 2. Gets user's location and calculates distance
+     * 3. Shows UI and user confirms or is within radius
+     *
+     * The app is responsible for all location verification logic and UI
+     * SDK will automatically continue the pass flow after this call
+     */
+    public void confirmLocationVerified() {
+        PassFlowManager.getInstance().confirmLocationVerified();
+    }
 
-        Intent intent = new Intent(mActiveContext, cls);
-        final ComponentName component = new ComponentName(mActiveContext, cls);
-        intent.setComponent(component);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        mActiveContext.startActivity(intent);
+    /**
+     * Cancel current flow
+     */
+    /**
+     * Cancel current flow - stops any active Bluetooth operations and resets state
+     */
+    public void cancelFlow() {
+        PassFlowManager.getInstance().cancelFlow();
     }
 
 }

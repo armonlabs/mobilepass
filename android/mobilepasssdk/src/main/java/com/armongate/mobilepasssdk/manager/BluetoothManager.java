@@ -22,8 +22,6 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.ParcelUuid;
 
-import androidx.core.app.ActivityCompat;
-
 import com.armongate.mobilepasssdk.constant.DataTypes;
 import com.armongate.mobilepasssdk.constant.LogCodes;
 import com.armongate.mobilepasssdk.constant.PacketHeaders;
@@ -93,6 +91,7 @@ public class BluetoothManager {
     private final Queue<DeviceWriteItem>    mWriteQueue     = new LinkedList<>();
     private boolean                         mWriteActive    = false;
     private int                             mReconnectCount = 0;
+    private boolean                         shouldAllowReconnect = true; // Prevent reconnect after manual disconnect
 
     // Public Functions
 
@@ -104,9 +103,37 @@ public class BluetoothManager {
         }
     }
 
+    private boolean needsBluetoothPermission() {
+        return missingScanPermission() || missingConnectPermission();
+    }
+
+    private boolean missingScanPermission() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+                && this.activeContext != null
+                && this.activeContext.checkSelfPermission(Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED;
+    }
+
+    private boolean missingConnectPermission() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+                && this.activeContext != null
+                && this.activeContext.checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED;
+    }
+
+    private boolean needsLocationPermission() {
+        // Location permission is required for BLE scanning on Android 11 (API 30) and below
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S && this.activeContext != null) {
+            boolean hasFineLocation = this.activeContext.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+            boolean hasCoarseLocation = this.activeContext.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+            return !hasFineLocation && !hasCoarseLocation;
+        }
+        return false;
+    }
+
     public DeviceCapability getCurrentState() {
         if (this.bluetoothState == null) {
-            this.bluetoothState = new DeviceCapability(false, false, false);
+            this.bluetoothState = new DeviceCapability(false, false, needsBluetoothPermission());
+        } else {
+            this.bluetoothState.needAuthorize = needsBluetoothPermission() || needsLocationPermission();
         }
 
         return this.bluetoothState;
@@ -141,7 +168,7 @@ public class BluetoothManager {
             return;
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && ActivityCompat.checkSelfPermission(this.activeContext, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && this.activeContext.checkSelfPermission(Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
             LogManager.getInstance().info("Missing BluetoothScan permission!");
             return;
         }
@@ -200,7 +227,7 @@ public class BluetoothManager {
             return;
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && ActivityCompat.checkSelfPermission(this.activeContext, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && this.activeContext.checkSelfPermission(Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
             LogManager.getInstance().info("Missing BluetoothScan permission!");
             return;
         }
@@ -211,6 +238,7 @@ public class BluetoothManager {
         }
 
         isScanningActive = false;
+        shouldAllowReconnect = false; // Prevent automatic reconnect after manual stop
 
         try {
             currentBluetoothScanner.stopScan(mPeripheralScanCallback);
@@ -235,7 +263,7 @@ public class BluetoothManager {
             return;
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && ActivityCompat.checkSelfPermission(this.activeContext, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && this.activeContext.checkSelfPermission(Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
             LogManager.getInstance().info("Missing BluetoothScan permission!");
             return;
         }
@@ -307,7 +335,11 @@ public class BluetoothManager {
 
     private void updateBLECapability(int state) {
         LogManager.getInstance().info("Bluetooth state changed. Supported: " + (this.currentBluetoothAdapter != null) + ", State: " + (state == BluetoothAdapter.STATE_ON ? "Enabled" : "Disabled"));
-        this.bluetoothState = new DeviceCapability(this.currentBluetoothAdapter != null, state == BluetoothAdapter.STATE_ON, false);
+        this.bluetoothState = new DeviceCapability(
+                this.currentBluetoothAdapter != null,
+                state == BluetoothAdapter.STATE_ON,
+                needsBluetoothPermission()
+        );
 
         if (delegate != null) {
             delegate.onBLEStateChanged(this.bluetoothState);
@@ -326,6 +358,10 @@ public class BluetoothManager {
 
         // Clear connection limit flags
         isConnectionActive = false;
+        
+        // Reset reconnection flags for new scan
+        mReconnectCount = 0;
+        shouldAllowReconnect = true; // Allow reconnect for connection errors during active scan
 
         LogManager.getInstance().debug("Related fields are cleared for new scanning session");
     }
@@ -366,7 +402,7 @@ public class BluetoothManager {
             return;
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && ActivityCompat.checkSelfPermission(this.activeContext, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && this.activeContext.checkSelfPermission(Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
             LogManager.getInstance().info("Missing BluetoothScan permission!");
             return;
         }
@@ -411,11 +447,20 @@ public class BluetoothManager {
             return;
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && ActivityCompat.checkSelfPermission(this.activeContext, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && this.activeContext.checkSelfPermission(Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
             LogManager.getInstance().info("Missing BluetoothScan permission!");
             return;
         }
 
+        // For FAILED state: disconnect BEFORE notifying delegate to prevent duplicate callbacks
+        // The disconnect() will trigger GATT callbacks that could send another FAILED event
+        boolean shouldDisconnect = (connectionState == DeviceConnectionStatus.ConnectionState.FAILED);
+        
+        if (shouldDisconnect) {
+            LogManager.getInstance().warn("Bluetooth connection to device has failed - disconnecting before delegate callback", LogCodes.BLUETOOTH_CONNECTION_FAILED);
+        }
+
+        // Check if delegate exists - PassFlowManager may have cleared it after processing terminal state
         if (delegate != null) {
             if (identifier != null) {
                 delegate.onConnectionStateChanged(new DeviceConnectionStatus(identifier, connectionState, failReason, failMessage));
@@ -423,11 +468,12 @@ public class BluetoothManager {
                 LogManager.getInstance().debug("Identifier is not provided to generate callback for listener about connection state");
             }
         } else {
-            LogManager.getInstance().debug("There is no listener exists to inform about connection state");
+            LogManager.getInstance().debug("Delegate is null - callback skipped (likely already processed by PassFlowManager)");
         }
 
-        if (connectionState == DeviceConnectionStatus.ConnectionState.FAILED) {
-            LogManager.getInstance().warn("Bluetooth connection to device has failed", LogCodes.BLUETOOTH_CONNECTION_FAILED);
+        // Disconnect AFTER delegate callback to avoid race condition
+        // Note: PassFlowManager will clear delegate after processing terminal states
+        if (shouldDisconnect) {
             disconnect();
         } else if (connectionState == DeviceConnectionStatus.ConnectionState.DISCONNECTED) {
             if (identifier != null) {
@@ -519,7 +565,7 @@ public class BluetoothManager {
             return;
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && ActivityCompat.checkSelfPermission(this.activeContext, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && this.activeContext.checkSelfPermission(Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
             LogManager.getInstance().info("Missing BluetoothScan permission!");
             return;
         }
@@ -577,11 +623,12 @@ public class BluetoothManager {
             LogManager.getInstance().info("Disconnecting from device after successful process of passing!");
             disconnect();
         } else {
+            String failMessage = result.data.containsKey("message") ? (String) result.data.get("message") : null;
             onConnectionStateChanged(
                     deviceIdentifier,
                     DeviceConnectionStatus.ConnectionState.FAILED,
                     result.data.containsKey("reason") ? (Integer) result.data.get("reason") : null,
-                    result.data.containsKey("message") ? (String) result.data.get("message") : null);
+                    failMessage);
         }
     }
 
@@ -611,9 +658,18 @@ public class BluetoothManager {
     }
 
     private byte[] generateMacfitChallengeResponse(byte[] challenge, byte[] iv, DeviceConnectionInfo deviceInfo) throws Exception {
+        // Determine if installationId exists
+        String installationId = ConfigurationManager.getInstance().getInstallationId();
+        boolean hasInstallationId = installationId != null && !installationId.isEmpty();
+
+        // Create header data with dynamic challenge type
+        byte challengeHeader = hasInstallationId ?
+                PacketHeaders.PROTOCOLV2.AUTH.MACFIT_CHALLENGE_WITH_INSTALLATIONID :
+                PacketHeaders.PROTOCOLV2.AUTH.MACFIT_CHALLENGE;
+
         byte[] resultData = new byte[] {
                 PacketHeaders.PROTOCOLV2.GROUP.AUTH,
-                PacketHeaders.PROTOCOLV2.AUTH.MACFIT_CHALLENGE,
+                challengeHeader,
                 PacketHeaders.PLATFORM_ANDROID
         };
 
@@ -621,6 +677,14 @@ public class BluetoothManager {
         resultData = ArrayUtil.concat(resultData, ConverterUtil.stringToData(currentConfiguration.dataUserBarcode, 16, (byte)0, false));
         resultData = ArrayUtil.concat(resultData, ConverterUtil.hexStringToBytes(currentConfiguration.qrCodeId.replace("-", "")));
         resultData = ArrayUtil.add(resultData, currentConfiguration.language == Language.EN ? (byte)0x01 : (byte)0x00);
+
+        // Add installationId with length prefix if available
+        if (hasInstallationId) {
+            byte[] installationIdBytes = installationId.getBytes();
+            byte length = (byte) installationIdBytes.length;
+            resultData = ArrayUtil.add(resultData, length);
+            resultData = ArrayUtil.concat(resultData, installationIdBytes);
+        }
 
         byte[] encryptedResponse = CryptoManager.getInstance().encryptBytesWithIV(ConfigurationManager.getInstance().getPrivateKey(), deviceInfo.publicKey, challenge, iv);
         resultData = ArrayUtil.concat(resultData, encryptedResponse);
@@ -769,7 +833,7 @@ public class BluetoothManager {
     {
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && ActivityCompat.checkSelfPermission(activeContext, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && activeContext.checkSelfPermission(Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
                 LogManager.getInstance().info("Missing BluetoothScan permission!");
                 super.onConnectionStateChange(gatt, status, newState);
                 return;
@@ -807,13 +871,16 @@ public class BluetoothManager {
                 mWriteActive = false;
                 mWriteQueue.clear();
 
-                if (status == 133 && mReconnectCount < 2) {
+                if (status == 133 && mReconnectCount < 2 && shouldAllowReconnect) {
                     LogManager.getInstance().info("Try reconnection to " + gatt.getDevice().getName());
 
                     isConnectionActive = false;
                     mReconnectCount++;
                     connectToDevice(gatt.getDevice().getAddress());
                 } else {
+                    if (status == 133 && !shouldAllowReconnect) {
+                        LogManager.getInstance().info("Reconnection blocked - manual disconnect requested");
+                    }
                     onConnectionStateChanged(gatt.getDevice().getAddress(), DeviceConnectionStatus.ConnectionState.DISCONNECTED);
                 }
             }
@@ -825,7 +892,7 @@ public class BluetoothManager {
         public void onMtuChanged(BluetoothGatt gatt, int mtu, int status) {
             super.onMtuChanged(gatt, mtu, status);
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && ActivityCompat.checkSelfPermission(activeContext, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && activeContext.checkSelfPermission(Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
                 LogManager.getInstance().info("Missing BluetoothScan permission!");
                 return;
             }

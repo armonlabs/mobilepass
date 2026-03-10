@@ -41,7 +41,7 @@ class LogManager: NSObject {
     }
     
     func getVersion() -> String {
-        return "1.7.6"
+        return "2.0.0"
     }
     
     // MARK: Private Functions
@@ -64,9 +64,9 @@ class LogManager: NSObject {
             break
         }
         
-        print("\(LOG_TAG) [\(Date().getFormattedDate(format: "HH:mm:ss:SSS"))] - \(prefix) | \(message)")
-        
+        // Apply log level filtering to both console and delegate
         if (level.rawValue >= ConfigurationManager.shared.getLogLevel()) {
+            print("\(LOG_TAG) [\(Date().getFormattedDate(format: "HH:mm:ss:SSS"))] - \(prefix) | \(message)")
             DelegateManager.shared.onLogItemCreated(log: LogItem(level: level.rawValue, code: code?.rawValue, message: message))
         }
     }

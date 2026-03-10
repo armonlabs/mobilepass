@@ -16,10 +16,11 @@ public class PacketHeaders {
         }
 
         interface AUTH {
-            byte PUBLICKEY_CHALLENGE    = 0x01;
-            byte CHALLENGE_RESULT       = 0x03;
-            byte DIRECTION_CHALLENGE    = 0x05;
-            byte MACFIT_CHALLENGE       = 0x06;
+            byte PUBLICKEY_CHALLENGE                    = 0x01;
+            byte CHALLENGE_RESULT                       = 0x03;
+            byte DIRECTION_CHALLENGE                    = 0x05;
+            byte MACFIT_CHALLENGE                       = 0x06;
+            byte MACFIT_CHALLENGE_WITH_INSTALLATIONID   = 0x07;
         }
 
         interface FAILURE_REASON {

@@ -3,35 +3,29 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.armongate.mobilepasssdk">
 
+    <!-- Location permissions -->
+    <!-- Required for: -->
+    <!-- 1. BLE scanning on Android 11 and below -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    
+    <!-- Internet permission for remote access API calls -->
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
-    <uses-permission android:name="android.permission.BLUETOOTH" />
-    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
+    
+    <!-- Bluetooth permissions for Android 12+ (API 31+) -->
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN"
+        android:usesPermissionFlags="neverForLocation"
+        tools:targetApi="s" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
-    <uses-permission android:name="android.permission.CAMERA" />
+    
+    <!-- Bluetooth permissions for Android 11 and below (API 30 and below) -->
+    <uses-permission android:name="android.permission.BLUETOOTH"
+        android:maxSdkVersion="30" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"
+        android:maxSdkVersion="30" />
 
     <application>
-        <activity
-            android:name=".activity.HuaweiQRCodeReaderActivity"
-            android:exported="false"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".activity.GoogleQRCodeReaderActivity"
-            android:exported="false"
-            android:theme="@style/MobilePassTheme"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".activity.PassFlowActivity"
-            android:screenOrientation="portrait"
-            android:theme="@style/MobilePassTheme" />
-
-        <meta-data
-            android:name="com.google.mlkit.vision.DEPENDENCIES"
-            android:value="barcode" />
-
-        <!-- <activity android:name="com.huawei.hms.hmsscankit.ScanKitActivity" /> -->
+        <!-- Headless SDK - No activities or UI components -->
     </application>
 
 </manifest>

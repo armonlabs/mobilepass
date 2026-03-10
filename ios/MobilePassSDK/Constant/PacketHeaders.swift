@@ -20,10 +20,11 @@ struct PacketHeaders {
             static let AUTH = 0x01
         }
         enum AUTH {
-            static let PUBLICKEY_CHALLENGE  = 0x01
-            static let CHALLENGE_RESULT     = 0x03
-            static let DIRECTION_CHALLENGE  = 0x05
-            static let MACFIT_CHALLENGE     = 0x06
+            static let PUBLICKEY_CHALLENGE                  = 0x01
+            static let CHALLENGE_RESULT                     = 0x03
+            static let DIRECTION_CHALLENGE                  = 0x05
+            static let MACFIT_CHALLENGE                     = 0x06
+            static let MACFIT_CHALLENGE_WITH_INSTALLATIONID = 0x07
         }
         enum FAILURE_REASON {
             static let NOACCESSRIGHT                = 0x01

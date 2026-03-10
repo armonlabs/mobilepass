@@ -6,19 +6,18 @@
 	android:layout_height="match_parent"
 	tools:context=".MainActivity">
 
-	<LinearLayout
+	<ScrollView
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
-		android:weightSum="5"
-		android:orientation="vertical">
+		android:fillViewport="true">
 
 		<LinearLayout
 			android:layout_width="match_parent"
-			android:layout_height="500px"
-			android:layout_marginLeft="20px"
-			android:layout_marginRight="20px"
-			android:foregroundGravity="center"
-			android:gravity="center"
+			android:layout_height="wrap_content"
+			android:layout_marginLeft="20dp"
+			android:layout_marginRight="20dp"
+			android:layout_marginTop="20dp"
+			android:layout_marginBottom="20dp"
 			android:orientation="vertical">
 
 			<TextView
@@ -42,7 +41,71 @@
 				android:onClick="onButtonStartClicked"
 				android:text="Başlat" />
 
+			<Button
+				android:id="@+id/armon_test_btnScanQR_entrance"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:layout_marginTop="16dp"
+				android:onClick="onButtonScanQREntranceClicked"
+				android:text="📷 QR Kod Tara (Giriş)"
+				android:backgroundTint="#4CAF50" />
+
+			<Button
+				android:id="@+id/armon_test_btnScanQR_exit"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:layout_marginTop="16dp"
+				android:onClick="onButtonScanQRExitClicked"
+				android:text="📷 QR Kod Tara (Çıkış)"
+				android:backgroundTint="#4CAF50" />
+
+			<Button
+				android:id="@+id/armon_test_btnConfirmLocation"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:layout_marginTop="8dp"
+				android:onClick="onButtonConfirmLocationClicked"
+				android:text="📍 Konum Doğrulandı"
+				android:backgroundTint="#2196F3" />
+
+			<Button
+				android:id="@+id/armon_test_btnSyncQRCodes"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:layout_marginTop="8dp"
+				android:onClick="onButtonSyncQRCodesClicked"
+				android:text="🔄 QR Listesi Güncelle"
+				android:backgroundTint="#FF9800" />
+
+			<Button
+				android:id="@+id/armon_test_btnRequestPermissions"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:layout_marginTop="8dp"
+				android:onClick="onButtonRequestPermissionsClicked"
+				android:text="📋 İzinleri İste"
+				android:backgroundTint="#9C27B0" />
+
+			<Button
+				android:id="@+id/armon_test_btnCancel"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:layout_marginTop="8dp"
+				android:onClick="onButtonCancelFlowClicked"
+				android:text="❌ İşlemi İptal Et"
+				android:backgroundTint="#F44336" />
+
+			<TextView
+				android:id="@+id/armon_test_txtHelp"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:layout_marginTop="24dp"
+				android:text="💡 Test: QR kod burada mock veri olarak gönderiliyor.\nGerçek uygulamada kamera entegrasyonu yapılmalı."
+				android:textSize="12sp"
+				android:textColor="#666666"
+				android:gravity="center" />
+
 		</LinearLayout>
-	</LinearLayout>
+	</ScrollView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
