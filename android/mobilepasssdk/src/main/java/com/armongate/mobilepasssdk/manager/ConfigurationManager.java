@@ -6,6 +6,7 @@ import android.os.Build;
 import com.armongate.mobilepasssdk.constant.ConfigurationDefaults;
 import com.armongate.mobilepasssdk.constant.LogCodes;
 import com.armongate.mobilepasssdk.constant.LogLevel;
+import com.armongate.mobilepasssdk.constant.PassFlowStateCode;
 import com.armongate.mobilepasssdk.constant.QRCodeListState;
 import com.armongate.mobilepasssdk.constant.ServiceProviders;
 import com.armongate.mobilepasssdk.constant.StorageKeys;
@@ -158,8 +159,31 @@ public class ConfigurationManager {
         return mCurrentConfig != null && mCurrentConfig.logLevel != null ? mCurrentConfig.logLevel : LogLevel.INFO;
     }
 
+    public int getQRCodesCount() {
+        return mQRCodes.size();
+    }
+
     public String getConfigurationLog() {
         return mCurrentConfig != null ? mCurrentConfig.getLog() : "";
+    }
+
+    public int getQRCodeListState() {
+        switch (DelegateManager.getInstance().getQRCodeListState()) {
+            case QRCodeListState.SYNCING:
+                return PassFlowStateCode.DATA_QRCODE_LIST_SYNCING;
+            case QRCodeListState.USING_STORED_DATA:
+                return PassFlowStateCode.DATA_QRCODE_LIST_USING_STORED_DATA;
+            case QRCodeListState.USING_STORED_DATA_AFTER_ERROR:
+                return PassFlowStateCode.DATA_QRCODE_LIST_USING_STORED_DATA_AFTER_ERROR;
+            case QRCodeListState.USING_SYNCED_DATA:
+                return PassFlowStateCode.DATA_QRCODE_LIST_USING_SYNCED_DATA;
+            default:
+                return PassFlowStateCode.DATA_QRCODE_LIST_INITIALIZING;
+        }
+    }
+
+    public boolean isMemberIdValid() {
+        return !this.getMemberId().isEmpty() && !this.getMemberId().equals("0");
     }
 
     public void refreshList() {
@@ -381,7 +405,7 @@ public class ConfigurationManager {
             LogManager.getInstance().info("Updated QR Code list is ready to use, total: " + mQRCodes.size() + ", version: " + ConfigurationDefaults.CurrentListVersion);
             LogManager.getInstance().info("Updated Access Point list is ready to use, total: " + mAccessPoints.size() + ", version: " + ConfigurationDefaults.CurrentListVersion);
 
-            if (mQRCodes.size() > 0) {
+            if (!mQRCodes.isEmpty()) {
                 LogManager.getInstance().info("Up to date qr code list will be used for passing flow");
             } else {
                 LogManager.getInstance().warn("There is no qr code that retrieved from server to continue passing flow", LogCodes.CONFIGURATION_SERVER_SYNC_LIST);
@@ -411,8 +435,8 @@ public class ConfigurationManager {
                     DelegateManager.getInstance().onQRCodesSyncFailed(statusCode);
 
                     LogManager.getInstance().error("Getting definition list of qr codes and access points has failed with status code " + statusCode, LogCodes.CONFIGURATION_SERVER_SYNC_LIST);
-                    LogManager.getInstance().warn(mQRCodes.size() > 0 ? "Stored qr code list will be used for passing flow" : "There is no qr code that stored before to continue passing flow", LogCodes.CONFIGURATION_SERVER_SYNC_LIST);
-                    DelegateManager.getInstance().onQRCodeListStateChanged(QRCodeListState.USING_STORED_DATA, mQRCodes.size());
+                    LogManager.getInstance().warn(!mQRCodes.isEmpty() ? "Stored qr code list will be used for passing flow" : "There is no qr code that stored before to continue passing flow", LogCodes.CONFIGURATION_SERVER_SYNC_LIST);
+                    DelegateManager.getInstance().onQRCodeListStateChanged(QRCodeListState.USING_STORED_DATA_AFTER_ERROR, mQRCodes.size());
                 }
             }
         });

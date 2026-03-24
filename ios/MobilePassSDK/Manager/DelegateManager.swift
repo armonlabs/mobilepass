@@ -161,7 +161,7 @@ class DelegateManager: NSObject {
                 } else {
                     self.mobilePassDelegate?.onQRCodesSyncStateChanged(
                         state: .syncCompleted(
-                        synced: state == .USING_SYNCED_DATA,
+                            synced: state == .USING_SYNCED_DATA,
                             count: count
                         )
                     )

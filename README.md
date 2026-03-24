@@ -243,10 +243,31 @@ Called when pass flow state changes.
 **State Codes:**
 
 ```
+Data States:
+- 1101: DATA_INVALID_MEMBER_ID
+    Member ID provided in configuration is invalid like zero
+
+- 1201: DATA_QRCODE_LIST_INITIALIZING
+    QR code list is being initialized for the first time; no cached data available yet
+
+- 1202: DATA_QRCODE_LIST_SYNCING
+    QR code list is actively syncing with the server to fetch the latest authorized codes
+
+- 1203: DATA_QRCODE_LIST_USING_STORED_DATA
+    Using previously cached QR code list; sync has not been performed yet in this session
+
+- 1204: DATA_QRCODE_LIST_USING_STORED_DATA_AFTER_ERROR
+    Sync failed; falling back to the last successfully cached QR code list
+
+- 1205: DATA_QRCODE_LIST_USING_SYNCED_DATA
+    Using freshly synced QR code list retrieved from the server
+
+
 QR Code States:
-- 1006: SCAN_QRCODE_INVALID_FORMAT
-- 1007: SCAN_QRCODE_NO_MATCH
-- 1008: SCAN_QRCODE_FOUND
+- 1006: QRCODE_INVALID_FORMAT
+- 1007: QRCODE_NO_MATCH
+- 1008: QRCODE_FOUND
+- 1009: QRCODE_CONTENT_INVALID
 
 Action Tracking:
 - 4102: PROCESS_ACTION_BLUETOOTH

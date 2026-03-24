@@ -8,9 +8,9 @@
 import Foundation
 
 enum QRCodeListState: Int, Codable {
-    case INITIALIZING       = 1
-    case SYNCING            = 2
-    case USING_STORED_DATA  = 3
-    case USING_SYNCED_DATA  = 4
-    case EMPTY              = 5
+    case INITIALIZING                   = 1
+    case SYNCING                        = 2
+    case USING_STORED_DATA              = 3
+    case USING_STORED_DATA_AFTER_ERROR  = 4
+    case USING_SYNCED_DATA              = 5
 }

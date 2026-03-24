@@ -3,8 +3,6 @@ package com.armongate.mobilepasssdk.manager;
 import android.os.Handler;
 import android.os.Looper;
 
-import androidx.annotation.Nullable;
-
 import com.armongate.mobilepasssdk.constant.NeedPermissionType;
 import com.armongate.mobilepasssdk.constant.PassFlowResultCode;
 import com.armongate.mobilepasssdk.constant.PassFlowStateCode;
@@ -172,11 +170,11 @@ public class PassFlowManager {
 
     public void addToStates(Integer state, String data) {
         // Prevent duplicate SCAN_QRCODE_NO_MATCH states
-            if (state == PassFlowStateCode.SCAN_QRCODE_NO_MATCH) {
+            if (state == PassFlowStateCode.QRCODE_NO_MATCH) {
                 boolean alreadyAdded = false;
 
                 for (PassFlowState stateItem : this.states) {
-                    if (stateItem.getState() == PassFlowStateCode.SCAN_QRCODE_NO_MATCH) {
+                    if (stateItem.getState() == PassFlowStateCode.QRCODE_NO_MATCH) {
                         alreadyAdded = true;
                         break;
                     }
@@ -211,9 +209,16 @@ public class PassFlowManager {
     public QRCodeProcessResult processQRCode(String data) {
         LogManager.getInstance().info("Processing QR code: " + data);
 
+        // 0. Add current states
+        if (!ConfigurationManager.getInstance().isMemberIdValid()) {
+            addToStates(PassFlowStateCode.DATA_INVALID_MEMBER_ID, ConfigurationManager.getInstance().getMemberId());
+        }
+
+        addToStates(ConfigurationManager.getInstance().getQRCodeListState(), "QR Codes Count: " + ConfigurationManager.getInstance().getQRCodesCount());
+
         // 1. Check format - basic validation
         if (data == null || data.isEmpty()) {
-            addToStates(PassFlowStateCode.SCAN_QRCODE_INVALID_FORMAT, "Empty QR code");
+            addToStates(PassFlowStateCode.QRCODE_INVALID_FORMAT, "Empty QR code");
             LogManager.getInstance().warn("QR code data is empty", null);
             
             // Complete flow with failure
@@ -228,7 +233,7 @@ public class PassFlowManager {
         java.util.regex.Matcher matcher = regex.matcher(data);
 
         if (!matcher.matches()) {
-            addToStates(PassFlowStateCode.SCAN_QRCODE_INVALID_FORMAT, data);
+            addToStates(PassFlowStateCode.QRCODE_INVALID_FORMAT, data);
             LogManager.getInstance().warn("QR code has invalid format: " + data, null);
             
             // Complete flow with failure
@@ -249,8 +254,8 @@ public class PassFlowManager {
         QRCodeContent content = ConfigurationManager.getInstance().getQRCodeContent(qrCodeContent);
 
         if (content == null) {
-            addToStates(PassFlowStateCode.SCAN_QRCODE_NO_MATCH, qrCodeContent);
-            LogManager.getInstance().warn("QR code not found in authorized list", PassFlowStateCode.SCAN_QRCODE_NO_MATCH);
+            addToStates(PassFlowStateCode.QRCODE_NO_MATCH, qrCodeContent);
+            LogManager.getInstance().warn("QR code not found in authorized list", PassFlowStateCode.QRCODE_NO_MATCH);
             
             // Complete flow with failure
             DelegateManager.getInstance().onCompleted(PassFlowResultCode.FAIL, false, null, null, null);
@@ -260,6 +265,7 @@ public class PassFlowManager {
         
         // 5. Validate QR code content structure
         if (!content.valid) {
+            addToStates(PassFlowStateCode.QRCODE_CONTENT_INVALID, qrCodeContent);
             LogManager.getInstance().warn("QR code configuration is invalid or incomplete", null);
             
             // Complete flow with failure
@@ -275,7 +281,7 @@ public class PassFlowManager {
         }
 
         LogManager.getInstance().info("QR code content validated successfully");
-        addToStates(PassFlowStateCode.SCAN_QRCODE_FOUND);
+        addToStates(PassFlowStateCode.QRCODE_FOUND);
 
         setQRData(content.qrCode != null ? content.qrCode.i : null,
                   content.clubInfo != null ? content.clubInfo.i : null);

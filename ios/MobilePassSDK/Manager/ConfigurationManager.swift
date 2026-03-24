@@ -131,6 +131,25 @@ class ConfigurationManager: NSObject {
     public func getQRCodesCount() -> Int {
         return mQRCodes.count;
     }
+    
+    public func getQRCodeListState() -> PassFlowStateCode {
+        switch DelegateManager.shared.qrCodeListState {
+        case .INITIALIZING:
+            return .DATA_QRCODE_LIST_INITIALIZING
+        case .SYNCING:
+            return .DATA_QRCODE_LIST_SYNCING
+        case .USING_STORED_DATA:
+            return .DATA_QRCODE_LIST_USING_STORED_DATA
+        case .USING_STORED_DATA_AFTER_ERROR:
+            return .DATA_QRCODE_LIST_USING_STORED_DATA_AFTER_ERROR
+        case .USING_SYNCED_DATA:
+            return .DATA_QRCODE_LIST_USING_SYNCED_DATA
+        }
+    }
+    
+    public func isMemberIdValid() -> Bool {
+        return !getMemberId().isEmpty && getMemberId() != "0"
+    }
         
     public func refreshList() -> Void {
         if (DelegateManager.shared.isQRCodeListRefreshable()) {
@@ -371,7 +390,7 @@ class ConfigurationManager: NSObject {
                 LogManager.shared.error(message: "Getting definition list of qr codes and access points has failed", code: LogCodes.CONFIGURATION_SERVER_SYNC_LIST)
                 LogManager.shared.warn(message: mQRCodes.count > 0 ? "Stored qr code list will be used for passing flow" : "There is no qr code that stored before to continue passing flow", code: LogCodes.CONFIGURATION_SERVER_SYNC_LIST)
                 
-                DelegateManager.shared.qrCodeListChanged(state: .USING_STORED_DATA,
+                DelegateManager.shared.qrCodeListChanged(state: .USING_STORED_DATA_AFTER_ERROR,
                                                          count: mQRCodes.count)
             }
         }

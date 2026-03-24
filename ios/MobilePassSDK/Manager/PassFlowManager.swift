@@ -147,8 +147,8 @@ class PassFlowManager: NSObject {
     
     func addToStates(state: PassFlowStateCode, data: String? = nil) {
         // Prevent duplicate SCAN_QRCODE_NO_MATCH states
-        if (state == PassFlowStateCode.SCAN_QRCODE_NO_MATCH
-            && self.states.contains(where: { $0.state == PassFlowStateCode.SCAN_QRCODE_NO_MATCH.rawValue })) {
+        if (state == PassFlowStateCode.QRCODE_NO_MATCH
+            && self.states.contains(where: { $0.state == PassFlowStateCode.QRCODE_NO_MATCH.rawValue })) {
             LogManager.shared.debug(message: "No match QR Code state has been added before")
         } else {
             self.states.append(PassFlowState(state: state, data: data))
@@ -170,9 +170,17 @@ class PassFlowManager: NSObject {
     func processQRCode(data: String) -> QRCodeProcessResult {
         LogManager.shared.info(message: "Processing QR code data")
         
+        // Step 0: Add current states
+        if (!ConfigurationManager.shared.isMemberIdValid()) {
+            addToStates(state: .DATA_INVALID_MEMBER_ID, data: ConfigurationManager.shared.getMemberId())
+        }
+        
+        addToStates(state: ConfigurationManager.shared.getQRCodeListState(), data: "QR Codes Count: \(ConfigurationManager.shared.getQRCodesCount().description)")
+        
+        
         // Step 1: Check if QR code format is valid (basic validation)
         guard !data.isEmpty else {
-            addToStates(state: .SCAN_QRCODE_INVALID_FORMAT, data: "Empty QR code")
+            addToStates(state: .QRCODE_INVALID_FORMAT, data: "Empty QR code")
             LogManager.shared.warn(message: "QR code data is empty", code: LogCodes.PASSFLOW_QRCODE_READER_INVALID_CONTENT)
             
             // Complete flow with failure
@@ -186,7 +194,7 @@ class PassFlowManager: NSObject {
         let regex = try? NSRegularExpression(pattern: pattern, options: .caseInsensitive)
         
         guard let match = regex?.firstMatch(in: data, options: [], range: NSRange(location: 0, length: data.utf16.count)) else {
-            addToStates(state: .SCAN_QRCODE_INVALID_FORMAT, data: data)
+            addToStates(state: .QRCODE_INVALID_FORMAT, data: data)
             LogManager.shared.warn(message: "QR code has invalid format: \(data)", code: LogCodes.PASSFLOW_QRCODE_READER_INVALID_FORMAT)
             
             // Complete flow with failure
@@ -221,7 +229,7 @@ class PassFlowManager: NSObject {
         // Step 5: Check if QR code was found in list
         guard let content = foundContent else {
             // QR code has valid format but not found in authorized list
-            addToStates(state: .SCAN_QRCODE_NO_MATCH, data: qrCodeContent)
+            addToStates(state: .QRCODE_NO_MATCH, data: qrCodeContent)
             LogManager.shared.warn(message: "QR code not found in authorized list", code: LogCodes.PASSFLOW_QRCODE_READER_NO_MATCHING)
             
             // Complete flow with failure
@@ -233,6 +241,7 @@ class PassFlowManager: NSObject {
         // Step 6: Validate QR code content structure
         guard content.valid else {
             // QR code found but has invalid/incomplete configuration
+            addToStates(state: .QRCODE_CONTENT_INVALID, data: qrCodeContent)
             LogManager.shared.warn(message: "QR code configuration is invalid or incomplete", code: LogCodes.PASSFLOW_EMPTY_QRCODE_CONTENT)
             
             // Complete flow with failure
@@ -242,7 +251,7 @@ class PassFlowManager: NSObject {
         }
         
         LogManager.shared.info(message: "QR code content validated successfully")
-        addToStates(state: .SCAN_QRCODE_FOUND)
+        addToStates(state: .QRCODE_FOUND)
         
         // Store QR data
         setQRData(qrId: content.qrCode?.i, clubId: content.clubInfo?.i)
