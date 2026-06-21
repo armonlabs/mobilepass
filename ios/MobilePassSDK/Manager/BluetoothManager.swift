@@ -47,6 +47,16 @@ class BluetoothManager: NSObject {
             self.readyCentralManager()
         }
     }
+
+    // Returns false if BLE permission has never been requested (notDetermined).
+    // Safe to call without creating CBCentralManager — no iOS permission popup triggered.
+    public func isPermissionDetermined() -> Bool {
+        if #available(iOS 13.1, *) {
+            return CBCentralManager.authorization != .notDetermined
+        } else {
+            return CBPeripheralManager.authorizationStatus() != .notDetermined
+        }
+    }
     
     public func getCurrentState() -> DeviceCapability {
         if (self.bluetoothState == nil) {

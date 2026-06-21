@@ -472,7 +472,7 @@ class PassFlowManager: NSObject {
         }
         
         // Check authorization status without creating CBCentralManager (avoids triggering iOS permission popup)
-        if #available(iOS 13.1, *), CBCentralManager.authorization == .notDetermined {
+        if !BluetoothManager.shared.isPermissionDetermined() {
             LogManager.shared.info(message: "Bluetooth permission not yet requested - skipping BLE silently")
             executeNextAction()
             return
