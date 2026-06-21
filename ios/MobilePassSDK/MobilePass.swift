@@ -27,10 +27,7 @@ public class MobilePass {
             LogManager.shared.info(message: "Configuration: \(config.getLog())")
             
             try ConfigurationManager.shared.setReady()
-            
-            // Initialize Bluetooth manager early so state is ready when QR code is scanned
-            BluetoothManager.shared.setReady()
-            
+
             // Perform initial handshake for request signing
             performInitialHandshake()
         } catch {

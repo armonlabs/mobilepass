@@ -471,9 +471,19 @@ class PassFlowManager: NSObject {
             return
         }
         
+        // Check authorization status without creating CBCentralManager (avoids triggering iOS permission popup)
+        if #available(iOS 13.1, *), CBCentralManager.authorization == .notDetermined {
+            LogManager.shared.info(message: "Bluetooth permission not yet requested - skipping BLE silently")
+            executeNextAction()
+            return
+        }
+
+        // Initialize BLE stack now that we know authorization state (lazy init — was previously done at SDK init)
+        BluetoothManager.shared.setReady()
+
         // Check Bluetooth authorization and enabled state
         let bleState = BluetoothManager.shared.getCurrentState()
-        
+
         // Check authorization first
         if bleState.needAuthorize {
             LogManager.shared.warn(message: "Bluetooth permission not granted")
