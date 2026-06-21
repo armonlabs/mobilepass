@@ -193,12 +193,18 @@ class CryptoManager: NSObject {
     // MARK: Private Functions
     
     private func getKeyRef(keyBase64: String, keyOptions: Dictionary<String, Any>) -> SecKey? {
-        let keyData = Data(base64Encoded: keyBase64, options: [])
-        
+        guard let keyData = Data(base64Encoded: keyBase64, options: []) else {
+            LogManager.shared.error(message: "Failed to decode base64 key data")
+            return nil
+        }
+
         var error:Unmanaged<CFError>?
-        let createdKeyRef: SecKey = SecKeyCreateWithData(keyData! as CFData, keyOptions as CFDictionary, &error)!
-        
-        return error != nil ? nil : createdKeyRef
+        guard let createdKeyRef = SecKeyCreateWithData(keyData as CFData, keyOptions as CFDictionary, &error) else {
+            LogManager.shared.error(message: "Failed to create key reference: \(error?.takeRetainedValue().localizedDescription ?? "unknown error")")
+            return nil
+        }
+
+        return createdKeyRef
     }
     
     private func getPrivateKey(keyBase64: String) -> SecKey? {
