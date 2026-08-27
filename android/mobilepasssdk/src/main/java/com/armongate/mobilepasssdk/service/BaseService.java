@@ -110,7 +110,7 @@ public class BaseService {
         }
         
         try {
-            String sdkVersion = "2.1.0";
+            String sdkVersion = "2.2.1";
             String osVersion = "Android " + android.os.Build.VERSION.RELEASE + " (API " + android.os.Build.VERSION.SDK_INT + ")";
             
             // Safe access to potentially null device info with fallbacks
@@ -132,7 +132,7 @@ public class BaseService {
         } catch (Exception ex) {
             // Fallback to basic User-Agent if any exception occurs
             LogManager.getInstance().warn("Failed to build detailed User-Agent, using fallback", null);
-            cachedUserAgent = "MobilePassSDK/2.1.0";
+            cachedUserAgent = "MobilePassSDK/2.2.1";
         }
         
         return cachedUserAgent;
@@ -211,8 +211,15 @@ public class BaseService {
                     @Override
                     public void onResponse(String response) {
                         if (clazz != null) {
-                            Gson gson = new Gson();
-                            listener.onCompleted(gson.fromJson(response, clazz));
+                            T parsed;
+                            try {
+                                parsed = new Gson().fromJson(response, clazz);
+                            } catch (Exception ex) {
+                                LogManager.getInstance().error("Failed to parse response: " + (ex.getMessage() != null ? ex.getMessage() : "Unknown parse error"), null);
+                                listener.onError(-1, "");
+                                return;
+                            }
+                            listener.onCompleted(parsed);
                         } else {
                             listener.onCompleted(null);
                         }
@@ -260,7 +267,7 @@ public class BaseService {
                 params.put("Cache-Control", "no-cache");
                 params.put("User-Agent", getUserAgent());
                 params.put("accept-language", ConfigurationManager.getInstance().getLanguage());
-                params.put("mobilepass-version", "2.1.0");
+                params.put("mobilepass-version", "2.2.1");
                 params.put("mobilepass-memberid", ConfigurationManager.getInstance().getMemberId());
                 params.put("mobilepass-barcode", ConfigurationManager.getInstance().getBarcodeId());
                 params.put("mobilepass-config", ConfigurationManager.getInstance().getConfigurationLog());

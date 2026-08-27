@@ -59,7 +59,7 @@ Add dependency to app-level `build.gradle`:
 
 ```gradle
 dependencies {
-    implementation 'com.github.armonlabs:mobilepass:v2.1.0'
+    implementation 'com.github.armonlabs:mobilepass:v2.2.1'
 }
 ```
 
