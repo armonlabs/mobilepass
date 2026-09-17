@@ -57,6 +57,7 @@ class PassFlowManager: NSObject {
     private var bleScanSessionId: UUID? = nil
     private var isWaitingForBLEEnabled: Bool = false
     private var lastFailureMessage: String? = nil // Store failure message from BLE or remote access
+    private var lastFailureCode: String? = nil // Store failure result code from BLE or remote access
     
     // All state codes are now user-facing - no ignore list needed
     
@@ -73,6 +74,9 @@ class PassFlowManager: NSObject {
         self.actionList.removeAll()
         self.actionCurrent = ""
         
+        self.lastFailureMessage = nil
+        self.lastFailureCode = nil
+
         cancelBLETimeout()
         cancelLocationTimeout()
         bleScanSessionId = nil // Invalidate session
@@ -555,7 +559,9 @@ class PassFlowManager: NSObject {
             direction: direction.rawValue,
             hardwareId: hardwareId,
             relayNumber: relayNumber,
-            language: Language(rawValue: language) ?? .TR
+            // Same resolution as the Accept-Language header, so the device and
+            // the server answer in the same language
+            language: Language.normalized(language)
         )
         
         // Create unique session ID for this scan to prevent race conditions
@@ -582,17 +588,22 @@ class PassFlowManager: NSObject {
                 self.cancelBLETimeout()
                 BluetoothManager.shared.stopScan(disconnect: false) // Don't disconnect - already connected
                 
-                LogManager.shared.info(message: "Bluetooth connection successful")
-                addToStates(state: .RUN_ACTION_BLUETOOTH_PASS_SUCCEED)
+                LogManager.shared.info(message: "Bluetooth connection successful with code: \(status.resultCode ?? "None")")
+                addToStates(state: .RUN_ACTION_BLUETOOTH_PASS_SUCCEED, data: status.resultCode)
                 
+                // A path that succeeded owns the result; the other path's code,
+                // if any, is discarded. The device sends no text on success yet,
+                // so message is nil until the firmware starts sending one.
                 DelegateManager.shared.onCompleted(
                     resultCode: PassFlowResultCode.SUCCESS.rawValue,
                     isRemoteAccess: false,
                     direction: content.qrCode?.d != nil ? content.qrCode!.d! : nil,
                     clubId: content.clubInfo?.i,
-                    clubName: content.clubInfo?.n
+                    clubName: content.clubInfo?.n,
+                    message: status.message,
+                    code: status.resultCode
                 )
-                
+
             case .failed, .notFound:
                 // Invalidate session FIRST to prevent duplicate terminal events
                 self.bleScanSessionId = nil
@@ -602,11 +613,16 @@ class PassFlowManager: NSObject {
                 self.cancelBLETimeout()
                 BluetoothManager.shared.stopScan(disconnect: true)
                 
-                // Store failure message for potential use in onCompleted
-                self.lastFailureMessage = status.failMessage
-                
-                LogManager.shared.warn(message: "Bluetooth connection failed: \(status.failMessage ?? "Unknown error")")
-                self.addToStates(state: .RUN_ACTION_BLUETOOTH_CONNECTION_FAILED, data: status.failMessage)
+                // Store failure message and result code for potential use in
+                // onCompleted. The last attempted path owns the code, but a path
+                // that produced none must not erase the code of an earlier one:
+                // on a RemoteThenBluetooth flow against older firmware the remote
+                // code is the only one there is.
+                self.lastFailureMessage = status.message
+                self.lastFailureCode = status.resultCode ?? self.lastFailureCode
+
+                LogManager.shared.warn(message: "Bluetooth connection failed: \(status.message ?? "Unknown error") (code: \(status.resultCode ?? "None"))")
+                self.addToStates(state: .RUN_ACTION_BLUETOOTH_CONNECTION_FAILED, data: status.message)
                 
                 // Try next action or fail
                 self.fallbackOrFail()
@@ -672,7 +688,8 @@ class PassFlowManager: NSObject {
                 direction: activeQRCodeContent?.qrCode?.d,
                 clubId: activeQRCodeContent?.clubInfo?.i,
                 clubName: activeQRCodeContent?.clubInfo?.n,
-                message: lastFailureMessage
+                message: lastFailureMessage,
+                code: lastFailureCode
             )
         }
     }
@@ -697,28 +714,34 @@ class PassFlowManager: NSObject {
         LogManager.shared.info(message: "Executing remote access")
         AccessPointService().remoteOpen(request: request) { result in
             switch result {
-            case .success(_):
-                LogManager.shared.info(message: "Remote access successful")
-                self.addToStates(state: .RUN_ACTION_REMOTE_ACCESS_PASS_SUCCEED)
-                
+            case .success(let response):
+                LogManager.shared.info(message: "Remote access successful with code: \(response?.code ?? "None")")
+                self.addToStates(state: .RUN_ACTION_REMOTE_ACCESS_PASS_SUCCEED, data: response?.code)
+
                 // Clear delegate to stop receiving BLE callbacks (scan may not be active)
                 BluetoothManager.shared.onConnectionStateChanged = nil
                 self.bleScanSessionId = nil
-                
+
                 DelegateManager.shared.onCompleted(
                     resultCode: PassFlowResultCode.SUCCESS.rawValue,
                     isRemoteAccess: true,
                     direction: content.qrCode?.d != nil ? content.qrCode!.d! : nil,
                     clubId: content.clubInfo?.i,
-                    clubName: content.clubInfo?.n
+                    clubName: content.clubInfo?.n,
+                    message: response?.message,
+                    code: response?.code
                 )
-                
+
             case .failure(let error):
                 LogManager.shared.error(message: "Remote access failed: \(error.localizedDescription)")
-                
-                // Store error message for potential use in onCompleted
+
+                // Store error message and result code for potential use in
+                // onCompleted. Same rule as the Bluetooth leg: the last attempted
+                // path owns the code, but a path that produced none does not
+                // erase the code of an earlier one.
                 self.lastFailureMessage = error.message
-                
+                self.lastFailureCode = error.resultCode ?? self.lastFailureCode
+
                 // Add specific error state based on status code (matching Android implementation)
                 let statusCode = error.code
                 if statusCode == 401 {
@@ -753,7 +776,8 @@ class PassFlowManager: NSObject {
                         direction: content.qrCode?.d != nil ? content.qrCode!.d! : nil,
                         clubId: content.clubInfo?.i,
                         clubName: content.clubInfo?.n,
-                        message: error.message
+                        message: error.message,
+                        code: self.lastFailureCode
                     )
                 }
             }

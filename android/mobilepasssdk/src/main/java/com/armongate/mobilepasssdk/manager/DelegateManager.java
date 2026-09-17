@@ -85,6 +85,10 @@ public class DelegateManager {
     }
 
     public void onCompleted(int resultCode, Boolean isRemoteAccess, Integer direction, String clubId, String clubName, String message) {
+        this.onCompleted(resultCode, isRemoteAccess, direction, clubId, clubName, message, null);
+    }
+
+    public void onCompleted(int resultCode, Boolean isRemoteAccess, Integer direction, String clubId, String clubName, String message, String code) {
         if (mCurrentMobilePassDelegate != null) {
             PassFlowResult result = new PassFlowResult(
                             resultCode,
@@ -92,7 +96,8 @@ public class DelegateManager {
                             clubId,
                             clubName,
                     PassFlowManager.getInstance().getStates(),
-                    message);
+                    message,
+                    code);
 
             mCurrentMobilePassDelegate.onPassFlowStateChanged(
                 PassFlowStateUpdate.completed(result)

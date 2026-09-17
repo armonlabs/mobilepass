@@ -43,6 +43,10 @@ public class BaseService {
         void onCompleted(T result);
 
         void onError(int errorCode, String message);
+
+        default void onError(int errorCode, String message, String resultCode) {
+            onError(errorCode, message);
+        }
     }
 
     // Singleton
@@ -231,30 +235,41 @@ public class BaseService {
                         LogManager.getInstance().error("Error received " + (error.networkResponse != null ? error.networkResponse.statusCode : "NoNetwork"), null);
 
                         String message = "";
+                        String resultCode = null;
 
+                        // Body is parsed for every status code, not only 2xx: the
+                        // result code is most valuable exactly on the error
+                        // responses (member rejection, door could not be opened,
+                        // service failure)
                         if (error.networkResponse != null && error.networkResponse.data != null) {
                             try {
                                 Gson gson = new Gson();
                                 ResponseMessage responseMsg = gson.fromJson(new String(error.networkResponse.data), ResponseMessage.class);
 
-                                if (responseMsg != null && responseMsg.message != null) {
-                                    message = responseMsg.message;
+                                if (responseMsg != null) {
+                                    if (responseMsg.message != null) {
+                                        message = responseMsg.message;
+                                    }
+
+                                    resultCode = responseMsg.code;
                                 }
                             } catch (Exception ex) {
                                 LogManager.getInstance().error(ex.getMessage() != null ? ex.getMessage() : "Failed to parse error response", null);
                             }
                         }
 
+                        LogManager.getInstance().debug("Request completed with result code: " + (resultCode != null ? resultCode : "None"));
+
                         if (error.networkResponse == null) {
-                            listener.onError(0, message);
+                            listener.onError(0, message, resultCode);
                         } else if (error instanceof TimeoutError) {
-                            listener.onError(408, message);
+                            listener.onError(408, message, resultCode);
                         } else if (error instanceof AuthFailureError) {
                             // Return actual status code if available, otherwise 401
                             int statusCode = error.networkResponse.statusCode;
-                            listener.onError(statusCode, message);
+                            listener.onError(statusCode, message, resultCode);
                         } else {
-                            listener.onError(error.networkResponse.statusCode, message);
+                            listener.onError(error.networkResponse.statusCode, message, resultCode);
                         }
                     }
                 }) {

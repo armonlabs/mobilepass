@@ -9,13 +9,15 @@ public class PassFlowResult {
     public String   clubName;
     public List<PassFlowState> states;
     public String   message;
+    public String   code;
 
-    public PassFlowResult(Integer result, Integer direction, String clubId, String clubName, List<PassFlowState> states, String message) {
+    public PassFlowResult(Integer result, Integer direction, String clubId, String clubName, List<PassFlowState> states, String message, String code) {
         this.result     = result;
         this.direction  = direction;
         this.clubId     = clubId;
         this.clubName   = clubName;
         this.states     = states;
         this.message    = message;
+        this.code       = code;
     }
 }

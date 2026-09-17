@@ -105,7 +105,9 @@ class ConfigurationManager: NSObject {
     }
     
     public func getLanguage() -> String {
-        return mCurrentConfig?.language ?? ConfigurationDefaults.Language
+        // Normalized so that the Accept-Language header and the Bluetooth
+        // language byte always resolve to the same language
+        return Language.normalized(mCurrentConfig?.language ?? ConfigurationDefaults.Language).rawValue
     }
     
     public func bleConnectionTimeout() -> Int {

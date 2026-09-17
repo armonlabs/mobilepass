@@ -19,6 +19,7 @@ import com.armongate.mobilepasssdk.model.QRCodeContent;
 import com.armongate.mobilepasssdk.model.QRCodeProcessResult;
 import com.armongate.mobilepasssdk.model.request.RequestAccess;
 import com.armongate.mobilepasssdk.model.response.ResponseAccessPointListQRCode;
+import com.armongate.mobilepasssdk.model.response.ResponseMessage;
 import com.armongate.mobilepasssdk.service.AccessPointService;
 import com.armongate.mobilepasssdk.service.BaseService;
 
@@ -26,7 +27,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -72,6 +72,7 @@ public class PassFlowManager {
     private boolean isWaitingForLocationVerification = false;
     private boolean lastBleEnabledState = false;
     private String lastFailureMessage = null; // Store failure message from BLE or remote access
+    private String lastFailureCode = null; // Store failure result code from remote access
 
     // Setup
     private void setupBluetoothStateListener() {
@@ -101,6 +102,8 @@ public class PassFlowManager {
         this.activeQRCodeContent = null;
         this.actionList.clear();
         this.actionCurrent = "";
+        this.lastFailureMessage = null;
+        this.lastFailureCode = null;
 
         cancelBLETimeout();
         cancelLocationTimeout();
@@ -571,8 +574,9 @@ public class PassFlowManager {
         // Bluetooth is ready - start scan
         String memberId = ConfigurationManager.getInstance().getMemberId();
         String barcodeId = ConfigurationManager.getInstance().getBarcodeId();
-        Language language = Objects.equals(ConfigurationManager.getInstance().getLanguage(), "en")
-                ? Language.EN : Language.TR;
+        // Same resolution as the accept-language header, so the device and the
+        // server answer in the same language
+        Language language = Language.normalized(ConfigurationManager.getInstance().getLanguage());
 
         BLEScanConfiguration config = new BLEScanConfiguration(
                 Arrays.asList(activeQRCodeContent.terminals),
@@ -609,15 +613,19 @@ public class PassFlowManager {
                         cancelBLETimeout();
                         BluetoothManager.getInstance().stopScan(false); // Don't disconnect - already connected
                         
-                        LogManager.getInstance().info("Bluetooth connection successful");
-                        addToStates(PassFlowStateCode.RUN_ACTION_BLUETOOTH_PASS_SUCCEED);
-                        
+                        LogManager.getInstance().info("Bluetooth connection successful with code: " + (status.resultCode != null ? status.resultCode : "None"));
+                        addToStates(PassFlowStateCode.RUN_ACTION_BLUETOOTH_PASS_SUCCEED, status.resultCode);
+
+                        // A path that succeeded owns the result; the other path's
+                        // code, if any, is discarded
                         DelegateManager.getInstance().onCompleted(
                                 PassFlowResultCode.SUCCESS,
                                 false,
                             getActiveDirection(),
                             getActiveClubId(),
-                            getActiveClubName()
+                            getActiveClubName(),
+                            status.message,
+                            status.resultCode
                         );
                         break;
 
@@ -631,11 +639,16 @@ public class PassFlowManager {
                         cancelBLETimeout();
                         BluetoothManager.getInstance().stopScan(true);
                         
-                        // Store failure message for potential use in onCompleted
-                        lastFailureMessage = status.failMessage;
-                        
-                        LogManager.getInstance().warn("Bluetooth connection failed: " + status.failMessage, PassFlowStateCode.RUN_ACTION_BLUETOOTH_CONNECTION_FAILED);
-                        addToStates(PassFlowStateCode.RUN_ACTION_BLUETOOTH_CONNECTION_FAILED, status.failMessage);
+                        // Store failure message and result code for potential use
+                        // in onCompleted. The last attempted path owns the code,
+                        // but a path that produced none must not erase the code of
+                        // an earlier one: on a RemoteThenBluetooth flow against
+                        // older firmware the remote code is the only one there is.
+                        lastFailureMessage = status.message;
+                        lastFailureCode = status.resultCode != null ? status.resultCode : lastFailureCode;
+
+                        LogManager.getInstance().warn("Bluetooth connection failed: " + status.message + " (code: " + (status.resultCode != null ? status.resultCode : "None") + ")", PassFlowStateCode.RUN_ACTION_BLUETOOTH_CONNECTION_FAILED);
+                        addToStates(PassFlowStateCode.RUN_ACTION_BLUETOOTH_CONNECTION_FAILED, status.message);
                         
                         fallbackOrFail();
                         break;
@@ -731,31 +744,44 @@ public class PassFlowManager {
             request.i = ConfigurationManager.getInstance().getInstallationId();
         }
 
-        new AccessPointService().remoteOpen(request, new BaseService.ServiceResultListener() {
+        new AccessPointService().remoteOpen(request, new BaseService.ServiceResultListener<ResponseMessage>() {
             @Override
-            public void onCompleted(Object result) {
-                LogManager.getInstance().info("Remote access successful");
-                addToStates(PassFlowStateCode.RUN_ACTION_REMOTE_ACCESS_PASS_SUCCEED);
-                
+            public void onCompleted(ResponseMessage result) {
+                String resultCode = result != null ? result.code : null;
+
+                LogManager.getInstance().info("Remote access successful with code: " + (resultCode != null ? resultCode : "None"));
+                addToStates(PassFlowStateCode.RUN_ACTION_REMOTE_ACCESS_PASS_SUCCEED, resultCode);
+
                 // Clear delegate to stop receiving BLE callbacks (scan may not be active)
                 BluetoothManager.getInstance().delegate = null;
                 bleScanSessionId = null;
-                
+
                 DelegateManager.getInstance().onCompleted(
                         PassFlowResultCode.SUCCESS,
                         true,
                     getActiveDirection(),
                     getActiveClubId(),
-                    getActiveClubName()
+                    getActiveClubName(),
+                    result != null ? result.message : null,
+                    resultCode
                 );
             }
 
             @Override
             public void onError(int errorCode, String message) {
-                LogManager.getInstance().warn("Remote access failed: " + errorCode + " - " + message, PassFlowStateCode.RUN_ACTION_REMOTE_ACCESS_REQUEST_FAILED);
+                this.onError(errorCode, message, null);
+            }
 
-                // Store error message for potential use in onCompleted
+            @Override
+            public void onError(int errorCode, String message, String resultCode) {
+                LogManager.getInstance().warn("Remote access failed: " + errorCode + " - " + message + " (code: " + (resultCode != null ? resultCode : "None") + ")", PassFlowStateCode.RUN_ACTION_REMOTE_ACCESS_REQUEST_FAILED);
+
+                // Store error message and result code for potential use in
+                // onCompleted. Same rule as the Bluetooth leg: the last attempted
+                // path owns the code, but a path that produced none does not erase
+                // the code of an earlier one.
                 lastFailureMessage = message;
+                lastFailureCode = resultCode != null ? resultCode : lastFailureCode;
 
                 // Handle specific error codes
                 switch (errorCode) {
@@ -796,7 +822,8 @@ public class PassFlowManager {
                             getActiveDirection(),
                             getActiveClubId(),
                             getActiveClubName(),
-                            message
+                            message,
+                            lastFailureCode
                     );
                 }
             }
@@ -824,7 +851,8 @@ public class PassFlowManager {
                     getActiveDirection(),
                     getActiveClubId(),
                     getActiveClubName(),
-                    lastFailureMessage
+                    lastFailureMessage,
+                    lastFailureCode
             );
         }
     }

@@ -87,7 +87,7 @@ class DelegateManager: NSObject {
         AnalyticsService().sendAnalytics(request: request) { _ in }
     }
     
-    func onCompleted(resultCode: Int, isRemoteAccess: Bool, direction: Direction?, clubId: String?, clubName: String?, message: String? = nil) {
+    func onCompleted(resultCode: Int, isRemoteAccess: Bool, direction: Direction?, clubId: String?, clubName: String?, message: String? = nil, code: String? = nil) {
         DispatchQueue.main.async {
             self.mobilePassDelegate?.onPassFlowStateChanged(
                 state: .completed(result: PassFlowResult(
@@ -96,7 +96,8 @@ class DelegateManager: NSObject {
                 direction: direction,
                 clubId: clubId,
                     clubName: clubName,
-                    message: message
+                    message: message,
+                    code: code
                 ))
             )
         }
