@@ -202,24 +202,37 @@ class BaseService: NSObject {
             }
             
             if (statusCode != 200) {
-                var message = "";
-
+                // Body is parsed for every status code, not only 2xx: the result
+                // code is most valuable exactly on the error responses (member
+                // rejection, door could not be opened, service failure)
                 let responseMsg: ResponseMessage? = self.getResponse(fromData: data)
-                message = responseMsg?.message ?? ""
-                
+                let message     = responseMsg?.message ?? ""
+                let resultCode  = responseMsg?.code
+
                 LogManager.shared.debug(message: "Request completed with message: \(message)")
+                LogManager.shared.debug(message: "Request completed with result code: \(resultCode ?? "None")")
                 LogManager.shared.debug(message: "Request completed with status code: \(statusCode!)")
-                
+
                 DispatchQueue.main.async {
-                    completion(.failure(RequestError(message: message, reason: .errorCode, code: statusCode!)))
+                    completion(.failure(RequestError(message: message, reason: .errorCode, code: statusCode!, resultCode: resultCode)))
                 }
                 return
             }
-            
+
             LogManager.shared.info(message: "Request completed successfully")
-            
+
+            if (data.isEmpty) {
+                // Successful response without a body, there is nothing to parse
+                // and no result code to carry
+                LogManager.shared.debug(message: "Response body is empty")
+                DispatchQueue.main.async {
+                    completion(.success(nil))
+                }
+                return
+            }
+
             let state: T? = self.getResponse(fromData: data)
-            
+
             DispatchQueue.main.async {
                 if (state == nil) {
                     LogManager.shared.debug(message: "Response data is empty")

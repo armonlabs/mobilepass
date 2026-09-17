@@ -8,5 +8,6 @@
 import Foundation
 
 struct ResponseMessage: Codable {
-    var message: String
+    var code: String?
+    var message: String?
 }

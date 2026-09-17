@@ -39,11 +39,11 @@ public class MainActivity extends AppCompatActivity implements MobilePassDelegat
             Toast.makeText(this, "Üye numaranızı giriniz", Toast.LENGTH_SHORT).show();
         } else {
             Configuration config = new Configuration();
-            config.apiKey = "4a8d1a27794f4a8a7cfdc2e8ecbf6b5ab0683df122742647c171add63e0cb65d"; // "38fa3d202700f52dfb2842c7360574ec833a4e090b65852e4115ad4f811afe91";
+            config.apiKey = "38fa3d202700f52dfb2842c7360574ec833a4e090b65852e4115ad4f811afe91"; // "4a8d1a27794f4a8a7cfdc2e8ecbf6b5ab0683df122742647c171add63e0cb65d";
             config.memberId = txtMemberId.getText().toString();
-            config.barcode = null; // "3453645646546";
-            config.installationId = "armongate-test";
-            config.serverUrl = "https://qr.marsathletic.com"; // https://macfit.armon.com.tr:3443";
+            config.barcode = "608768437547"; // "3453645646546";
+            config.installationId = "abc"; // "armongate-test";
+            config.serverUrl = "https://macfit.armon.com.tr:3443"; // "https://qr.marsathletic.com";
             config.language = "tr";
             config.continueWithoutBLE = true;
             config.connectionTimeout = 10;
@@ -171,7 +171,8 @@ public class MainActivity extends AppCompatActivity implements MobilePassDelegat
                         ", ClubId: " + result.clubId + 
                         ", ClubName: " + result.clubName + 
                         ", Direction: " + result.direction +
-                        ", Message: " + result.message);
+                        ", Message: " + result.message +
+                        ", Code: " + result.code);
 
                 for (PassFlowState state :
                         result.states) {

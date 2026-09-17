@@ -235,12 +235,12 @@ class BluetoothManager: NSObject {
         }
     }
     
-    private func onConnectionStateChanged(identifier: String, connectionState: DeviceConnectionStatus.ConnectionState, failReason: Int? = nil, failMessage: String? = nil) {
+    private func onConnectionStateChanged(identifier: String, connectionState: DeviceConnectionStatus.ConnectionState, failReason: Int? = nil, message: String? = nil, resultCode: String? = nil) {
         LogManager.shared.info(message: "Bluetooth connection state changed for \(identifier) > \(self.getDescriptionOfConnectionState(state: connectionState))");
-        
+
         // Check if delegate exists - PassFlowManager may have cleared it after processing terminal state
         if self.onConnectionStateChanged != nil {
-            self.onConnectionStateChanged?(DeviceConnectionStatus(id: identifier, state: connectionState, failReason: failReason, failMessage: failMessage))
+            self.onConnectionStateChanged?(DeviceConnectionStatus(id: identifier, state: connectionState, failReason: failReason, message: message, resultCode: resultCode))
         } else {
             LogManager.shared.debug(message: "Delegate is nil - callback skipped (likely already processed by PassFlowManager)")
         }
@@ -550,15 +550,24 @@ extension BluetoothManager: CBPeripheralDelegate {
                     
                     let deviceId = result!.data!["deviceId"] as? String ?? ""
                     LogManager.shared.debug(message: "Auth challenge received, device id: \(deviceId)");
-                    
+
+                    // Capability byte is absent on older firmware. It is read per
+                    // connection and never cached: the same user meets terminals
+                    // running different firmware versions.
+                    let capabilities = result!.data?["capabilities"] as? Int ?? 0
+                    let supportsResultCode = (capabilities & PacketHeaders.PROTOCOLV2.CAPABILITY.RESULT_CODE) != 0
+
+                    LogManager.shared.debug(message: "Device capabilities: \(String(capabilities, radix: 16)), result code supported: \(supportsResultCode)")
+
                     do {
                         let connectedDevice = self.currentConnectedDevices[peripheral.identifier.uuidString]!
                         let deviceConnectionInfo = self.currentConfiguration != nil ? self.currentConfiguration!.deviceList[connectedDevice.serviceUUID.lowercased()] : nil
-                        
+
                         if (deviceConnectionInfo != nil) {
-                            let resultData: Data? = try generateChallengeResponse(challengeType:   result!.type,
-                                                                                  iv:              (result!.data!["iv"] as? Data)!,
-                                                                                  deviceInfo:      deviceConnectionInfo!)
+                            let resultData: Data? = try generateChallengeResponse(challengeType:      result!.type,
+                                                                                  iv:                 (result!.data!["iv"] as? Data)!,
+                                                                                  deviceInfo:         deviceConnectionInfo!,
+                                                                                  supportsResultCode: supportsResultCode)
                             
                             peripheral.writeValue(resultData!, for: characteristic, type: .withResponse)
                         } else {
@@ -630,22 +639,51 @@ extension BluetoothManager {
     
     
     private func processChallengeResult(deviceIdentifier: String, result: BLEDataContent) {
+        // Only present when the device answered the result code request type,
+        // so it is nil for every older device
+        let resultCode = BluetoothManager.readResultCode(from: result.data)
+        // Read the same way for success and failure: the device sends no text on
+        // success today, but this carries it through as soon as it does
+        let message = result.data?["message"] as? String
+
         if (result.result == DataTypes.RESULT.Succeed) {
-            self.onConnectionStateChanged?(DeviceConnectionStatus(id: deviceIdentifier, state: DeviceConnectionStatus.ConnectionState.connected))
-            
+            LogManager.shared.info(message: "Device reported successful pass with code: \(resultCode ?? "None")")
+
+            self.onConnectionStateChanged?(DeviceConnectionStatus(id: deviceIdentifier, state: DeviceConnectionStatus.ConnectionState.connected, message: message, resultCode: resultCode))
+
             LogManager.shared.info(message: "Disconnect from device after successful process of passing!")
             self.disconnect()
         } else {
-            let failMessage = result.data!["message"] as? String
-            onConnectionStateChanged(identifier: deviceIdentifier, connectionState: .failed, failReason: result.data!["reason"] as? Int, failMessage: failMessage)
+            onConnectionStateChanged(identifier: deviceIdentifier, connectionState: .failed, failReason: result.data?["reason"] as? Int, message: message, resultCode: resultCode)
         }
     }
+
+    /**
+     * Read the result code out of a parsed device packet.
+     *
+     * The value is passed through without being interpreted: the list is open
+     * ended and the device forwards third party codes verbatim, so a code this
+     * SDK version has never seen must survive untouched. Only padding is
+     * stripped and a blank field becomes nil.
+     */
+    private static func readResultCode(from data: Dictionary<String, Any>?) -> String? {
+        guard let rawCode = data?["code"] as? String else {
+            return nil
+        }
+
+        let code = rawCode
+            .replacingOccurrences(of: "\0", with: "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+
+        return code.isEmpty ? nil : code
+    }
     
-    private func generateChallengeResponse(challengeType: Int, iv: Data, deviceInfo: DeviceConnectionInfo) throws -> Data {
+    private func generateChallengeResponse(challengeType: Int, iv: Data, deviceInfo: DeviceConnectionInfo, supportsResultCode: Bool) throws -> Data {
         if (currentConfiguration!.dataUserBarcode.isEmpty) {
+            // Direction challenge has no result code variant
             return try self.generateDirectionChallengeResponse(challengeType: challengeType, iv: iv, deviceInfo: deviceInfo)
         } else {
-            return try self.generateMacfitChallengeResponse(challengeType: challengeType, iv: iv, deviceInfo: deviceInfo)
+            return try self.generateMacfitChallengeResponse(challengeType: challengeType, iv: iv, deviceInfo: deviceInfo, supportsResultCode: supportsResultCode)
         }
     }
     
@@ -677,16 +715,35 @@ extension BluetoothManager {
         return resultData
     }
     
-    private func generateMacfitChallengeResponse(challengeType: Int, iv: Data, deviceInfo: DeviceConnectionInfo) throws -> Data {
+    private func generateMacfitChallengeResponse(challengeType: Int, iv: Data, deviceInfo: DeviceConnectionInfo, supportsResultCode: Bool) throws -> Data {
         // MARK: Determine if installationId exists
-        let installationId = ConfigurationManager.shared.getInstallationId()
-        let hasInstallationId = installationId != nil && !installationId!.isEmpty
-        
+        let installationId = ConfigurationManager.shared.getInstallationId() ?? ""
+        let hasInstallationId = !installationId.isEmpty
+
         // MARK: Create header data with dynamic challenge type
-        let challengeHeader = hasInstallationId ? 
-            UInt8(PacketHeaders.PROTOCOLV2.AUTH.MACFIT_CHALLENGE_WITH_INSTALLATIONID) :
-            UInt8(PacketHeaders.PROTOCOLV2.AUTH.MACFIT_CHALLENGE)
-        
+        // The result code type carries the same body as the installationId type,
+        // including the length prefix, so it is also used when there is no
+        // installationId - the length is then zero. Without a capability byte
+        // nothing changes: older firmware keeps receiving 0x07 or 0x06 exactly as
+        // before. Sending 0x08 to firmware that does not know it would be parsed
+        // as a direction challenge and fail the pass, hence the capability check.
+        let challengeHeader: UInt8
+
+        if supportsResultCode {
+            challengeHeader = UInt8(PacketHeaders.PROTOCOLV2.AUTH.MACFIT_CHALLENGE_WITH_RESULTCODE)
+        } else if hasInstallationId {
+            challengeHeader = UInt8(PacketHeaders.PROTOCOLV2.AUTH.MACFIT_CHALLENGE_WITH_INSTALLATIONID)
+        } else {
+            challengeHeader = UInt8(PacketHeaders.PROTOCOLV2.AUTH.MACFIT_CHALLENGE)
+        }
+
+        // Body shape follows the opcode, never a separate flag. If these two ever
+        // drift apart the device reads the length byte where the encrypted
+        // challenge starts and every pass fails.
+        let carriesInstallationId = challengeHeader != UInt8(PacketHeaders.PROTOCOLV2.AUTH.MACFIT_CHALLENGE)
+
+        LogManager.shared.debug(message: "Challenge response type: \(String(challengeHeader, radix: 16)), carries installation id: \(carriesInstallationId)")
+
         let resultDataArray: [UInt8] = [
             UInt8(PacketHeaders.PROTOCOLV2.GROUP.AUTH),
             challengeHeader,
@@ -709,11 +766,12 @@ extension BluetoothManager {
         resultData.append(currentConfiguration!.qrCodeId.replacingOccurrences(of: "-", with: "").data(using: .hexadecimal)!)
         resultData.append(currentConfiguration!.language == Language.EN ? Data([0x01]) : Data([0x00]))
         
-        // MARK: Add installationId with length prefix if available
-        if hasInstallationId {
-            let installationIdData = installationId!.data(using: .utf8)!
-            let length = UInt8(installationIdData.count)
-            resultData.append(Data([length]))
+        // MARK: Add length prefixed installationId when the opcode carries it.
+        // An empty installationId is sent as a zero length, which the device
+        // reads as "no installation id"
+        if carriesInstallationId {
+            let installationIdData = Data(installationId.utf8)
+            resultData.append(Data([UInt8(installationIdData.count)]))
             resultData.append(installationIdData)
         }
         

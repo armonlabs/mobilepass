@@ -436,10 +436,10 @@ public class BluetoothManager {
     }
 
     private void onConnectionStateChanged(String identifier, DeviceConnectionStatus.ConnectionState connectionState) {
-        onConnectionStateChanged(identifier, connectionState, null, null);
+        onConnectionStateChanged(identifier, connectionState, null, null, null);
     }
 
-    private void onConnectionStateChanged(String identifier, DeviceConnectionStatus.ConnectionState connectionState, Integer failReason, String failMessage) {
+    private void onConnectionStateChanged(String identifier, DeviceConnectionStatus.ConnectionState connectionState, Integer failReason, String message, String resultCode) {
         LogManager.getInstance().info("Bluetooth connection state changed for " + (identifier != null ? identifier : "-") + " > " + connectionState.toString());
 
         if (this.activeContext == null) {
@@ -463,7 +463,7 @@ public class BluetoothManager {
         // Check if delegate exists - PassFlowManager may have cleared it after processing terminal state
         if (delegate != null) {
             if (identifier != null) {
-                delegate.onConnectionStateChanged(new DeviceConnectionStatus(identifier, connectionState, failReason, failMessage));
+                delegate.onConnectionStateChanged(new DeviceConnectionStatus(identifier, connectionState, failReason, message, resultCode));
             } else {
                 LogManager.getInstance().debug("Identifier is not provided to generate callback for listener about connection state");
             }
@@ -618,25 +618,59 @@ public class BluetoothManager {
     }
 
     private void processChallengeResult(String deviceIdentifier, BLEDataContent result) {
+        // Only present when the device answered the result code request type, so
+        // it is null for every older device
+        String resultCode = readResultCode(result.data);
+        // Read the same way for success and failure: the device sends no text on
+        // success today, but this carries it through as soon as it does
+        String message = result.data != null && result.data.containsKey("message") ? (String) result.data.get("message") : null;
+
         if (result.result == DataTypes.RESULT.Succeed) {
-            onConnectionStateChanged(deviceIdentifier, DeviceConnectionStatus.ConnectionState.CONNECTED);
+            LogManager.getInstance().info("Device reported successful pass with code: " + (resultCode != null ? resultCode : "None"));
+
+            onConnectionStateChanged(deviceIdentifier, DeviceConnectionStatus.ConnectionState.CONNECTED, null, message, resultCode);
             LogManager.getInstance().info("Disconnecting from device after successful process of passing!");
             disconnect();
         } else {
-            String failMessage = result.data.containsKey("message") ? (String) result.data.get("message") : null;
             onConnectionStateChanged(
                     deviceIdentifier,
                     DeviceConnectionStatus.ConnectionState.FAILED,
-                    result.data.containsKey("reason") ? (Integer) result.data.get("reason") : null,
-                    failMessage);
+                    result.data != null && result.data.containsKey("reason") ? (Integer) result.data.get("reason") : null,
+                    message,
+                    resultCode);
         }
     }
 
-    private byte[] generateChallengeResponse(byte[] challenge, byte[] iv, DeviceConnectionInfo deviceInfo) throws Exception {
+    /**
+     * Read the result code out of a parsed device packet.
+     *
+     * The value is passed through without being interpreted: the list is open
+     * ended and the device forwards third party codes verbatim, so a code this
+     * SDK version has never seen must survive untouched. Only padding is stripped
+     * and a blank field becomes null.
+     */
+    private String readResultCode(HashMap<String, Object> data) {
+        if (data == null || !data.containsKey("code")) {
+            return null;
+        }
+
+        Object rawCode = data.get("code");
+
+        if (!(rawCode instanceof String)) {
+            return null;
+        }
+
+        String code = ((String) rawCode).replace("\0", "").trim();
+
+        return code.isEmpty() ? null : code;
+    }
+
+    private byte[] generateChallengeResponse(byte[] challenge, byte[] iv, DeviceConnectionInfo deviceInfo, boolean supportsResultCode) throws Exception {
         if (currentConfiguration.dataUserBarcode == null || currentConfiguration.dataUserBarcode.isEmpty()) {
+            // Direction challenge has no result code variant
             return this.generateDirectionChallengeResponse(challenge, iv, deviceInfo);
         } else {
-            return this.generateMacfitChallengeResponse(challenge, iv, deviceInfo);
+            return this.generateMacfitChallengeResponse(challenge, iv, deviceInfo, supportsResultCode);
         }
     }
 
@@ -657,15 +691,34 @@ public class BluetoothManager {
         return resultData;
     }
 
-    private byte[] generateMacfitChallengeResponse(byte[] challenge, byte[] iv, DeviceConnectionInfo deviceInfo) throws Exception {
+    private byte[] generateMacfitChallengeResponse(byte[] challenge, byte[] iv, DeviceConnectionInfo deviceInfo, boolean supportsResultCode) throws Exception {
         // Determine if installationId exists
         String installationId = ConfigurationManager.getInstance().getInstallationId();
         boolean hasInstallationId = installationId != null && !installationId.isEmpty();
 
-        // Create header data with dynamic challenge type
-        byte challengeHeader = hasInstallationId ?
-                PacketHeaders.PROTOCOLV2.AUTH.MACFIT_CHALLENGE_WITH_INSTALLATIONID :
-                PacketHeaders.PROTOCOLV2.AUTH.MACFIT_CHALLENGE;
+        // Create header data with dynamic challenge type.
+        // The result code type carries the same body as the installationId type,
+        // including the length prefix, so it is also used when there is no
+        // installationId - the length is then zero. Without a capability byte
+        // nothing changes: older firmware keeps receiving 0x07 or 0x06 exactly as
+        // before. Sending 0x08 to firmware that does not know it would be parsed
+        // as a direction challenge and fail the pass, hence the capability check.
+        byte challengeHeader;
+
+        if (supportsResultCode) {
+            challengeHeader = PacketHeaders.PROTOCOLV2.AUTH.MACFIT_CHALLENGE_WITH_RESULTCODE;
+        } else if (hasInstallationId) {
+            challengeHeader = PacketHeaders.PROTOCOLV2.AUTH.MACFIT_CHALLENGE_WITH_INSTALLATIONID;
+        } else {
+            challengeHeader = PacketHeaders.PROTOCOLV2.AUTH.MACFIT_CHALLENGE;
+        }
+
+        // Body shape follows the opcode, never a separate flag. If these two ever
+        // drift apart the device reads the length byte where the encrypted
+        // challenge starts and every pass fails.
+        boolean carriesInstallationId = challengeHeader != PacketHeaders.PROTOCOLV2.AUTH.MACFIT_CHALLENGE;
+
+        LogManager.getInstance().debug("Challenge response type: " + String.format("%02X", challengeHeader) + ", carries installation id: " + carriesInstallationId);
 
         byte[] resultData = new byte[] {
                 PacketHeaders.PROTOCOLV2.GROUP.AUTH,
@@ -678,11 +731,12 @@ public class BluetoothManager {
         resultData = ArrayUtil.concat(resultData, ConverterUtil.hexStringToBytes(currentConfiguration.qrCodeId.replace("-", "")));
         resultData = ArrayUtil.add(resultData, currentConfiguration.language == Language.EN ? (byte)0x01 : (byte)0x00);
 
-        // Add installationId with length prefix if available
-        if (hasInstallationId) {
-            byte[] installationIdBytes = installationId.getBytes();
-            byte length = (byte) installationIdBytes.length;
-            resultData = ArrayUtil.add(resultData, length);
+        // Add length prefixed installationId when the opcode carries it. An empty
+        // installationId is sent as a zero length, which the device reads as
+        // "no installation id"
+        if (carriesInstallationId) {
+            byte[] installationIdBytes = hasInstallationId ? installationId.getBytes() : new byte[0];
+            resultData = ArrayUtil.add(resultData, (byte) installationIdBytes.length);
             resultData = ArrayUtil.concat(resultData, installationIdBytes);
         }
 
@@ -1026,10 +1080,19 @@ public class BluetoothManager {
                             if (connectedDevice != null && deviceConnectionInfo != null) {
                                 LogManager.getInstance().debug("Auth challenge received, device id: " + deviceId);
 
+                                // Capability byte is absent on older firmware. It is
+                                // read per connection and never cached: the same user
+                                // meets terminals running different firmware versions.
+                                int capabilities = result.data.containsKey("capabilities") ? (Integer) result.data.get("capabilities") : 0;
+                                boolean supportsResultCode = (capabilities & PacketHeaders.PROTOCOLV2.CAPABILITY.RESULT_CODE) != 0;
+
+                                LogManager.getInstance().debug("Device capabilities: " + String.format("%02X", capabilities) + ", result code supported: " + supportsResultCode);
+
                                 byte[] resultData = generateChallengeResponse(
                                         result.data.containsKey("challenge") ? ConverterUtil.hexStringToBytes(result.data.get("challenge").toString()) : new byte[0],
                                         result.data.containsKey("iv") ? ConverterUtil.hexStringToBytes(result.data.get("iv").toString()) : new byte[0],
-                                        deviceConnectionInfo
+                                        deviceConnectionInfo,
+                                        supportsResultCode
                                 );
 
                                 writeToDevice(resultData, characteristic, connectedDevice.connection);

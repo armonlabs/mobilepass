@@ -14,13 +14,15 @@ public struct PassFlowResult {
     public var clubName:    String?
     public var states:      [PassFlowState]
     public var message:     String?
-    
-    init(result: PassFlowResultCode, states: [PassFlowState], direction: Direction?, clubId: String?, clubName: String?, message: String?) {
+    public var code:        String?
+
+    init(result: PassFlowResultCode, states: [PassFlowState], direction: Direction?, clubId: String?, clubName: String?, message: String?, code: String?) {
         self.result     = result.rawValue
         self.direction  = direction != nil ? direction!.rawValue : nil
         self.clubId     = clubId
         self.clubName   = clubName
         self.states     = states
         self.message    = message
+        self.code       = code
     }
 }

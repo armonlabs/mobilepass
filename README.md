@@ -306,7 +306,36 @@ Remote Access States:
 - `clubId: String?` - Club ID if available
 - `clubName: String?` - Club name if available
 - `states: [PassFlowState]` - History of states
-- `message: String?` - Error/failure message from BLE device or remote server (only set on failure when no fallback available)
+- `message: String?` - Displayable message from the BLE device or the remote server. Set on remote access success and, when no fallback is available, on failure
+- `code: String?` - Result code of the access attempt, e.g. `A-1001`, `A-3001`, `B-2`, `C-1019`
+
+**Result codes (`code`)**
+
+Carried from the server on remote access and from the device on Bluetooth access - the same field either way, so the app never needs to know which channel completed the flow. It is independent of `result`: `result` reports how the SDK flow ended, `code` reports what the access attempt itself returned. This is what separates "daily limit reached", "card blocked", "door could not be opened" and "service temporarily unavailable", all of which arrive as `result: 3` today.
+
+`null` is a valid value and not an error. It means no code was produced, because the flow never reached the server or the device (cancelled flow, missing permission, Bluetooth disabled, location timeout) or because it completed against a terminal whose firmware does not send result codes yet. That last case will be the common one for a while, since apps update faster than devices. Fall back to your own static texts whenever `code` is `null`.
+
+Build your code table with a **default per prefix letter**, not per full code:
+
+```
+A-1xxx  -> success
+A-2xxx  -> access denied           -> show `message`
+A-3xxx  -> door / terminal         -> "try again" or "try another gate"
+A-4xxx  -> client / session        -> refresh session, retry once
+A-5xxx  -> service communication   -> "try again shortly"
+A-6xxx  -> configuration           -> direct the user to club staff
+A-9999  -> unclassified            -> generic error + support
+B-*     -> MultiSport rejection    -> own text for known codes, `message` otherwise
+C-*     -> FlyBy rejection         -> `message`
+```
+
+The code list is intentionally open ended: `B-` and `C-` codes are passed through from third party providers without being interpreted, so a code your table has never seen may arrive at any time. Fall back to the prefix default and display `message`; never show an "unknown code" error. Do not derive the code from the HTTP status or the other way around - the same status can carry different codes and `A-4001` arrives with both 400 and 403.
+
+Two codes can be produced within a single pass when the QR code is configured as `BluetoothThenRemote` or `RemoteThenBluetooth`. The SDK reconciles them before reporting: a path that succeeded owns the result, otherwise the last path that produced a code wins. A path that produced no code never erases the code of an earlier one.
+
+A few codes mean something slightly different depending on the channel. `A-4001` is "rejected by request validation" from the server and "member not found locally or challenge failed" from the device. `A-3002` never comes from the device, since a terminal that answered over Bluetooth is by definition reachable.
+
+**Note on `message` over Bluetooth:** the device packet has no room guarantee for the message, so it may arrive empty or truncated while the code is always intact. This is why the code table has to live in the app rather than depending on server text.
 
 #### `onLocationVerificationRequired(requirement: LocationRequirement)`
 

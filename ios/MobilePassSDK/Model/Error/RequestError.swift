@@ -19,7 +19,8 @@ struct RequestError: Error {
     var message:  String
     var code:     Int
     var reason:   Reason
-    
+    var resultCode: String?
+
     private var reasonTag: String {
         switch self.reason {
         case .invalidServer:
@@ -34,13 +35,14 @@ struct RequestError: Error {
     }
     
     var localizedDescription: String {
-      return "\(self.reasonTag) / \(self.code.description) | \(self.message)"
+      return "\(self.reasonTag) / \(self.code.description) | \(self.resultCode ?? "-") | \(self.message)"
     }
-    
-    init(message: String, reason: Reason, code: Int?) {
-        self.code     = code ?? -1000
-        self.message  = message
-        self.reason   = reason
+
+    init(message: String, reason: Reason, code: Int?, resultCode: String? = nil) {
+        self.code       = code ?? -1000
+        self.message    = message
+        self.reason     = reason
+        self.resultCode = resultCode
     }
         
 }

@@ -10,6 +10,7 @@ import com.armongate.mobilepasssdk.constant.PassFlowStateCode;
 import com.armongate.mobilepasssdk.constant.QRCodeListState;
 import com.armongate.mobilepasssdk.constant.ServiceProviders;
 import com.armongate.mobilepasssdk.constant.StorageKeys;
+import com.armongate.mobilepasssdk.enums.Language;
 import com.armongate.mobilepasssdk.model.Configuration;
 import com.armongate.mobilepasssdk.model.CryptoKeyPair;
 import com.armongate.mobilepasssdk.model.QRCodeContent;
@@ -140,7 +141,9 @@ public class ConfigurationManager {
     }
 
     public String getLanguage() {
-        return mCurrentConfig != null && mCurrentConfig.language != null ? mCurrentConfig.language : ConfigurationDefaults.Language;
+        // Normalized so that the accept-language header and the Bluetooth
+        // language byte always resolve to the same language
+        return Language.normalized(mCurrentConfig != null && mCurrentConfig.language != null ? mCurrentConfig.language : ConfigurationDefaults.Language).getValue();
     }
 
     public Integer getBLEConnectionTimeout() {
